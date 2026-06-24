@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { db } from "@/lib/firebase";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { 
   Home, 
   Calendar, 
@@ -14,7 +16,9 @@ import {
   LogOut,
   Menu,
   X,
-  Bell
+  Bell,
+  LayoutGrid,
+  Plus
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -22,6 +26,7 @@ type NavItem = {
   name: string;
   href: string;
   icon: React.ReactNode;
+  badge?: number;
 };
 
 type NavGroup = {
@@ -34,17 +39,52 @@ export function Sidebar() {
   const { user, role, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
 
+  const [unreadNotifCount, setUnreadNotifCount] = useState(0);
+  const [pendingApprovalCount, setPendingApprovalCount] = useState(0);
+
   // Auto-close sidebar di mobile kalau rute berubah
   useEffect(() => {
     setIsOpen(false);
   }, [pathname]);
+
+  // Real-time Badge Counts
+  useEffect(() => {
+    if (!user) return;
+    
+    let unsubNotif = () => {};
+    let unsubApproval = () => {};
+
+    // Notifications Count Listener
+    if (role === "admin") {
+      const notifQuery = query(collection(db, "notifications"), where("targetRole", "==", "admin"), where("status", "==", "unread"));
+      unsubNotif = onSnapshot(notifQuery, (snapshot) => {
+        setUnreadNotifCount(snapshot.docs.length);
+      });
+
+      // Approval Count Listener (only for admin)
+      const approvalQuery = query(collection(db, "events"), where("status", "==", "pending"));
+      unsubApproval = onSnapshot(approvalQuery, (snapshot) => {
+        setPendingApprovalCount(snapshot.docs.length);
+      });
+    } else if (role === "organizer") {
+      const notifQuery = query(collection(db, "notifications"), where("userId", "==", user.uid), where("status", "==", "unread"));
+      unsubNotif = onSnapshot(notifQuery, (snapshot) => {
+        setUnreadNotifCount(snapshot.docs.length);
+      });
+    }
+
+    return () => {
+      unsubNotif();
+      unsubApproval();
+    };
+  }, [user, role]);
 
   const adminGroups: NavGroup[] = [
     {
       label: "MENU UTAMA",
       items: [
         { name: "Dasbor", href: "/admin", icon: <Home className="h-4 w-4" /> },
-        { name: "Approval Acara", href: "/admin/approval", icon: <FileText className="h-4 w-4" /> },
+        { name: "Approval Acara", href: "/admin/approval", icon: <FileText className="h-4 w-4" />, badge: pendingApprovalCount },
         { name: "Manajemen Akun", href: "/admin/users", icon: <Users className="h-4 w-4" /> },
       ]
     },
@@ -57,6 +97,7 @@ export function Sidebar() {
     {
       label: "LAINNYA",
       items: [
+        { name: "Notifikasi", href: "/admin/notifications", icon: <Bell className="h-4 w-4" />, badge: unreadNotifCount },
         { name: "Pengaturan", href: "/admin/settings", icon: <Settings className="h-4 w-4" /> },
       ]
     }
@@ -66,15 +107,23 @@ export function Sidebar() {
     {
       label: "MENU UTAMA",
       items: [
-        { name: "Dashboard", href: "/organizer", icon: <BarChart className="h-4 w-4" /> },
-        { name: "Buat Acara", href: "/organizer/events/new", icon: <FileText className="h-4 w-4" /> },
+        { name: "Dashboard", href: "/organizer", icon: <LayoutGrid className="h-4 w-4" /> },
+        { name: "Buat Acara", href: "/organizer/events/new", icon: <Plus className="h-4 w-4" /> },
         { name: "Acara Saya", href: "/organizer/events", icon: <Calendar className="h-4 w-4" /> },
+      ]
+    },
+    {
+      label: "LAPORAN",
+      items: [
+        { name: "Analitik", href: "/organizer/analytics", icon: <BarChart className="h-4 w-4" /> },
+        { name: "Peserta", href: "/organizer/attendees", icon: <Users className="h-4 w-4" /> },
       ]
     },
     {
       label: "LAINNYA",
       items: [
-        { name: "Kehadiran (QR)", href: "/organizer/attendance", icon: <QrCode className="h-4 w-4" /> },
+        { name: "Notifikasi", href: "/organizer/notifications", icon: <Bell className="h-4 w-4" />, badge: unreadNotifCount },
+        { name: "Pengaturan", href: "/organizer/settings", icon: <Settings className="h-4 w-4" /> },
       ]
     }
   ];
@@ -163,7 +212,10 @@ export function Sidebar() {
                 </h3>
                 <nav className="space-y-1">
                   {group.items.map((link) => {
-                    const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`);
+                    // Logika isActive yang lebih cerdas untuk menangani rute bersarang (nested routes)
+                    const isActive = pathname === link.href || 
+                      (pathname.startsWith(link.href + "/") && 
+                       !group.items.some(other => other.href !== link.href && other.href.startsWith(link.href) && pathname.startsWith(other.href)));
                     
                     return (
                       <Link
@@ -180,7 +232,12 @@ export function Sidebar() {
                         <div className={`${isActive ? "text-primary" : "text-gray-400"}`}>
                           {link.icon}
                         </div>
-                        {link.name}
+                        <span className="flex-1">{link.name}</span>
+                        {link.badge !== undefined && link.badge > 0 && (
+                          <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center shrink-0">
+                            {link.badge}
+                          </span>
+                        )}
                       </Link>
                     );
                   })}

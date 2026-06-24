@@ -8,7 +8,8 @@ import {
   signInWithPopup,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  updateProfile
+  updateProfile,
+  sendEmailVerification
 } from "firebase/auth";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import toast from "react-hot-toast";
@@ -30,11 +31,23 @@ export default function LoginPage() {
   const [registerRole, setRegisterRole] = useState<"organizer" | "mahasiswa">("mahasiswa");
   const [isProcessing, setIsProcessing] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState("");
 
   // Form States
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState(""); // Dipakai untuk Nama Lengkap / Nama Organisasi
+
+  // Deteksi domain email reaktif untuk mahasiswa & dosen/HIMA
+  const isStudentEmail = email.toLowerCase().trim().endsWith("@students.paramadina.ac.id");
+  const isParamadinaEmail = email.toLowerCase().trim().endsWith("@paramadina.ac.id");
+
+  useEffect(() => {
+    if (activeTab === "daftar" && isStudentEmail) {
+      setRegisterRole("mahasiswa");
+    }
+  }, [email, activeTab, isStudentEmail]);
 
   const router = useRouter();
   const { user, role, isLoading } = useAuth();
@@ -44,7 +57,7 @@ export default function LoginPage() {
     if (!isLoading && user && role) {
       if (role === "admin") router.push("/admin");
       else if (role === "organizer") router.push("/organizer");
-      else router.push("/mahasiswa");
+      else router.push("/"); // Mahasiswa diarahkan ke Beranda
     }
   }, [user, role, isLoading, router]);
 
@@ -72,17 +85,35 @@ export default function LoginPage() {
 
       const result = await signInWithEmailAndPassword(auth, email, password);
 
+      // PROTEKSI: Cek verifikasi email (kecuali akun superadmin/developer dan email dummy penyelenggara)
+      const isBypassed = result.user.email === "miftahulfitriah143@gmail.com" || 
+                         result.user.email === "mita@paramadina.ac.id" ||
+                         result.user.email === "testing@paramadina.ac.id";
+      if (!result.user.emailVerified && !isBypassed) {
+        await auth.signOut();
+        toast.error("Email Anda belum terverifikasi! Harap verifikasi email Anda terlebih dahulu.");
+        setIsProcessing(false);
+        return;
+      }
+
       // Ambil role dari Firestore
-      const userSnap = await getDoc(doc(db, "users", result.user.uid));
+      const userRef = doc(db, "users", result.user.uid);
+      const userSnap = await getDoc(userRef);
       let assignedRole = "mahasiswa";
       if (userSnap.exists()) {
-        assignedRole = userSnap.data().role;
+        const userData = userSnap.data();
+        assignedRole = userData.role;
+
+        // SINKRONISASI STATUS VERIFIKASI: Update ke true jika sebelumnya masih false/belum ada
+        if (!userData.emailVerified) {
+          await setDoc(userRef, { emailVerified: true }, { merge: true });
+        }
       }
 
       toast.success("Berhasil masuk!");
       if (assignedRole === "admin") router.push("/admin");
       else if (assignedRole === "organizer") router.push("/organizer");
-      else router.push("/mahasiswa");
+      else router.push("/");
 
     } catch (error: any) {
       console.error("Login error:", error);
@@ -124,13 +155,29 @@ export default function LoginPage() {
         displayName: fullName,
         photoURL: "",
         role: registerRole, // Sesuai pilihan di form
+        emailVerified: false, // Ditandai sebagai belum terverifikasi
         createdAt: serverTimestamp(),
       });
 
-      toast.success("Pendaftaran berhasil!");
+      // Kirim email verifikasi
+      await sendEmailVerification(result.user);
 
-      if (registerRole === "organizer") router.push("/organizer");
-      else router.push("/mahasiswa");
+      // Simpan email yang didaftarkan untuk modal
+      setRegisteredEmail(email);
+
+      // Sign out agar tidak langsung ter-login dalam keadaan belum diverifikasi
+      await auth.signOut();
+
+      // Reset form fields
+      setEmail("");
+      setPassword("");
+      setFullName("");
+
+      // Buka modal verifikasi dan alihkan ke tab masuk
+      setShowVerificationModal(true);
+      setActiveTab("masuk");
+
+      toast.success("Pendaftaran berhasil! Silakan verifikasi email Anda.");
 
     } catch (error: any) {
       console.error("Register error:", error);
@@ -175,7 +222,9 @@ export default function LoginPage() {
         // Tentukan role: Jika user menekan tombol di tab 'Daftar', gunakan pilihan rolenya
         // Jika dia menekan dari tab 'Masuk', default ke mahasiswa, kecuali email admin
         if (activeTab === "daftar") {
-          assignedRole = registerRole;
+          // PROTEKSI: Mahasiswa dengan email @students.paramadina.ac.id dipaksa role mahasiswa
+          const isStudent = userEmail.toLowerCase().trim().endsWith("@students.paramadina.ac.id");
+          assignedRole = isStudent ? "mahasiswa" : registerRole;
         } else {
           // Fallback logika lama
           const isParamadina = userEmail.endsWith("@paramadina.ac.id");
@@ -190,18 +239,24 @@ export default function LoginPage() {
           displayName: currentUser.displayName || "Pengguna",
           photoURL: currentUser.photoURL || "",
           role: assignedRole,
+          emailVerified: true, // Google login otomatis terverifikasi
           createdAt: serverTimestamp(),
         });
         toast.success("Pendaftaran dengan Google berhasil!");
       } else {
         // Jika sudah ada, ini berarti LOGIN via Google
         assignedRole = userSnap.data().role;
+
+        // SINKRONISASI STATUS VERIFIKASI: Pastikan ter-update ke true di Firestore
+        if (!userSnap.data().emailVerified) {
+          await setDoc(userRef, { emailVerified: true }, { merge: true });
+        }
         toast.success("Berhasil masuk!");
       }
 
       if (assignedRole === "admin") router.push("/admin");
       else if (assignedRole === "organizer") router.push("/organizer");
-      else router.push("/mahasiswa");
+      else router.push("/");
 
     } catch (error: any) {
       console.error("Google Auth error:", error);
@@ -224,11 +279,11 @@ export default function LoginPage() {
       {/* Top Navbar - Floating Pill Design */}
       <div className="fixed top-0 w-full z-50 flex flex-col items-center pt-4 md:pt-6 px-4 md:px-6">
         <header className="w-full max-w-7xl bg-white/95 backdrop-blur-md rounded-full px-4 py-2 md:px-6 md:py-3 shadow-sm flex items-center justify-between relative">
-          
+
           {/* Bagian Kiri: Menu & Logo */}
           <div className="flex items-center gap-1 md:gap-3">
             {/* Mobile Menu Button */}
-            <button 
+            <button
               className="md:hidden p-1.5 -ml-1.5 text-primary rounded-full hover:bg-gray-100 transition-colors"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
@@ -247,7 +302,7 @@ export default function LoginPage() {
               <span className="text-primary">CA</span><span className="text-secondary">VENT</span>
             </div>
           </div>
-          
+
           {/* Navigation Links - Tengah */}
           <nav className="hidden md:flex items-center gap-10 text-sm font-medium text-neutral">
             <Link href="/" className="hover:text-primary transition-colors">Beranda</Link>
@@ -258,17 +313,16 @@ export default function LoginPage() {
 
           {/* Buttons Kanan */}
           <div className="flex items-center gap-2 md:gap-3">
-            <button 
+            <button
               onClick={() => setActiveTab("masuk")}
-              className={`px-3 py-1.5 md:px-5 md:py-2 rounded-full text-xs md:text-sm font-semibold transition-all ${
-                activeTab === "masuk" 
-                  ? "border border-primary text-primary bg-primary-50" 
+              className={`px-3 py-1.5 md:px-5 md:py-2 rounded-full text-xs md:text-sm font-semibold transition-all ${activeTab === "masuk"
+                  ? "border border-primary text-primary bg-primary-50"
                   : "border border-primary/30 text-primary hover:border-primary hover:bg-primary-50"
-              }`}
+                }`}
             >
               Masuk
             </button>
-            <button 
+            <button
               onClick={() => setActiveTab("daftar")}
               className="px-4 py-1.5 md:px-6 md:py-2 rounded-full text-xs md:text-sm font-semibold bg-primary text-white shadow-sm hover:bg-[#0e517a] transition-colors"
             >
@@ -434,10 +488,11 @@ export default function LoginPage() {
                     <button
                       type="button"
                       onClick={() => setRegisterRole("organizer")}
+                      disabled={isStudentEmail}
                       className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-300 ${registerRole === "organizer"
-                          ? "border-primary bg-primary-50 text-primary shadow-sm scale-[1.02]"
-                          : "border-gray-100 bg-white text-neutral hover:border-gray-200 hover:bg-gray-50"
-                        }`}
+                        ? "border-primary bg-primary-50 text-primary shadow-sm scale-[1.02]"
+                        : "border-gray-100 bg-white text-neutral hover:border-gray-200 hover:bg-gray-50"
+                        } ${isStudentEmail ? "opacity-40 cursor-not-allowed border-gray-100" : ""}`}
                     >
                       <Mic2 className={`h-6 w-6 mb-2 transition-colors ${registerRole === "organizer" ? "text-primary" : "text-neutral"}`} />
                       <span className="text-sm font-bold">Penyelenggara</span>
@@ -448,8 +503,8 @@ export default function LoginPage() {
                       type="button"
                       onClick={() => setRegisterRole("mahasiswa")}
                       className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-300 ${registerRole === "mahasiswa"
-                          ? "border-primary bg-primary-50 text-primary shadow-sm scale-[1.02]"
-                          : "border-gray-100 bg-white text-neutral hover:border-gray-200 hover:bg-gray-50"
+                        ? "border-primary bg-primary-50 text-primary shadow-sm scale-[1.02]"
+                        : "border-gray-100 bg-white text-neutral hover:border-gray-200 hover:bg-gray-50"
                         }`}
                     >
                       <Users className={`h-6 w-6 mb-2 transition-colors ${registerRole === "mahasiswa" ? "text-primary" : "text-neutral"}`} />
@@ -457,6 +512,20 @@ export default function LoginPage() {
                       <span className="text-[10px] opacity-80 mt-1">Daftar & ikuti acara</span>
                     </button>
                   </div>
+
+                  {/* Reactive warning descriptions based on email input */}
+                  {isStudentEmail && (
+                    <div className="text-[11px] text-[#0e517a] bg-blue-50/50 border border-blue-100/50 rounded-xl p-3 mb-6 font-semibold animate-in fade-in slide-in-from-top-1 duration-300 flex items-start gap-2">
+                      <span className="text-xs">💡</span>
+                      <span>Email mahasiswa (<strong>@students.paramadina.ac.id</strong>) otomatis dikunci sebagai peran <strong>Audiens</strong>.</span>
+                    </div>
+                  )}
+                  {isParamadinaEmail && (
+                    <div className="text-[11px] text-[#854d0e] bg-amber-50/50 border border-amber-100/50 rounded-xl p-3 mb-6 font-semibold animate-in fade-in slide-in-from-top-1 duration-300 flex items-start gap-2">
+                      <span className="text-xs">ℹ️</span>
+                      <span>Email @paramadina.ac.id terdeteksi. Silakan pilih peran <strong>Audiens</strong> (untuk Dosen/Staf) atau <strong>Penyelenggara</strong> (untuk HIMA/UKM/Fakultas).</span>
+                    </div>
+                  )}
 
                   <form onSubmit={handleEmailRegister} className="space-y-4">
                     <div>
@@ -540,6 +609,59 @@ export default function LoginPage() {
           </div>
         </div>
       </main>
+
+      {/* Verification Email Modal */}
+      {showVerificationModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6">
+          <div 
+            className="absolute inset-0 bg-[#0a2540]/60 backdrop-blur-sm" 
+            onClick={() => setShowVerificationModal(false)} 
+          />
+          <div className="relative bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden border border-gray-100 animate-in fade-in zoom-in duration-300">
+            {/* Header dengan Gradient & Ikon Animatif */}
+            <div className="bg-gradient-to-br from-primary to-secondary p-8 text-white text-center relative">
+              <button 
+                onClick={() => setShowVerificationModal(false)}
+                className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+              
+              <div className="mx-auto h-16 w-16 bg-white/25 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-md animate-bounce">
+                <Bell className="h-8 w-8 text-white" />
+              </div>
+              
+              <h3 className="text-xl font-extrabold mb-1">Verifikasi Email Anda</h3>
+              <p className="text-white/70 text-xs">Satu langkah lagi untuk memulai petualanganmu!</p>
+            </div>
+
+            {/* Isi Modal */}
+            <div className="p-8 text-center font-sans">
+              <p className="text-sm text-dark font-medium leading-relaxed mb-6">
+                Kami telah mengirimkan tautan verifikasi ke email institusi Anda:
+                <br />
+                <strong className="text-primary text-base block mt-2 font-bold select-all bg-gray-50 rounded-lg py-2 px-3 border border-gray-100">
+                  {registeredEmail}
+                </strong>
+              </p>
+              
+              <div className="bg-amber-50/80 border border-amber-100 rounded-xl p-4 text-left mb-6 flex gap-3">
+                <span className="text-amber-500 shrink-0 text-base mt-0.5">⚠️</span>
+                <p className="text-xs text-amber-800 leading-relaxed font-semibold">
+                  Harap klik tautan verifikasi di email tersebut sebelum masuk. Jika email belum masuk dalam 2 menit, silakan periksa folder <strong>Spam</strong> atau <strong>Promosi</strong> Anda.
+                </p>
+              </div>
+
+              <button 
+                onClick={() => setShowVerificationModal(false)}
+                className="w-full bg-primary hover:bg-[#0f527c] text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-primary/20 active:scale-95 text-sm"
+              >
+                Saya Mengerti, Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

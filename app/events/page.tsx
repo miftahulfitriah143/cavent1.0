@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Search,
@@ -8,88 +8,16 @@ import {
   Calendar,
   Clock,
   Users,
-  Menu,
-  X,
   SlidersHorizontal,
   ChevronDown,
   Sparkles,
-  Loader2,
+  Building2,
+  User,
 } from "lucide-react";
-
-// ─── Data Dummy ─────────────────────────────────────────────────────────────
-const EVENTS = [
-  {
-    id: 1,
-    title: "Seminar Nasional Teknologi 2026",
-    location: "Aula Firmanzah Lt.8",
-    date: "25 Mei 2026",
-    time: "08.00 WIB",
-    registered: 180,
-    capacity: 300,
-    tags: ["Seminar", "Teknologi"],
-    tagColors: [
-      "text-teal-700 bg-teal-50 border border-teal-200",
-      "text-green-700 bg-green-50 border border-green-200",
-    ],
-    imageBg: "from-blue-400 via-cyan-400 to-teal-500",
-    imagePattern: "opacity-20",
-    price: "Gratis",
-    status: "Gratis",
-    statusColor: "text-green-600 bg-green-50 border border-green-200",
-    penyelenggara: "FIR — TI",
-  },
-  {
-    id: 2,
-    title: "Workshop UI/UX Design Thinking",
-    location: "Lab Komputer",
-    date: "25 Mei 2026",
-    time: "08.00 WIB",
-    registered: 180,
-    capacity: 300,
-    tags: ["Workshop"],
-    tagColors: ["text-rose-700 bg-rose-50 border border-rose-200"],
-    imageBg: "from-pink-400 via-rose-400 to-red-400",
-    imagePattern: "opacity-20",
-    price: "Rp 75.000",
-    status: "Berbayar",
-    statusColor: "text-amber-600 bg-amber-50 border border-amber-200",
-    penyelenggara: "FIR — DKV",
-  },
-  {
-    id: 3,
-    title: "Hackathon ITFest 6.0",
-    location: "Aula Firmanzah Lt.8",
-    date: "25 Okt 2026",
-    time: "08.00 WIB",
-    registered: 0,
-    capacity: 500,
-    tags: ["Kompetisi"],
-    tagColors: ["text-amber-700 bg-amber-50 border border-amber-200"],
-    imageBg: "from-yellow-400 via-orange-400 to-amber-500",
-    imagePattern: "opacity-20",
-    price: "Gratis",
-    status: "Gratis",
-    statusColor: "text-green-600 bg-green-50 border border-green-200",
-    penyelenggara: "Universitas",
-  },
-  {
-    id: 4,
-    title: "Nobar & Diskusi Film Monster",
-    location: "Aula Firmanzah Lt.8",
-    date: "25 Mei 2026",
-    time: "08.00 WIB",
-    registered: 180,
-    capacity: 300,
-    tags: ["Diskusi"],
-    tagColors: ["text-violet-700 bg-violet-50 border border-violet-200"],
-    imageBg: "from-teal-400 via-emerald-400 to-cyan-500",
-    imagePattern: "opacity-20",
-    price: "Gratis",
-    status: "Gratis",
-    statusColor: "text-green-600 bg-green-50 border border-green-200",
-    penyelenggara: "FFP — Ilmu Komunikasi",
-  },
-];
+import { PublicNavbar } from "@/components/layout/PublicNavbar";
+import { Footer } from "@/components/layout/Footer";
+import { db } from "@/lib/firebase";
+import { collection, query, where, onSnapshot, orderBy } from "firebase/firestore";
 
 const CATEGORIES = [
   { label: "Semua", color: "bg-primary text-white", inactive: "bg-white border border-gray-200 text-neutral hover:border-primary hover:text-primary" },
@@ -102,146 +30,136 @@ const CATEGORIES = [
 const FILTER_PENYELENGGARA = [
   { label: "Semua Penyelenggara", group: null },
   { label: "Universitas", group: null },
-  // FEB
   { label: "FEB — Manajemen", group: "Fak. Ekonomi & Bisnis" },
-  // FFP
   { label: "FFP — Ilmu Komunikasi", group: "Fak. Falsafah & Peradaban" },
   { label: "FFP — Hubungan Internasional", group: "Fak. Falsafah & Peradaban" },
   { label: "FFP — Psikologi", group: "Fak. Falsafah & Peradaban" },
   { label: "FFP — Falsafah Agama", group: "Fak. Falsafah & Peradaban" },
-  // FIR
   { label: "FIR — DKV", group: "Fak. Ilmu Rekayasa" },
   { label: "FIR — TI", group: "Fak. Ilmu Rekayasa" },
   { label: "FIR — DP", group: "Fak. Ilmu Rekayasa" },
 ];
+
+const getCategoryBadgeClass = (category: string) => {
+  const norm = category.toLowerCase();
+  if (norm.includes("seminar")) return "text-teal-600 bg-teal-50 border-teal-100";
+  if (norm.includes("workshop")) return "text-rose-600 bg-rose-50 border-rose-100";
+  if (norm.includes("kompetisi") || norm.includes("competition")) return "text-amber-600 bg-amber-50 border-amber-100";
+  if (norm.includes("diskusi")) return "text-violet-600 bg-violet-50 border-violet-100";
+  
+  const colors = [
+    "text-blue-600 bg-blue-50 border-blue-100",
+    "text-emerald-600 bg-emerald-50 border-emerald-100",
+    "text-pink-600 bg-pink-50 border-pink-100",
+    "text-orange-600 bg-orange-50 border-orange-100",
+    "text-indigo-600 bg-indigo-50 border-indigo-100",
+  ];
+  let hash = 0;
+  for (let i = 0; i < category.length; i++) {
+    hash = category.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return colors[Math.abs(hash) % colors.length];
+};
+
 const STATUS_OPTIONS = ["Gratis", "Berbayar", "Segera Dimulai", "Telah Lalu"];
 
 export default function EventsPage() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [events, setEvents] = useState<any[]>([]);
   const [activeCategory, setActiveCategory] = useState("Semua");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPenyelenggara, setSelectedPenyelenggara] = useState("Semua Penyelenggara");
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
-  const [filterDate, setFilterDate] = useState("23/04/2026");
+  const [filterDate, setFilterDate] = useState("");
   const [sortBy, setSortBy] = useState("Terbaru");
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Fake loading effect to simulate fetching data
-  import("react").then(({ useEffect }) => {
-    // We import useEffect dynamically here just to not mess up imports above if it's tricky,
-    // actually let's just use React.useEffect directly since react is not fully imported.
-  });
-  
-  // A better way is to use React.useEffect:
-  const React = require("react");
-  React.useEffect(() => {
-    setIsLoading(true);
-    const timer = setTimeout(() => {
+  useEffect(() => {
+    // Fetch real events from Firestore
+    const q = query(
+      collection(db, "events"),
+      where("status", "==", "published")
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const eventData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setEvents(eventData);
       setIsLoading(false);
-    }, 600);
-    return () => clearTimeout(timer);
-  }, [searchQuery, activeCategory, selectedPenyelenggara, selectedStatuses, filterDate, sortBy]);
+    }, (error) => {
+      console.error("Firestore Error:", error);
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const toggleStatus = (s: string) =>
     setSelectedStatuses((prev) =>
       prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]
     );
 
-  const filtered = EVENTS.filter((e) => {
+  const filtered = events.filter((e) => {
     // 1. Kategori Tag
     const matchCat =
-      activeCategory === "Semua" || activeCategory === "Bulan Ini" || activeCategory === "Gratis"
+      activeCategory === "Semua"
         ? true
-        : e.tags.includes(activeCategory);
-    
+        : Array.isArray(e.category)
+          ? e.category.includes(activeCategory)
+          : e.category === activeCategory;
+
     // 2. Search Query
     const matchSearch =
       !searchQuery ||
-      e.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      e.location.toLowerCase().includes(searchQuery.toLowerCase());
-      
-    // 3. Penyelenggara
-    const matchPenyelenggara = 
-      selectedPenyelenggara === "Semua Penyelenggara" 
-        ? true 
-        : e.penyelenggara === selectedPenyelenggara;
-        
-    // 4. Status (Gratis/Berbayar dsb)
-    const matchStatus = 
-      selectedStatuses.length === 0 
-        ? true 
-        : selectedStatuses.includes(e.status);
+      e.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      e.venue?.toLowerCase().includes(searchQuery.toLowerCase());
 
-    return matchCat && matchSearch && matchPenyelenggara && matchStatus;
+    // 3. Penyelenggara
+    const matchPenyelenggara =
+      selectedPenyelenggara === "Semua Penyelenggara"
+        ? true
+        : Array.isArray(e.organizerProdi)
+          ? e.organizerProdi.includes(selectedPenyelenggara)
+          : e.organizerProdi === selectedPenyelenggara;
+
+    // 4. Status Filter Logic
+    const feeFilters = selectedStatuses.filter(s => s === "Gratis" || s === "Berbayar");
+    const timeFilters = selectedStatuses.filter(s => s === "Segera Dimulai" || s === "Telah Lalu");
+
+    const isPastEvent = e.eventState === "completed";
+
+    // Aturan khusus: sembunyikan acara "Telah Lalu" secara default jika tidak dicentang
+    if (isPastEvent && !timeFilters.includes("Telah Lalu")) {
+      return false;
+    }
+
+    // Filter berdasarkan Waktu
+    if (timeFilters.length > 0) {
+      if (timeFilters.includes("Telah Lalu") && !timeFilters.includes("Segera Dimulai")) {
+        if (!isPastEvent) return false; // Hanya tampilkan yang sudah selesai
+      }
+      if (timeFilters.includes("Segera Dimulai") && !timeFilters.includes("Telah Lalu")) {
+        if (isPastEvent) return false; // Hanya tampilkan yang belum selesai
+      }
+    }
+
+    // Filter berdasarkan Biaya
+    if (feeFilters.length > 0) {
+      if (!feeFilters.includes(e.feeType)) return false;
+    }
+
+    return matchCat && matchSearch && matchPenyelenggara;
   });
 
   return (
     <div className="flex min-h-screen flex-col bg-[#f4f6fa] font-sans">
 
-      {/* ── NAVBAR ────────────────────────────────── */}
-      <div className="fixed top-0 w-full z-50 flex flex-col items-center pt-4 md:pt-6 px-4 md:px-6">
-        <header className="w-full max-w-7xl bg-white/95 backdrop-blur-md rounded-full px-4 py-2 md:px-6 md:py-3 shadow-sm flex items-center justify-between relative">
-
-          {/* Bagian Kiri: Menu & Logo */}
-          <div className="flex items-center gap-1 md:gap-3">
-            <button
-              className="md:hidden p-1.5 -ml-1.5 text-primary rounded-full hover:bg-gray-100 transition-colors"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </button>
-            <Link href="/" className="flex items-center gap-1 md:gap-2">
-              <div className="relative flex h-6 w-6 md:h-8 md:w-8 items-center justify-center">
-                <svg viewBox="0 0 24 24" fill="none" className="h-full w-full text-primary" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M12 2L20.66 7V17L12 22L3.34 17V7L12 2Z" />
-                  <circle cx="12" cy="12" r="3" fill="currentColor" />
-                </svg>
-              </div>
-              <div className="font-bold text-lg md:text-xl tracking-tight">
-                <span className="text-primary">CA</span><span className="text-secondary">VENT</span>
-              </div>
-            </Link>
-          </div>
-
-          {/* Navigation Links - Tengah */}
-          <nav className="hidden md:flex items-center gap-10 text-sm font-medium text-neutral">
-            <Link href="/" className="hover:text-primary transition-colors">Beranda</Link>
-            <Link href="/events" className="text-primary font-semibold">Acara</Link>
-            <Link href="/#tentang" className="hover:text-primary transition-colors">Tentang</Link>
-            <Link href="/#kontak" className="hover:text-primary transition-colors">Kontak</Link>
-          </nav>
-
-          {/* Buttons Kanan */}
-          <div className="flex items-center gap-2 md:gap-3">
-            <Link
-              href="/login"
-              className="px-3 py-1.5 md:px-5 md:py-2 rounded-full text-xs md:text-sm font-semibold border border-primary/30 text-primary hover:border-primary hover:bg-primary-50 transition-all"
-            >
-              Masuk
-            </Link>
-            <Link
-              href="/login"
-              className="px-4 py-1.5 md:px-6 md:py-2 rounded-full text-xs md:text-sm font-semibold bg-primary text-white shadow-sm hover:bg-[#0e517a] transition-colors"
-            >
-              Daftar
-            </Link>
-          </div>
-        </header>
-
-        {/* Mobile Dropdown Menu */}
-        {isMobileMenuOpen && (
-          <div className="w-full max-w-7xl mt-2 bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-lg md:hidden flex flex-col gap-3">
-            <Link href="/" className="font-semibold text-neutral hover:text-primary px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">Beranda</Link>
-            <Link href="/events" className="font-semibold text-primary px-3 py-2 rounded-lg bg-blue-50">Acara</Link>
-            <Link href="/#tentang" className="font-semibold text-neutral hover:text-primary px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">Tentang</Link>
-            <Link href="/#kontak" className="font-semibold text-neutral hover:text-primary px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">Kontak</Link>
-          </div>
-        )}
-      </div>
+      <PublicNavbar />
 
       {/* ── MINI HERO HEADER ────────────────────────── */}
-      <section className="relative pt-24 md:pt-28 pb-10 bg-gradient-to-br from-[#0a2540] via-[#116295] to-[#1EA99C] overflow-hidden">
+      <section className="relative pt-24 md:pt-28 pb-10 bg-gradient-to-br from-primary-900 via-primary to-secondary overflow-hidden">
         {/* Dekorasi blob */}
         <div className="absolute top-0 right-0 w-72 h-72 bg-white/5 rounded-full blur-3xl -translate-y-1/3 translate-x-1/3 pointer-events-none" />
         <div className="absolute bottom-0 left-10 w-48 h-48 bg-secondary/20 rounded-full blur-2xl pointer-events-none" />
@@ -312,9 +230,8 @@ export default function EventsPage() {
               <button
                 key={cat.label}
                 onClick={() => setActiveCategory(cat.label)}
-                className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all shadow-sm ${
-                  activeCategory === cat.label ? cat.color : cat.inactive
-                }`}
+                className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all shadow-sm ${activeCategory === cat.label ? cat.color : cat.inactive
+                  }`}
               >
                 {cat.label}
               </button>
@@ -352,11 +269,10 @@ export default function EventsPage() {
                             <div className="flex items-center gap-2.5 py-0.5">
                               <div
                                 onClick={() => setSelectedPenyelenggara(item.label)}
-                                className={`h-4 w-4 rounded-full shrink-0 cursor-pointer flex items-center justify-center border-2 transition-colors ${
-                                  selectedPenyelenggara === item.label
+                                className={`h-4 w-4 rounded-full shrink-0 cursor-pointer flex items-center justify-center border-2 transition-colors ${selectedPenyelenggara === item.label
                                     ? "border-primary bg-primary"
                                     : "border-gray-300 bg-white"
-                                }`}
+                                  }`}
                               >
                                 {selectedPenyelenggara === item.label && (
                                   <div className="h-1.5 w-1.5 rounded-full bg-white" />
@@ -398,9 +314,8 @@ export default function EventsPage() {
                       <li key={s} className="flex items-center gap-2.5">
                         <div
                           onClick={() => toggleStatus(s)}
-                          className={`h-4 w-4 rounded shrink-0 cursor-pointer flex items-center justify-center border transition-colors ${
-                            selectedStatuses.includes(s) ? "bg-primary border-primary" : "border-gray-300 bg-white"
-                          }`}
+                          className={`h-4 w-4 rounded shrink-0 cursor-pointer flex items-center justify-center border transition-colors ${selectedStatuses.includes(s) ? "bg-primary border-primary" : "border-gray-300 bg-white"
+                            }`}
                         >
                           {selectedStatuses.includes(s) && (
                             <svg viewBox="0 0 10 8" fill="none" className="h-2.5 w-2.5">
@@ -466,81 +381,101 @@ export default function EventsPage() {
               ) : filtered.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   {filtered.map((event) => (
-                    <div
+                    <Link
                       key={event.id}
-                      className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 group"
+                      href={`/events/${event.id}`}
+                      className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 group flex flex-col cursor-pointer"
                     >
-                      {/* Colorful Image Area */}
-                      <div className={`h-44 bg-gradient-to-br ${event.imageBg} relative overflow-hidden`}>
-                        {/* Pattern overlay */}
-                        <div className="absolute inset-0" style={{
-                          backgroundImage: `repeating-linear-gradient(45deg, rgba(255,255,255,0.08) 0px, rgba(255,255,255,0.08) 1px, transparent 1px, transparent 12px)`,
-                        }} />
-                        {/* Floating circles decoration */}
-                        <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-white/10 rounded-full" />
-                        <div className="absolute -top-4 -left-4 w-16 h-16 bg-white/10 rounded-full" />
+                      {/* Event Image Area */}
+                      <div className={`h-44 bg-gray-100 relative overflow-hidden`}>
+                        <img
+                          src={event.bannerUrl || "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2070&auto=format&fit=crop"}
+                          alt={event.title}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        />
                         {/* Status badge */}
-                        <div className="absolute top-3 left-3">
-                          <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${event.statusColor} backdrop-blur-sm`}>
-                            {event.status}
+                        <div className="absolute top-3 left-3 flex items-center gap-2">
+                          <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-sm text-dark shadow-sm border border-white/20`}>
+                            {event.feeType}
                           </span>
+                          {event.eventState === "started" && (
+                            <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-blue-500/90 backdrop-blur-sm text-white shadow-sm flex items-center gap-1.5 animate-pulse">
+                              <span className="h-1.5 w-1.5 rounded-full bg-white"></span>
+                              Berlangsung
+                            </span>
+                          )}
+                          {event.eventState === "completed" && (
+                            <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-gray-500/90 backdrop-blur-sm text-white shadow-sm flex items-center gap-1.5">
+                              Selesai
+                            </span>
+                          )}
                         </div>
                         {/* Seats badge */}
                         <div className="absolute bottom-3 right-3 bg-black/30 backdrop-blur-sm rounded-lg px-2.5 py-1 flex items-center gap-1.5">
                           <Users className="h-3 w-3 text-white" />
-                          <span className="text-white text-[10px] font-semibold">{event.registered}/{event.capacity} Kursi</span>
+                          <span className="text-white text-[10px] font-semibold">{event.registeredCount || 0}/{event.maxCapacity} Kursi</span>
                         </div>
                       </div>
 
                       {/* Body */}
-                      <div className="p-5">
+                      <div className="p-5 flex flex-col flex-1">
                         {/* Tags */}
                         <div className="flex gap-2 mb-3 flex-wrap">
-                          {event.tags.map((tag, i) => (
-                            <span
-                              key={tag}
-                              className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${event.tagColors[i] ?? "text-primary bg-primary/10 border border-primary/20"}`}
-                            >
-                              {tag}
+                          {Array.isArray(event.category) ? (
+                            event.category.map((cat: string) => (
+                              <span key={cat} className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border uppercase tracking-wider ${getCategoryBadgeClass(cat)}`}>
+                                {cat}
+                              </span>
+                            ))
+                          ) : (
+                            <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border uppercase tracking-wider ${getCategoryBadgeClass(event.category || "General")}`}>
+                              {event.category}
                             </span>
-                          ))}
+                          )}
                         </div>
 
-                        <h3 className="font-bold text-dark text-sm mb-3 line-clamp-2 group-hover:text-primary transition-colors leading-snug">
+                        <h3 className="font-bold text-dark text-sm mb-3 line-clamp-2 group-hover:text-primary transition-colors leading-snug h-10">
                           {event.title}
                         </h3>
 
-                        <div className="flex flex-col gap-1.5 text-xs text-neutral mb-4">
+                        <div className="flex flex-col gap-1.5 text-xs text-neutral mb-4 flex-1">
                           <span className="flex items-center gap-2">
-                            <MapPin className="h-3.5 w-3.5 text-primary/60 shrink-0" />
-                            {event.location}
+                            <Building2 className="h-3.5 w-3.5 text-primary/40 shrink-0" />
+                            <span className="line-clamp-1">{Array.isArray(event.organizerProdi) ? event.organizerProdi.join(", ") : event.organizerProdi}</span>
+                          </span>
+                          <span className="flex items-center gap-2">
+                            <User className="h-3.5 w-3.5 text-primary/40 shrink-0" />
+                            <span className="line-clamp-1">{event.organizerName}</span>
+                          </span>
+                          <span className="flex items-center gap-2 mt-1">
+                            <MapPin className="h-3.5 w-3.5 text-primary/40 shrink-0" />
+                            <span className="line-clamp-1">{event.venue}</span>
                           </span>
                           <div className="flex items-center gap-4">
                             <span className="flex items-center gap-2">
-                              <Calendar className="h-3.5 w-3.5 text-primary/60 shrink-0" />
-                              {event.date}
+                              <Calendar className="h-3.5 w-3.5 text-primary/40 shrink-0" />
+                              {event.startDate}
                             </span>
                             <span className="flex items-center gap-2">
-                              <Clock className="h-3.5 w-3.5 text-primary/60 shrink-0" />
-                              {event.time}
+                              <Clock className="h-3.5 w-3.5 text-primary/40 shrink-0" />
+                              {event.startTime}
                             </span>
                           </div>
                         </div>
 
-                        <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                        <div className="flex items-center justify-between pt-3 border-t border-gray-100 mt-auto">
                           <div>
-                            <span className="text-[10px] text-neutral">Harga</span>
-                            <div className="text-sm font-extrabold text-dark">{event.price}</div>
+                            <span className="text-[10px] text-neutral">Biaya</span>
+                            <div className="text-sm font-extrabold text-dark">{event.feeType === "Gratis" ? "Gratis" : "Berbayar"}</div>
                           </div>
-                          <Link
-                            href="/login"
-                            className="bg-primary text-white text-xs font-bold px-5 py-2.5 rounded-xl hover:bg-[#0e517a] hover:shadow-md hover:shadow-primary/20 transition-all"
+                          <span
+                            className="bg-primary text-white text-xs font-bold px-5 py-2.5 rounded-xl hover:bg-primary-900 hover:shadow-md hover:shadow-primary/20 transition-all"
                           >
-                            Lihat →
-                          </Link>
+                            Detail
+                          </span>
                         </div>
                       </div>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               ) : (
@@ -556,6 +491,7 @@ export default function EventsPage() {
           </div>
         </div>
       </main>
+      <Footer />
     </div>
   );
 }

@@ -31,6 +31,12 @@ export interface Event {
   organizerName: string
   category: string
   tags: string[]
+  // Tambahan untuk Task 8
+  speakers?: string[]
+  agenda?: { time: string; description: string }[]
+  isFree: boolean
+  price?: number
+  registrationDeadline?: Date
   createdAt: Date
   updatedAt: Date
 }

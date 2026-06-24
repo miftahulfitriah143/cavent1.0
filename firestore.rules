@@ -1,0 +1,150 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─────────────────────────────────────────────────────────────
+    // HELPER FUNCTIONS
+    // ─────────────────────────────────────────────────────────────
+
+    // Apakah user sudah login?
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Apakah ini dokumen milik user yang login?
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // Ambil data role user dari koleksi users
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    // Apakah user memiliki role admin?
+    function isAdmin() {
+      return isSignedIn() && getUserRole() == 'admin';
+    }
+
+    // Apakah user memiliki role organizer?
+    function isOrganizer() {
+      return isSignedIn() && getUserRole() == 'organizer';
+    }
+
+    // Apakah user memiliki role mahasiswa?
+    function isMahasiswa() {
+      return isSignedIn() && getUserRole() == 'mahasiswa';
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // KOLEKSI: users
+    // ─────────────────────────────────────────────────────────────
+    match /users/{userId} {
+      // Siapa saja yang login bisa baca profil sendiri
+      allow read: if isSignedIn() && isOwner(userId);
+
+      // Admin bisa baca semua profil user
+      allow read: if isAdmin();
+
+      // User bisa buat dokumen profil sendiri (saat register)
+      allow create: if isSignedIn() && isOwner(userId);
+
+      // User bisa update profil sendiri; admin bisa update semua
+      allow update: if isSignedIn() && (isOwner(userId) || isAdmin());
+
+      // Hanya admin yang bisa hapus
+      allow delete: if isAdmin();
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // KOLEKSI: events
+    // ─────────────────────────────────────────────────────────────
+    match /events/{eventId} {
+      // Semua orang bisa lihat acara yang sudah di-publish
+      allow read: if resource.data.status == 'published' || isSignedIn(); 
+      // Organizer bisa buat acara
+      allow create: if isOrganizer();
+      // Organizer bisa update acaranya sendiri, Admin bisa update semua, ATAU user login yang mendaftar/batal (hanya ubah registeredCount)
+      allow update: if isAdmin() || 
+                    (isOrganizer() && resource.data.organizerId == request.auth.uid) ||
+                    (isSignedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['registeredCount']));
+      allow delete: if isAdmin() || (isOrganizer() && resource.data.organizerId == request.auth.uid);
+
+      // Admin dan organizer pemilik bisa hapus
+      allow delete: if isAdmin() ||
+                    (isOrganizer() && resource.data.organizerId == request.auth.uid);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // KOLEKSI: registrations
+    // ─────────────────────────────────────────────────────────────
+    match /registrations/{regId} {
+      // Mahasiswa bisa baca pendaftaran miliknya sendiri
+      // Organizer bisa baca pendaftaran untuk event miliknya
+      // Admin bisa baca semua
+      allow read: if isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.organizerId == request.auth.uid ||
+        isAdmin()
+      );
+
+      // Mahasiswa yang sudah login bisa mendaftar
+      allow create: if isSignedIn();
+
+      // Mahasiswa bisa update (batalkan) pendaftaran sendiri
+      // Organizer bisa update (absensi) untuk event miliknya
+      // Admin bisa update semua
+      allow update: if isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.organizerId == request.auth.uid ||
+        isAdmin()
+      );
+
+      // Mahasiswa bisa hapus (batalkan) pendaftaran sendiri
+      allow delete: if isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // KOLEKSI: reviews
+    // ─────────────────────────────────────────────────────────────
+    match /reviews/{reviewId} {
+      // Semua orang yang login bisa baca review
+      allow read: if isSignedIn();
+
+      // Mahasiswa yang sudah absen bisa buat review
+      allow create: if isSignedIn();
+
+      // Hanya penulis review yang bisa update/hapus
+      allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // KOLEKSI: notifications
+    // ─────────────────────────────────────────────────────────────
+    match /notifications/{notifId} {
+      // User bisa baca notifikasi yang ditujukan untuk mereka
+      // Admin bisa baca semua notifikasi
+      allow read: if isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.targetRole == getUserRole() ||
+        isAdmin()
+      );
+
+      // Sistem (organizer & admin) bisa buat notifikasi
+      allow create: if isSignedIn();
+
+      // User bisa update (mark as read) notifikasi milik mereka
+      allow update: if isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        isAdmin()
+      );
+
+      // Hanya admin yang bisa hapus notifikasi
+      allow delete: if isAdmin();
+    }
+  }
+}
