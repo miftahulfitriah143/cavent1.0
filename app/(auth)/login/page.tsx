@@ -316,8 +316,8 @@ export default function LoginPage() {
             <button
               onClick={() => setActiveTab("masuk")}
               className={`px-3 py-1.5 md:px-5 md:py-2 rounded-full text-xs md:text-sm font-semibold transition-all ${activeTab === "masuk"
-                  ? "border border-primary text-primary bg-primary-50"
-                  : "border border-primary/30 text-primary hover:border-primary hover:bg-primary-50"
+                ? "border border-primary text-primary bg-primary-50"
+                : "border border-primary/30 text-primary hover:border-primary hover:bg-primary-50"
                 }`}
             >
               Masuk
@@ -613,24 +613,24 @@ export default function LoginPage() {
       {/* Verification Email Modal */}
       {showVerificationModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6">
-          <div 
-            className="absolute inset-0 bg-[#0a2540]/60 backdrop-blur-sm" 
-            onClick={() => setShowVerificationModal(false)} 
+          <div
+            className="absolute inset-0 bg-[#0a2540]/60 backdrop-blur-sm"
+            onClick={() => setShowVerificationModal(false)}
           />
           <div className="relative bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden border border-gray-100 animate-in fade-in zoom-in duration-300">
             {/* Header dengan Gradient & Ikon Animatif */}
             <div className="bg-gradient-to-br from-primary to-secondary p-8 text-white text-center relative">
-              <button 
+              <button
                 onClick={() => setShowVerificationModal(false)}
                 className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
               >
                 <X className="h-4 w-4" />
               </button>
-              
+
               <div className="mx-auto h-16 w-16 bg-white/25 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-md animate-bounce">
                 <Bell className="h-8 w-8 text-white" />
               </div>
-              
+
               <h3 className="text-xl font-extrabold mb-1">Verifikasi Email Anda</h3>
               <p className="text-white/70 text-xs">Satu langkah lagi untuk memulai petualanganmu!</p>
             </div>
@@ -644,7 +644,7 @@ export default function LoginPage() {
                   {registeredEmail}
                 </strong>
               </p>
-              
+
               <div className="bg-amber-50/80 border border-amber-100 rounded-xl p-4 text-left mb-6 flex gap-3">
                 <span className="text-amber-500 shrink-0 text-base mt-0.5">⚠️</span>
                 <p className="text-xs text-amber-800 leading-relaxed font-semibold">
@@ -652,7 +652,7 @@ export default function LoginPage() {
                 </p>
               </div>
 
-              <button 
+              <button
                 onClick={() => setShowVerificationModal(false)}
                 className="w-full bg-primary hover:bg-[#0f527c] text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-primary/20 active:scale-95 text-sm"
               >
