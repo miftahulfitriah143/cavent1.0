@@ -42,24 +42,37 @@ export function NotificationListener() {
   }, []);
 
   const triggerNotification = (title: string, message: string) => {
-    // In-App Toast
-    toast(message, {
-      icon: "🔔",
-      duration: 5000,
-      style: {
-        borderRadius: "10px",
-        background: "#333",
-        color: "#fff",
-        fontSize: "14px",
-      },
-    });
+    // In-App Toast (Tampil di dalam aplikasi selalu, atau bisa difilter)
+    // Tampilkan toast jika tab sedang aktif
+    if (document.visibilityState === "visible") {
+      toast(message, {
+        icon: "🔔",
+        duration: 5000,
+        style: {
+          borderRadius: "10px",
+          background: "#333",
+          color: "#fff",
+          fontSize: "14px",
+        },
+      });
+    }
 
-    // Native Desktop Push Notification
-    if ("Notification" in window && Notification.permission === "granted") {
-      new Notification(title, {
+    // Native Desktop Push Notification (Tampil di sistem operasi/desktop)
+    // Hanya tampilkan jika window sedang tidak fokus / tab disembunyikan
+    if ("Notification" in window && Notification.permission === "granted" && document.visibilityState !== "visible") {
+      const notification = new Notification(title, {
         body: message,
         icon: "/favicon.ico", // Ensure you have a favicon
+        requireInteraction: true, // Membuat notifikasi tidak hilang sendiri sampai di-klik atau di-close
+        silent: false, // Memutar suara notifikasi default dari OS
       });
+
+      // Jika notifikasi di-klik, fokuskan kembali tab browser
+      notification.onclick = (e) => {
+        e.preventDefault();
+        window.focus();
+        notification.close();
+      };
     }
   };
 

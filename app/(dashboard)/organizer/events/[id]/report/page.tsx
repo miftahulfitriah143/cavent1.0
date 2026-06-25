@@ -44,21 +44,21 @@ export default function EventReportPage({ params }: { params: Promise<{ id: stri
         // 1. Fetch Event
         const eventRef = doc(db, "events", id);
         const eventSnap = await getDoc(eventRef);
-        
+
         if (!eventSnap.exists()) {
           toast.error("Acara tidak ditemukan");
           router.push("/organizer/events");
           return;
         }
-        
+
         const eventData = { id: eventSnap.id, ...eventSnap.data() } as any;
-        
+
         if (eventData.organizerId !== user.uid) {
           toast.error("Akses ditolak");
           router.push("/organizer/events");
           return;
         }
-        
+
         setEvent(eventData);
 
         // 2. Fetch Registrations
@@ -70,7 +70,7 @@ export default function EventReportPage({ params }: { params: Promise<{ id: stri
         const regSnap = await getDocs(regQuery);
         const regData = regSnap.docs.map(d => ({ id: d.id, ...d.data() } as any));
         setRegistrations(regData);
-        
+
         const attended = regData.filter(r => r.status === "attended").length;
         setAttendedCount(attended);
 
@@ -85,7 +85,7 @@ export default function EventReportPage({ params }: { params: Promise<{ id: stri
           const timeB = b.createdAt?.seconds || (b.createdAt ? new Date(b.createdAt).getTime() / 1000 : 0);
           return timeB - timeA;
         });
-        
+
         setReviews(revData);
 
         if (revData.length > 0) {
@@ -130,13 +130,13 @@ export default function EventReportPage({ params }: { params: Promise<{ id: stri
     <div className="max-w-5xl mx-auto pb-20 print:p-0 print:max-w-full">
       {/* ── HEADER / NAVIGATION ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 print:hidden">
-        <Link 
-          href="/organizer/events" 
+        <Link
+          href="/organizer/events"
           className="inline-flex items-center gap-2 text-accent hover:text-accent-600 font-bold text-sm transition-colors w-fit"
         >
           <ChevronLeft className="h-4 w-4" /> Kembali ke Daftar Acara
         </Link>
-        <button 
+        <button
           onClick={() => window.print()}
           className="flex items-center gap-2 bg-dark text-white px-6 py-2.5 rounded-xl text-sm font-bold hover:bg-black transition-all shadow-xl shadow-black/10 active:scale-95"
         >
@@ -151,18 +151,18 @@ export default function EventReportPage({ params }: { params: Promise<{ id: stri
       </div>
 
       <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden print:border-none print:shadow-none print:rounded-none">
-        
+
         {/* ── EVENT INFO HERO ── */}
         <div className="bg-gray-50/50 p-8 border-b border-gray-100 print:bg-transparent print:p-0 print:mb-8 print:border-none">
           <div className="flex flex-col md:flex-row gap-8 items-start">
             <div className="w-full md:w-1/3 aspect-[4/3] rounded-2xl overflow-hidden bg-gray-100 shrink-0 border border-gray-200/50 shadow-inner print:hidden">
-              <img 
-                src={event.bannerUrl || "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2070"} 
-                alt="Banner Acara" 
+              <img
+                src={event.bannerUrl || "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2070"}
+                alt="Banner Acara"
                 className="w-full h-full object-cover"
               />
             </div>
-            
+
             <div className="flex-1 space-y-5 print:w-full">
               <div>
                 <div className="flex items-center gap-2 mb-3">
@@ -202,7 +202,7 @@ export default function EventReportPage({ params }: { params: Promise<{ id: stri
           <h2 className="text-xl font-black text-dark mb-6 flex items-center gap-2 print:text-black">
             <BarChart3 className="h-5 w-5 text-primary" /> Statistik Kehadiran
           </h2>
-          
+
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-8 print:grid-cols-4">
             <div className="bg-gray-50 rounded-2xl p-5 border border-gray-100 print:border-gray-300 print:bg-transparent">
               <p className="text-[10px] font-black text-neutral uppercase tracking-widest mb-1 print:text-gray-500">Kapasitas</p>
@@ -236,9 +236,9 @@ export default function EventReportPage({ params }: { params: Promise<{ id: stri
                 <p className="text-2xl font-black text-emerald-600 print:text-black">{attendanceRate}%</p>
               </div>
               <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
-                <div 
-                  className="bg-emerald-500 h-full rounded-full transition-all duration-1000 print:bg-emerald-600" 
-                  style={{ width: `${attendanceRate}%` }} 
+                <div
+                  className="bg-emerald-500 h-full rounded-full transition-all duration-1000 print:bg-emerald-600"
+                  style={{ width: `${attendanceRate}%` }}
                 />
               </div>
               <p className="text-[10px] font-bold text-neutral text-center mt-3 uppercase tracking-wider">
@@ -256,9 +256,9 @@ export default function EventReportPage({ params }: { params: Promise<{ id: stri
                 <p className="text-2xl font-black text-blue-600 print:text-black">{capacityRate}%</p>
               </div>
               <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
-                <div 
-                  className="bg-blue-500 h-full rounded-full transition-all duration-1000 print:bg-blue-600" 
-                  style={{ width: `${capacityRate}%` }} 
+                <div
+                  className="bg-blue-500 h-full rounded-full transition-all duration-1000 print:bg-blue-600"
+                  style={{ width: `${capacityRate}%` }}
                 />
               </div>
               <p className="text-[10px] font-bold text-neutral text-center mt-3 uppercase tracking-wider">
@@ -293,7 +293,7 @@ export default function EventReportPage({ params }: { params: Promise<{ id: stri
                       const nimParts = emailStr.split('@');
                       const possibleNim = nimParts[0];
                       const nimDisplay = /^\d+$/.test(possibleNim) ? possibleNim : (emailStr || "-");
-                      
+
                       return (
                         <tr key={reg.id} className="hover:bg-gray-50/50 transition-colors">
                           <td className="py-3 px-5 text-sm text-neutral text-center font-medium print:text-black">{idx + 1}</td>
@@ -308,13 +308,13 @@ export default function EventReportPage({ params }: { params: Promise<{ id: stri
               </div>
             </div>
           ) : (
-             <div className="bg-white rounded-2xl border border-dashed border-gray-200 p-12 text-center flex flex-col items-center print:border-none">
-                <div className="h-16 w-16 bg-gray-50 rounded-2xl flex items-center justify-center mb-4">
-                  <Users className="h-8 w-8 text-gray-300" />
-                </div>
-                <h3 className="font-bold text-dark mb-1">Belum Ada Peserta Hadir</h3>
-                <p className="text-sm text-neutral">Belum ada peserta yang melakukan check-in pada acara ini.</p>
-             </div>
+            <div className="bg-white rounded-2xl border border-dashed border-gray-200 p-12 text-center flex flex-col items-center print:border-none">
+              <div className="h-16 w-16 bg-gray-50 rounded-2xl flex items-center justify-center mb-4">
+                <Users className="h-8 w-8 text-gray-300" />
+              </div>
+              <h3 className="font-bold text-dark mb-1">Belum Ada Peserta Hadir</h3>
+              <p className="text-sm text-neutral">Belum ada peserta yang melakukan check-in pada acara ini.</p>
+            </div>
           )}
         </div>
 
@@ -384,13 +384,13 @@ export default function EventReportPage({ params }: { params: Promise<{ id: stri
               </div>
             </div>
           ) : (
-             <div className="bg-white rounded-2xl border border-dashed border-gray-200 p-12 text-center flex flex-col items-center print:border-none">
-                <div className="h-16 w-16 bg-gray-50 rounded-2xl flex items-center justify-center mb-4">
-                  <Star className="h-8 w-8 text-gray-300" />
-                </div>
-                <h3 className="font-bold text-dark mb-1">Belum Ada Ulasan</h3>
-                <p className="text-sm text-neutral">Belum ada peserta yang memberikan rating atau evaluasi untuk acara ini.</p>
-             </div>
+            <div className="bg-white rounded-2xl border border-dashed border-gray-200 p-12 text-center flex flex-col items-center print:border-none">
+              <div className="h-16 w-16 bg-gray-50 rounded-2xl flex items-center justify-center mb-4">
+                <Star className="h-8 w-8 text-gray-300" />
+              </div>
+              <h3 className="font-bold text-dark mb-1">Belum Ada Ulasan</h3>
+              <p className="text-sm text-neutral">Belum ada peserta yang memberikan rating atau evaluasi untuk acara ini.</p>
+            </div>
           )}
         </div>
       </div>
