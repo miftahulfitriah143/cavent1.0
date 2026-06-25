@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { db } from "@/lib/firebase";
-import { doc, getDoc, updateDoc, serverTimestamp, collection, query, where, getDocs, addDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc, serverTimestamp, collection, query, where, getDocs, addDoc, increment } from "firebase/firestore";
 import { useAuth } from "@/components/providers/AuthProvider";
 import toast from "react-hot-toast";
 import { Html5QrcodeScanner } from "html5-qrcode";
@@ -36,6 +36,7 @@ export default function TicketPage({ params }: { params: Promise<{ id: string }>
   const [hoverRating, setHoverRating] = useState<number>(0);
   const [comment, setComment] = useState<string>("");
   const [isSubmittingReview, setIsSubmittingReview] = useState<boolean>(false);
+  const [isEditingReview, setIsEditingReview] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchRegistration = async () => {
@@ -62,7 +63,7 @@ export default function TicketPage({ params }: { params: Promise<{ id: string }>
             );
             const reviewSnap = await getDocs(reviewQuery);
             if (!reviewSnap.empty) {
-              setMyReview(reviewSnap.docs[0].data());
+              setMyReview({ id: reviewSnap.docs[0].id, ...reviewSnap.docs[0].data() });
             }
           }
         } else {
@@ -158,19 +159,41 @@ export default function TicketPage({ params }: { params: Promise<{ id: string }>
 
     try {
       setIsSubmittingReview(true);
-      const reviewData = {
-        eventId: registration.eventId,
-        eventTitle: registration.eventTitle,
-        userId: user.uid,
-        userName: user.displayName || "Mahasiswa Cavent",
-        rating: rating,
-        comment: comment.trim(),
-        createdAt: new Date().toISOString()
-      };
+      
+      if (isEditingReview && myReview?.id) {
+        // Mode Edit
+        const reviewRef = doc(db, "reviews", myReview.id);
+        await updateDoc(reviewRef, {
+          rating: rating,
+          comment: comment.trim(),
+          editCount: increment(1),
+          updatedAt: new Date().toISOString()
+        });
+        setMyReview((prev: any) => ({
+          ...prev,
+          rating: rating,
+          comment: comment.trim(),
+          editCount: (prev.editCount || 0) + 1
+        }));
+        toast.success("Ulasan berhasil diperbarui!");
+        setIsEditingReview(false);
+      } else {
+        // Mode Baru
+        const reviewData = {
+          eventId: registration.eventId,
+          eventTitle: registration.eventTitle,
+          userId: user.uid,
+          userName: user.displayName || "Mahasiswa Cavent",
+          rating: rating,
+          comment: comment.trim(),
+          editCount: 0,
+          createdAt: new Date().toISOString()
+        };
 
-      await addDoc(collection(db, "reviews"), reviewData);
-      setMyReview(reviewData);
-      toast.success("Terima kasih! Ulasan Anda berhasil dikirim.");
+        const newDoc = await addDoc(collection(db, "reviews"), reviewData);
+        setMyReview({ id: newDoc.id, ...reviewData });
+        toast.success("Terima kasih! Ulasan Anda berhasil dikirim.");
+      }
     } catch (err) {
       console.error("Submit Review Error:", err);
       toast.error("Gagal mengirim ulasan.");
@@ -278,9 +301,9 @@ export default function TicketPage({ params }: { params: Promise<{ id: string }>
                       <p className="text-neutral text-xs font-medium mt-1">Berikan rating dan ulasan untuk membantu panitia meningkatkan kualitas acara selanjutnya.</p>
                     </div>
 
-                    {myReview ? (
+                    {myReview && !isEditingReview ? (
                       /* Submitted State */
-                      <div className="bg-amber-50/50 border border-amber-100/50 rounded-xl p-5 space-y-3">
+                      <div className="bg-amber-50/50 border border-amber-100/50 rounded-xl p-5 space-y-4">
                         <div className="flex items-center justify-between">
                           <span className="text-[10px] font-black text-amber-800 bg-amber-100 px-3 py-1 rounded-full uppercase tracking-wider">Ulasan Terkirim</span>
                           <div className="flex items-center gap-1">
@@ -290,10 +313,38 @@ export default function TicketPage({ params }: { params: Promise<{ id: string }>
                           </div>
                         </div>
                         <p className="text-dark text-sm italic font-medium leading-relaxed">&quot;{myReview.comment}&quot;</p>
+                        
+                        {/* Edit Button Area */}
+                        {(myReview.editCount || 0) < 2 && (
+                          <div className="pt-2 border-t border-amber-200/30 flex items-center justify-between">
+                            <span className="text-[10px] font-bold text-amber-700">Sisa Edit: {2 - (myReview.editCount || 0)} kali</span>
+                            <button 
+                              onClick={() => {
+                                setRating(myReview.rating);
+                                setComment(myReview.comment);
+                                setIsEditingReview(true);
+                              }}
+                              className="text-xs font-bold text-amber-700 hover:text-amber-900 bg-amber-100 hover:bg-amber-200 px-3 py-1.5 rounded-lg transition-colors"
+                            >
+                              Edit Ulasan
+                            </button>
+                          </div>
+                        )}
+                        {(myReview.editCount || 0) >= 2 && (
+                          <div className="pt-2 border-t border-amber-200/30">
+                            <span className="text-[10px] font-bold text-neutral">Batas maksimal edit telah habis.</span>
+                          </div>
+                        )}
                       </div>
                     ) : (
                       /* Input Form State */
                       <form onSubmit={handleSubmitReview} className="space-y-5">
+                        {isEditingReview && (
+                           <div className="flex items-center justify-between mb-2">
+                             <span className="text-xs font-bold text-amber-600 bg-amber-50 px-3 py-1 rounded-full border border-amber-100">Mode Edit Ulasan</span>
+                             <button type="button" onClick={() => setIsEditingReview(false)} className="text-xs font-bold text-neutral hover:text-dark">Batal</button>
+                           </div>
+                        )}
                         {/* Interactive Stars Selector */}
                         <div className="flex flex-col items-center gap-2 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
                           <p className="text-neutral text-[10px] font-bold uppercase tracking-wider">Pilih Rating</p>
