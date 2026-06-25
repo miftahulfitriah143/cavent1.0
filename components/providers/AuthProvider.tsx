@@ -3,8 +3,9 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { auth, db } from "@/lib/firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, onSnapshot } from "firebase/firestore";
 import { UserRole } from "@/types";
+import toast from "react-hot-toast";
 
 interface AuthContextType {
   user: User | null;
@@ -32,24 +33,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(false);
     }, 5000);
 
+    let unsubscribeDoc = () => {};
+
     // Listener ini akan otomatis aktif setiap kali ada perubahan status login (termasuk auto-refresh token)
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
       clearTimeout(timeoutId);
+      
+      // Bersihkan listener sebelumnya jika ada
+      unsubscribeDoc();
       
       if (firebaseUser) {
         setUser(firebaseUser);
-        // Ambil role dari Firestore
+        // Dengarkan perubahan role/status dari Firestore secara real-time
         try {
           const userDocRef = doc(db, "users", firebaseUser.uid);
-          const userDocSnap = await getDoc(userDocRef);
-          
-          if (userDocSnap.exists()) {
-            setRole(userDocSnap.data().role as UserRole);
-          } else {
-            setRole("mahasiswa"); // Fallback
-          }
+          unsubscribeDoc = onSnapshot(userDocRef, (userDocSnap) => {
+            if (userDocSnap.exists()) {
+              const data = userDocSnap.data();
+              
+              // Jika akun dinonaktifkan
+              if (data.isActive === false) {
+                toast.error("Akun Anda telah dinonaktifkan oleh Admin.");
+                auth.signOut(); // Ini akan memicu onAuthStateChanged dengan user=null
+              } else {
+                setRole((data.role as UserRole) || "mahasiswa");
+              }
+            } else {
+              setRole("mahasiswa"); // Fallback
+            }
+          });
         } catch (error) {
-          console.error("Gagal mengambil role:", error);
+          console.error("Gagal mendengarkan role:", error);
           setRole("mahasiswa"); // Fallback jika terjadi error
         }
       } else {
@@ -61,7 +75,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return () => {
       clearTimeout(timeoutId);
-      unsubscribe();
+      unsubscribeAuth();
+      unsubscribeDoc();
     };
   }, []);
 
