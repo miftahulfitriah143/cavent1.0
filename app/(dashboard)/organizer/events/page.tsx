@@ -131,6 +131,8 @@ export default function MyEventsPage() {
             <XCircle className="h-3 w-3" /> Ditolak (Lihat Alasan)
           </button>
         );
+      case "draft":
+        return <span className="bg-gray-50 text-gray-600 px-3 py-1 rounded-full text-[10px] font-bold flex items-center gap-1.5 shadow-sm border border-gray-200"><FileText className="h-3 w-3" /> Draft</span>;
       default:
         return <span className="bg-amber-50 text-amber-600 px-3 py-1 rounded-full text-[10px] font-bold flex items-center gap-1.5 shadow-sm border border-amber-100"><Clock className="h-3 w-3" /> Menunggu</span>;
     }
@@ -150,12 +152,13 @@ export default function MyEventsPage() {
       </div>
 
       {/* Stats Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-10">
         {[
           { label: "Total Acara", value: events.length, color: "text-dark", bg: "bg-white" },
           { label: "Disetujui", value: events.filter(e => e.status === "published").length, color: "text-green-600", bg: "bg-green-50/30" },
           { label: "Menunggu", value: events.filter(e => e.status === "pending").length, color: "text-amber-600", bg: "bg-amber-50/30" },
           { label: "Ditolak", value: events.filter(e => e.status === "rejected").length, color: "text-red-600", bg: "bg-red-50/30" },
+          { label: "Draft", value: events.filter(e => e.status === "draft").length, color: "text-gray-600", bg: "bg-gray-50/50" },
         ].map((stat, i) => (
           <div key={i} className={`${stat.bg} p-6 rounded-xl border border-gray-100 shadow-sm transition-transform hover:scale-[1.02]`}>
             <p className="text-[10px] font-bold text-neutral uppercase tracking-[0.2em]">{stat.label}</p>
@@ -309,13 +312,16 @@ export default function MyEventsPage() {
                         </Link>
                       )}
 
-                      <Link 
-                       href={`/organizer/events/${event.id}/edit`}
-                       className="p-3 bg-gray-50 text-neutral hover:text-blue-600 hover:bg-blue-50 rounded-2xl transition-all"
-                       title="Edit Acara"
-                      >
-                        <Edit3 className="h-4 w-4" />
-                      </Link>
+                      {/* Hanya bisa edit acara jika statusnya draft atau rejected */}
+                      {(event.status === "draft" || event.status === "rejected") && (
+                        <Link 
+                         href={`/organizer/events/${event.id}/edit`}
+                         className="p-3 bg-gray-50 text-neutral hover:text-blue-600 hover:bg-blue-50 rounded-2xl transition-all"
+                         title="Edit Acara"
+                        >
+                          <Edit3 className="h-4 w-4" />
+                        </Link>
+                      )}
                     </div>
                    <button 
                     onClick={() => handleDelete(event.id, event.title)}

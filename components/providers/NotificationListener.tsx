@@ -42,9 +42,14 @@ export function NotificationListener() {
   }, []);
 
   const triggerNotification = (title: string, message: string) => {
+    // Cek apakah device adalah mobile
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    );
+
     // In-App Toast (Tampil di dalam aplikasi selalu, atau bisa difilter)
-    // Tampilkan toast jika tab sedang aktif
-    if (document.visibilityState === "visible") {
+    // Tampilkan toast jika tab sedang aktif, atau jika di mobile selalu tampilkan toast karena kita disable native push
+    if (document.visibilityState === "visible" || isMobile) {
       toast(message, {
         icon: "🔔",
         duration: 5000,
@@ -58,8 +63,13 @@ export function NotificationListener() {
     }
 
     // Native Desktop Push Notification (Tampil di sistem operasi/desktop)
-    // Hanya tampilkan jika window sedang tidak fokus / tab disembunyikan
-    if ("Notification" in window && Notification.permission === "granted" && document.visibilityState !== "visible") {
+    // Hanya tampilkan jika window sedang tidak fokus / tab disembunyikan DAN BUKAN di mobile
+    if (
+      !isMobile &&
+      "Notification" in window &&
+      Notification.permission === "granted" &&
+      document.visibilityState !== "visible"
+    ) {
       const notification = new Notification(title, {
         body: message,
         icon: "/favicon.ico", // Ensure you have a favicon
