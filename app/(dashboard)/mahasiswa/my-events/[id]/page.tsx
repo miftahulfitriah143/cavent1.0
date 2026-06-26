@@ -264,7 +264,7 @@ export default function TicketPage({ params }: { params: Promise<{ id: string }>
       } else {
         const errorData = await res.json();
         console.error("Google Calendar API Error:", errorData);
-        toast.error("Gagal menambahkan ke Google Calendar.");
+        toast.error(`Gagal API: ${errorData.error?.message || "Kesalahan API Kalender"}`);
       }
 
     } catch (error: any) {
@@ -272,7 +272,7 @@ export default function TicketPage({ params }: { params: Promise<{ id: string }>
       if (error.code === 'auth/popup-closed-by-user') {
         toast.error("Otorisasi dibatalkan pengguna.");
       } else {
-        toast.error("Gagal sinkronisasi kalender.");
+        toast.error(`Gagal sinkronisasi: ${error?.message || "Kesalahan tak dikenal"}`);
       }
     } finally {
       setIsSyncingCalendar(false);
