@@ -15,7 +15,8 @@ import {
   Star
 } from "lucide-react";
 import Link from "next/link";
-import { db } from "@/lib/firebase";
+import { db, auth } from "@/lib/firebase";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { doc, getDoc, updateDoc, serverTimestamp, collection, query, where, getDocs, addDoc, increment } from "firebase/firestore";
 import { useAuth } from "@/components/providers/AuthProvider";
 import toast from "react-hot-toast";
@@ -37,6 +38,7 @@ export default function TicketPage({ params }: { params: Promise<{ id: string }>
   const [comment, setComment] = useState<string>("");
   const [isSubmittingReview, setIsSubmittingReview] = useState<boolean>(false);
   const [isEditingReview, setIsEditingReview] = useState<boolean>(false);
+  const [isSyncingCalendar, setIsSyncingCalendar] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchRegistration = async () => {
@@ -202,6 +204,82 @@ export default function TicketPage({ params }: { params: Promise<{ id: string }>
     }
   };
 
+  const handleSyncCalendar = async () => {
+    try {
+      setIsSyncingCalendar(true);
+      const provider = new GoogleAuthProvider();
+      provider.addScope("https://www.googleapis.com/auth/calendar.events");
+      
+      const result = await signInWithPopup(auth, provider);
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      const token = credential?.accessToken;
+
+      if (!token) {
+        toast.error("Gagal mendapatkan token akses kalender.");
+        return;
+      }
+
+      // Convert format date "15 Juni 2024" to ISO format if possible, or fallback to simple ISO
+      // Here we assume eventDate is mapped properly, but we'll try to extract date.
+      // Assuming event.startDate is available in the event doc, we should fetch it.
+      const eventSnap = await getDoc(doc(db, "events", registration.eventId));
+      if (!eventSnap.exists()) {
+        toast.error("Data acara tidak ditemukan.");
+        return;
+      }
+      
+      const eventData = eventSnap.data();
+      const startDateStr = eventData.startDate || new Date().toISOString().split('T')[0];
+      const startTimeStr = eventData.startTime || "08:00";
+      const endTimeStr = eventData.endTime || "17:00";
+      
+      const startDateTime = `${startDateStr}T${startTimeStr}:00+07:00`;
+      const endDateTime = `${startDateStr}T${endTimeStr}:00+07:00`;
+
+      const calendarPayload = {
+        summary: eventData.title || registration.eventTitle,
+        location: eventData.venue || registration.eventVenue,
+        description: eventData.description || "Acara Cavent University System",
+        start: {
+          dateTime: startDateTime,
+          timeZone: "Asia/Jakarta"
+        },
+        end: {
+          dateTime: endDateTime,
+          timeZone: "Asia/Jakarta"
+        }
+      };
+
+      const res = await fetch("https://www.googleapis.com/calendar/v3/calendars/primary/events", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(calendarPayload)
+      });
+
+      if (res.ok) {
+        toast.success("Berhasil disinkronisasi ke Google Calendar!");
+      } else {
+        const errorData = await res.json();
+        console.error("Google Calendar API Error:", errorData);
+        toast.error("Gagal menambahkan ke Google Calendar.");
+      }
+
+    } catch (error: any) {
+      console.error("Sync Calendar Error:", error);
+      if (error.code === 'auth/popup-closed-by-user') {
+        toast.error("Otorisasi dibatalkan pengguna.");
+      } else {
+        toast.error("Gagal sinkronisasi kalender.");
+      }
+    } finally {
+      setIsSyncingCalendar(false);
+    }
+  };
+
+
 
   if (isLoading) {
     return (
@@ -279,6 +357,27 @@ export default function TicketPage({ params }: { params: Promise<{ id: string }>
                 )}
               </div>
             </div>
+          </div>
+          
+          {/* Action Area for Calendar */}
+          <div className="flex justify-center mb-10 pb-10 border-b border-gray-100 border-dashed">
+             <button
+                onClick={handleSyncCalendar}
+                disabled={isSyncingCalendar}
+                className="bg-blue-600 text-white font-bold py-3 px-6 rounded-xl hover:bg-blue-700 shadow-xl shadow-blue-600/20 transition-all active:scale-95 disabled:opacity-50 text-sm flex items-center justify-center gap-2"
+              >
+                {isSyncingCalendar ? (
+                  <>
+                    <div className="h-4 w-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                    Menyinkronkan...
+                  </>
+                ) : (
+                  <>
+                    <Calendar className="h-4 w-4" />
+                    Tambahkan ke Google Calendar
+                  </>
+                )}
+              </button>
           </div>
 
           {/* Action Area */}
