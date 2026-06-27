@@ -50,8 +50,11 @@ service cloud.firestore {
       // User bisa buat dokumen profil sendiri (saat register)
       allow create: if isSignedIn() && isOwner(userId);
 
-      // User bisa update profil sendiri; admin bisa update semua
-      allow update: if isSignedIn() && (isOwner(userId) || isAdmin());
+      // User bisa update profil sendiri (kecuali role dan isActive); admin bisa update semua
+      allow update: if isSignedIn() && (
+        (isOwner(userId) && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'isActive']))) || 
+        isAdmin()
+      );
 
       // Hanya admin yang bisa hapus
       allow delete: if isAdmin();
@@ -61,19 +64,23 @@ service cloud.firestore {
     // KOLEKSI: events
     // ─────────────────────────────────────────────────────────────
     match /events/{eventId} {
-      // Semua orang bisa lihat acara yang sudah di-publish
-      allow read: if resource.data.status == 'published' || isSignedIn(); 
-      // Organizer bisa buat acara
-      allow create: if isOrganizer();
-      // Organizer bisa update acaranya sendiri, Admin bisa update semua, ATAU user login yang mendaftar/batal (hanya ubah registeredCount)
-      allow update: if isAdmin() || 
-                    (isOrganizer() && resource.data.organizerId == request.auth.uid) ||
-                    (isSignedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['registeredCount']));
-      allow delete: if isAdmin() || (isOrganizer() && resource.data.organizerId == request.auth.uid);
+      // Semua orang (termasuk yang belum login) bisa melihat acara yang berstatus 'published'.
+      // Admin & Organizer (pemilik acara) bisa melihat seluruh event (termasuk draft/rejected).
+      allow read: if resource.data.status == 'published' || 
+                  (isSignedIn() && (isAdmin() || (isOrganizer() && resource.data.organizerId == request.auth.uid)));
+      
+      // Organizer bisa buat acara (harus mencantumkan organizerId mereka sendiri)
+      allow create: if isOrganizer() && request.resource.data.organizerId == request.auth.uid;
+      
+      // Admin HANYA bisa update status approval. Organizer bisa update acaranya sendiri. Mahasiswa hanya bisa update registeredCount saat mendaftar.
+      allow update: if isSignedIn() && (
+        (isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'approvedAt', 'rejectedAt', 'rejectionReason'])) || 
+        (isOrganizer() && resource.data.organizerId == request.auth.uid) ||
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['registeredCount']))
+      );
 
       // Admin dan organizer pemilik bisa hapus
-      allow delete: if isAdmin() ||
-                    (isOrganizer() && resource.data.organizerId == request.auth.uid);
+      allow delete: if isAdmin() || (isOrganizer() && resource.data.organizerId == request.auth.uid);
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -89,8 +96,8 @@ service cloud.firestore {
         isAdmin()
       );
 
-      // Mahasiswa yang sudah login bisa mendaftar
-      allow create: if isSignedIn();
+      // Mahasiswa yang sudah login bisa mendaftar atas namanya sendiri
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
 
       // Mahasiswa bisa update (batalkan) pendaftaran sendiri
       // Organizer bisa update (absensi) untuk event miliknya
@@ -112,11 +119,11 @@ service cloud.firestore {
     // KOLEKSI: reviews
     // ─────────────────────────────────────────────────────────────
     match /reviews/{reviewId} {
-      // Semua orang yang login bisa baca review
-      allow read: if isSignedIn();
+      // Semua orang (termasuk yang belum login) bisa membaca semua review untuk referensi acara.
+      allow read: if true;
 
-      // Mahasiswa yang sudah absen bisa buat review
-      allow create: if isSignedIn();
+      // Mahasiswa yang sudah absen bisa buat review atas namanya sendiri
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
 
       // Hanya penulis review yang bisa update/hapus
       allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
@@ -134,8 +141,13 @@ service cloud.firestore {
         isAdmin()
       );
 
-      // Sistem (organizer & admin) bisa buat notifikasi
-      allow create: if isSignedIn();
+      // Admin & Organizer bisa buat notifikasi apa saja
+      // Mahasiswa hanya boleh membuat notifikasi pendaftaran (NEW_REGISTRATION)
+      allow create: if isSignedIn() && (
+        isAdmin() || 
+        isOrganizer() || 
+        request.resource.data.type == 'NEW_REGISTRATION'
+      );
 
       // User bisa update (mark as read) notifikasi milik mereka
       allow update: if isSignedIn() && (
