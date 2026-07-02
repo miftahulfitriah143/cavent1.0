@@ -21,7 +21,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { db } from "@/lib/firebase";
-import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { collection, query, where, onSnapshot, doc, getDoc, updateDoc } from "firebase/firestore";
 
 export default function ProfilePage() {
   const { user, logout } = useAuth();
@@ -36,9 +36,33 @@ export default function ProfilePage() {
 
   const [editData, setEditData] = useState({
     displayName: user?.displayName || "",
-    nim: (user as any)?.nim || "",
-    prodi: "Teknik Informatika",
+    nim: "",
+    prodi: "",
   });
+
+  // Ambil data profil dari Firestore
+  useEffect(() => {
+    if (!user) return;
+    const fetchProfile = async () => {
+      const ref = doc(db, "users", user.uid);
+      const snap = await getDoc(ref);
+      if (snap.exists()) {
+        const data = snap.data();
+        setEditData({
+          displayName: data.displayName || user.displayName || "",
+          nim: data.nim || "",
+          prodi: data.prodi || "",
+        });
+      } else {
+        setEditData({
+          displayName: user.displayName || "",
+          nim: "",
+          prodi: "",
+        });
+      }
+    };
+    fetchProfile();
+  }, [user]);
 
   useEffect(() => {
     if (!user) return;
@@ -104,9 +128,21 @@ export default function ProfilePage() {
 
   if (!user) return null;
 
-  const handleSave = () => {
-    toast.success("Profil berhasil diperbarui!");
-    setIsEditing(false);
+  const handleSave = async () => {
+    if (!user) return;
+    try {
+      const ref = doc(db, "users", user.uid);
+      await updateDoc(ref, {
+        displayName: editData.displayName,
+        nim: editData.nim,
+        prodi: editData.prodi,
+      });
+      toast.success("Profil berhasil diperbarui!");
+      setIsEditing(false);
+    } catch (err) {
+      console.error(err);
+      toast.error("Gagal menyimpan profil. Coba lagi.");
+    }
   };
 
   return (
@@ -172,19 +208,34 @@ export default function ProfilePage() {
               <div className="flex items-center justify-center sm:justify-start gap-2 text-gray-600 mt-1.5">
                 <GraduationCap className="h-4 w-4 shrink-0" />
                 {isEditing ? (
-                   <select 
+                     <select 
                     value={editData.prodi}
                     onChange={(e) => setEditData({...editData, prodi: e.target.value})}
                     className="bg-gray-50 border border-gray-200 rounded-md px-2 py-1 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-blue-500"
                    >
-                     <option>Teknik Informatika</option>
-                     <option>Sistem Informasi</option>
-                     <option>DKV</option>
-                     <option>Manajemen</option>
-                     <option>Ilmu Komunikasi</option>
+                     <option value="">-- Pilih Program Studi --</option>
+                     <optgroup label="Fakultas Falsafah & Peradaban">
+                       <option>S1 Ilmu Hubungan Internasional</option>
+                       <option>S1 Ilmu Komunikasi</option>
+                       <option>S1 Psikologi</option>
+                       <option>S1 Falsafah dan Agama (Islam Madani)</option>
+                     </optgroup>
+                     <optgroup label="Fakultas Ekonomi & Bisnis">
+                       <option>S1 Manajemen dan Bisnis</option>
+                     </optgroup>
+                     <optgroup label="Fakultas Ilmu Rekayasa">
+                       <option>S1 Teknik Informatika</option>
+                       <option>S1 Desain Komunikasi Visual (DKV)</option>
+                       <option>S1 Desain Produk</option>
+                     </optgroup>
+                     <optgroup label="Program Pascasarjana (S2)">
+                       <option>Magister Manajemen (MM)</option>
+                       <option>Magister Ilmu Komunikasi (MIKOM)</option>
+                       <option>Magister Hubungan Internasional (MHI)</option>
+                     </optgroup>
                    </select>
                 ) : (
-                   <span className="text-sm font-medium">{editData.prodi}</span>
+                   <span className="text-sm font-medium">{editData.prodi || <span className="text-gray-400 italic">Belum diatur</span>}</span>
                 )}
               </div>
             </div>
