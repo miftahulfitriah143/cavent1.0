@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { 
-  ArrowRight, 
-  CalendarDays, 
-  Star, 
-  User, 
-  Ticket, 
-  Clock, 
-  CheckCircle2, 
+import {
+  ArrowRight,
+  CalendarDays,
+  Star,
+  User,
+  Ticket,
+  Clock,
+  CheckCircle2,
   Calendar,
   ChevronRight,
   Loader2
@@ -45,14 +45,14 @@ export default function MahasiswaDashboard() {
         });
 
       setRecentRegistrations(regs.slice(0, 3));
-      
+
       // Also get total counts
       setStats({
         totalTickets: regs.length,
         attendedEvents: regs.filter((r: any) => r.status === "attended").length
       });
 
-      
+
       setIsLoading(false);
     }, (error) => {
       console.error("Dashboard Error:", error);
@@ -106,15 +106,15 @@ export default function MahasiswaDashboard() {
             {recentRegistrations.length > 0 ? (
               <div className="divide-y divide-gray-50">
                 {recentRegistrations.map((reg) => (
-                  <Link 
-                    key={reg.id} 
+                  <Link
+                    key={reg.id}
                     href={`/mahasiswa/my-events/${reg.id}`}
                     className="p-6 flex items-center justify-between hover:bg-gray-50 transition-colors group"
                   >
                     <div className="flex items-center gap-5">
                       <div className="h-14 w-14 rounded-xl overflow-hidden shrink-0 border border-gray-100 shadow-inner">
-                        <img 
-                          src={reg.eventBanner || "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2070&auto=format&fit=crop"} 
+                        <img
+                          src={reg.eventBanner || "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2070&auto=format&fit=crop"}
                           alt={reg.eventTitle}
                           className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
                         />
@@ -126,9 +126,8 @@ export default function MahasiswaDashboard() {
                             <Calendar className="h-3 w-3 text-primary/40" />
                             {reg.eventDate}
                           </div>
-                          <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full border ${
-                            reg.status === 'attended' ? 'bg-green-50 text-green-600 border-green-100' : 'bg-blue-50 text-blue-600 border-blue-100'
-                          }`}>
+                          <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full border ${reg.status === 'attended' ? 'bg-green-50 text-green-600 border-green-100' : 'bg-blue-50 text-blue-600 border-blue-100'
+                            }`}>
                             {reg.status === 'attended' ? 'Hadir' : 'Terdaftar'}
                           </span>
                         </div>
@@ -140,14 +139,14 @@ export default function MahasiswaDashboard() {
               </div>
             ) : (
               <div className="py-20 flex flex-col items-center justify-center text-center px-10">
-                 <div className="h-16 w-16 bg-gray-50 rounded-xl flex items-center justify-center mb-6">
-                    <CalendarDays className="h-8 w-8 text-neutral/20" />
-                 </div>
-                 <h3 className="text-lg font-bold text-dark mb-1">Belum ada pendaftaran</h3>
-                 <p className="text-neutral text-sm mb-8">Acara yang kamu ikuti akan muncul di sini.</p>
-                 <Link href="/events" className="text-primary text-sm font-bold flex items-center gap-2 hover:gap-3 transition-all">
-                   Cari Acara <ArrowRight className="h-4 w-4" />
-                 </Link>
+                <div className="h-16 w-16 bg-gray-50 rounded-xl flex items-center justify-center mb-6">
+                  <CalendarDays className="h-8 w-8 text-neutral/20" />
+                </div>
+                <h3 className="text-lg font-bold text-dark mb-1">Belum ada pendaftaran</h3>
+                <p className="text-neutral text-sm mb-8">Acara yang kamu ikuti akan muncul di sini.</p>
+                <Link href="/events" className="text-primary text-sm font-bold flex items-center gap-2 hover:gap-3 transition-all">
+                  Cari Acara <ArrowRight className="h-4 w-4" />
+                </Link>
               </div>
             )}
           </div>
@@ -186,7 +185,7 @@ export default function MahasiswaDashboard() {
           {/* Quick Actions */}
           <div className="grid grid-cols-1 gap-4">
             {QUICK_ACTIONS.map((action) => (
-              <Link 
+              <Link
                 key={action.title}
                 href={action.href}
                 className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex items-center gap-4 group"

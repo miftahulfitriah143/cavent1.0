@@ -41,7 +41,7 @@ export default function UsersManagementPage() {
     }
 
     const newRole = currentRole === "organizer" ? "mahasiswa" : "organizer";
-    
+
     if (!window.confirm(`Apakah Anda yakin ingin mengubah role akun ini menjadi ${newRole.toUpperCase()}?`)) return;
 
     try {
@@ -64,7 +64,7 @@ export default function UsersManagementPage() {
     // Default isActive adalah true jika undefined
     const isCurrentlyActive = currentIsActive !== false;
     const newIsActive = !isCurrentlyActive;
-    
+
     const actionText = newIsActive ? "mengaktifkan" : "menonaktifkan";
     if (!window.confirm(`Apakah Anda yakin ingin ${actionText} akun ini?`)) return;
 
@@ -100,8 +100,8 @@ export default function UsersManagementPage() {
       <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm mb-8 flex flex-col md:flex-row gap-4 justify-between items-center">
         <div className="relative w-full md:max-w-md">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-neutral/50" />
-          <input 
-            type="text" 
+          <input
+            type="text"
             placeholder="Cari berdasarkan nama atau email..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -134,7 +134,7 @@ export default function UsersManagementPage() {
                 {filteredUsers.map((u) => {
                   const roleName = u.role || "mahasiswa";
                   const isDeactivated = u.isActive === false;
-                  
+
                   return (
                     <tr key={u.id} className="hover:bg-gray-50/50 transition-colors">
                       <td className="p-5">
@@ -155,13 +155,12 @@ export default function UsersManagementPage() {
                         </div>
                       </td>
                       <td className="p-5">
-                        <span className={`inline-flex px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                          roleName === "admin" 
-                            ? "bg-purple-100 text-purple-700" 
-                            : roleName === "organizer" 
-                              ? "bg-blue-100 text-blue-700" 
+                        <span className={`inline-flex px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${roleName === "admin"
+                            ? "bg-purple-100 text-purple-700"
+                            : roleName === "organizer"
+                              ? "bg-blue-100 text-blue-700"
                               : "bg-gray-100 text-gray-700"
-                        }`}>
+                          }`}>
                           {roleName}
                         </span>
                       </td>
@@ -181,26 +180,24 @@ export default function UsersManagementPage() {
                           <button
                             onClick={() => handleRoleChange(u.id, roleName)}
                             disabled={roleName === "admin"}
-                            className={`px-4 py-2 rounded-lg text-xs font-bold transition-colors ${
-                              roleName === "admin" 
-                                ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
+                            className={`px-4 py-2 rounded-lg text-xs font-bold transition-colors ${roleName === "admin"
+                                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                                 : "bg-primary/10 text-primary hover:bg-primary hover:text-white"
-                            }`}
+                              }`}
                             title="Ubah Role"
                           >
                             Ubah Role
                           </button>
-                          
+
                           <button
                             onClick={() => handleToggleActive(u.id, u.isActive, roleName)}
                             disabled={roleName === "admin"}
-                            className={`p-2 rounded-lg transition-colors ${
-                              roleName === "admin"
+                            className={`p-2 rounded-lg transition-colors ${roleName === "admin"
                                 ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                                 : isDeactivated
                                   ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-600 hover:text-white"
                                   : "bg-red-100 text-red-700 hover:bg-red-600 hover:text-white"
-                            }`}
+                              }`}
                             title={isDeactivated ? "Aktifkan Akun" : "Nonaktifkan Akun"}
                           >
                             <ShieldAlert className="h-4 w-4" />

@@ -84,7 +84,7 @@ export default function LandingPage() {
             {/* Quick Actions */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
               {QUICK_ACTIONS.map((action) => (
-                <Link 
+                <Link
                   key={action.title}
                   href={action.href}
                   className="bg-white p-5 md:p-8 rounded-2xl md:rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all flex flex-col items-center text-center group"
@@ -118,13 +118,13 @@ export default function LandingPage() {
                 <div className="flex flex-wrap items-center gap-3 mb-12">
                   <Link
                     href="/login"
-                    className="inline-flex items-center gap-2 bg-accent text-white px-6 py-3 rounded-full font-semibold text-sm hover:bg-amber-500 transition-colors shadow-lg shadow-amber-500/30"
+                    className="inline-flex items-center gap-2 bg-accent text-white px-6 py-3 rounded-full font-bold text-sm hover:bg-amber-600 hover:-translate-y-0.5 transition-all shadow-lg shadow-amber-500/30"
                   >
                     Mulai Sekarang
                   </Link>
                   <a
                     href="#acara"
-                    className="inline-flex items-center gap-2 border border-white/50 text-white px-6 py-3 rounded-full font-semibold text-sm hover:bg-white/10 transition-colors"
+                    className="inline-flex items-center gap-2 border border-white/50 text-white px-6 py-3 rounded-full font-bold text-sm hover:bg-white/10 hover:-translate-y-0.5 transition-all"
                   >
                     Lihat Acara
                   </a>
@@ -147,45 +147,36 @@ export default function LandingPage() {
               </div>
 
               <div className="hidden lg:flex flex-col gap-4 items-end">
-                <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 w-72 text-white hover:bg-white/15 transition-colors">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-[10px] font-bold uppercase tracking-wider bg-accent/20 text-accent border border-accent/30 px-2 py-0.5 rounded-full">
-                      Upcoming
-                    </span>
+                {upcomingEvents.slice(0, 2).map((event) => (
+                  <div key={event.id} className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 w-72 text-white hover:bg-white/15 transition-colors overflow-hidden">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-[10px] font-bold uppercase tracking-wider bg-accent/20 text-accent border border-accent/30 px-2 py-0.5 rounded-full">
+                        Upcoming
+                      </span>
+                    </div>
+                    <p className="font-bold text-sm mb-3 line-clamp-2 leading-snug">{event.title}</p>
+                    <div className="grid grid-cols-3 gap-1 text-xs text-white/70">
+                      <span className="flex items-center gap-1 min-w-0">
+                        <MapPin className="h-3 w-3 shrink-0" />
+                        <span className="truncate">{event.venue}</span>
+                      </span>
+                      <span className="flex items-center gap-1 min-w-0">
+                        <Calendar className="h-3 w-3 shrink-0" />
+                        <span className="truncate">{event.startDate ? new Date(event.startDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : 'TBA'}</span>
+                      </span>
+                      <span className="flex items-center gap-1 shrink-0">
+                        <Users className="h-3 w-3 shrink-0" />
+                        {event.maxCapacity} Kursi
+                      </span>
+                    </div>
                   </div>
-                  <p className="font-bold text-sm mb-2">Seminar Nasional Teknologi 2026</p>
-                  <div className="flex items-center gap-3 text-xs text-white/70">
-                    <span className="flex items-center gap-1">
-                      <MapPin className="h-3 w-3" />Aula Firmanzah Lt.8
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />25 Mei 2026
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Users className="h-3 w-3" />300 Kursi
-                    </span>
-                  </div>
-                </div>
-
-                <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-4 w-72 text-white hover:bg-white/15 transition-colors">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-[10px] font-bold uppercase tracking-wider bg-accent/20 text-accent border border-accent/30 px-2 py-0.5 rounded-full">
-                      Upcoming
-                    </span>
-                  </div>
-                  <p className="font-bold text-sm mb-2">Workshop UI/UX Design Thinking</p>
-                  <div className="flex items-center gap-3 text-xs text-white/70">
-                    <span className="flex items-center gap-1">
-                      <MapPin className="h-3 w-3" />Lab Komputer
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />30 Jun 2026
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Users className="h-3 w-3" />50 Kursi
-                    </span>
-                  </div>
-                </div>
+                ))}
+                {isLoading && upcomingEvents.length === 0 && (
+                  <>
+                    <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl h-32 w-72 animate-pulse"></div>
+                    <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl h-32 w-72 animate-pulse"></div>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -290,8 +281,8 @@ export default function LandingPage() {
                   className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow group flex flex-col h-full cursor-pointer"
                 >
                   <div className="h-44 bg-gray-100 relative overflow-hidden">
-                    <img 
-                      src={event.bannerUrl || "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2070&auto=format&fit=crop"} 
+                    <img
+                      src={event.bannerUrl || "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2070&auto=format&fit=crop"}
                       alt={event.title}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
@@ -355,13 +346,13 @@ export default function LandingPage() {
             <div className="flex flex-wrap items-center justify-center gap-4">
               <Link
                 href="/login"
-                className="inline-flex items-center gap-2 bg-accent text-white px-7 py-3.5 rounded-full font-semibold text-sm hover:bg-amber-500 transition-colors shadow-lg shadow-amber-500/30"
+                className="inline-flex items-center gap-2 bg-accent text-white px-7 py-3.5 rounded-full font-bold text-sm hover:bg-amber-600 hover:-translate-y-0.5 transition-all shadow-lg shadow-amber-500/30"
               >
                 Daftar sebagai Penyelenggara
               </Link>
               <a
                 href="#tentang"
-                className="inline-flex items-center gap-2 border border-white/50 text-white px-7 py-3.5 rounded-full font-semibold text-sm hover:bg-white/10 transition-colors"
+                className="inline-flex items-center gap-2 border border-white/50 text-white px-7 py-3.5 rounded-full font-bold text-sm hover:bg-white/10 hover:-translate-y-0.5 transition-all"
               >
                 Pelajari Lebih Lanjut
               </a>

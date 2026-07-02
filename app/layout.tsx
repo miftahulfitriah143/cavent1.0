@@ -32,7 +32,7 @@ export default function RootLayout({
       lang="id"
       className={`${poppins.variable} ${lora.variable} h-full antialiased scroll-smooth scroll-pt-24 md:scroll-pt-28`}
     >
-      <body className="min-h-full flex flex-col font-sans">
+      <body className={`${poppins.variable} ${lora.variable} antialiased min-h-full flex flex-col font-sans`}>
         <AuthProvider>
           <NotificationListener />
           {children}

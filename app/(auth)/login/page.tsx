@@ -25,12 +25,13 @@ import {
   X
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
+import { PublicNavbar } from "@/components/layout/PublicNavbar";
 
 export default function LoginPage() {
   const [activeTab, setActiveTab] = useState<"masuk" | "daftar">("masuk");
   const [registerRole, setRegisterRole] = useState<"organizer" | "mahasiswa">("mahasiswa");
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState("");
 
@@ -86,9 +87,9 @@ export default function LoginPage() {
       const result = await signInWithEmailAndPassword(auth, email, password);
 
       // PROTEKSI: Cek verifikasi email (kecuali akun superadmin/developer dan email dummy penyelenggara)
-      const isBypassed = result.user.email === "miftahulfitriah143@gmail.com" || 
-                         result.user.email === "mita@paramadina.ac.id" ||
-                         result.user.email === "testing@paramadina.ac.id";
+      const isBypassed = result.user.email === "miftahulfitriah143@gmail.com" ||
+        result.user.email === "mita@paramadina.ac.id" ||
+        result.user.email === "testing@paramadina.ac.id";
       if (!result.user.emailVerified && !isBypassed) {
         await auth.signOut();
         toast.error("Email Anda belum terverifikasi! Harap verifikasi email Anda terlebih dahulu.");
@@ -276,71 +277,8 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen flex-col bg-background-app font-sans">
 
-      {/* Top Navbar - Floating Pill Design */}
-      <div className="fixed top-0 w-full z-50 flex flex-col items-center pt-4 md:pt-6 px-4 md:px-6">
-        <header className="w-full max-w-7xl bg-white/95 backdrop-blur-md rounded-full px-4 py-2 md:px-6 md:py-3 shadow-sm flex items-center justify-between relative">
-
-          {/* Bagian Kiri: Menu & Logo */}
-          <div className="flex items-center gap-1 md:gap-3">
-            {/* Mobile Menu Button */}
-            <button
-              className="md:hidden p-1.5 -ml-1.5 text-primary rounded-full hover:bg-gray-100 transition-colors"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </button>
-
-            {/* Logo Icon (Hexagon placeholder) */}
-            <div className="relative flex h-6 w-6 md:h-8 md:w-8 items-center justify-center">
-              <svg viewBox="0 0 24 24" fill="none" className="h-full w-full text-primary" stroke="currentColor" strokeWidth="1.5">
-                <path d="M12 2L20.66 7V17L12 22L3.34 17V7L12 2Z" />
-                <circle cx="12" cy="12" r="3" fill="currentColor" />
-              </svg>
-            </div>
-            {/* Logo Text */}
-            <div className="font-bold text-lg md:text-xl tracking-tight">
-              <span className="text-primary">CA</span><span className="text-secondary">VENT</span>
-            </div>
-          </div>
-
-          {/* Navigation Links - Tengah */}
-          <nav className="hidden md:flex items-center gap-10 text-sm font-medium text-neutral">
-            <Link href="/" className="hover:text-primary transition-colors">Beranda</Link>
-            <Link href="/" className="hover:text-primary transition-colors">Acara</Link>
-            <Link href="/" className="hover:text-primary transition-colors">Tentang</Link>
-            <Link href="/" className="hover:text-primary transition-colors">Kontak</Link>
-          </nav>
-
-          {/* Buttons Kanan */}
-          <div className="flex items-center gap-2 md:gap-3">
-            <button
-              onClick={() => setActiveTab("masuk")}
-              className={`px-3 py-1.5 md:px-5 md:py-2 rounded-full text-xs md:text-sm font-semibold transition-all ${activeTab === "masuk"
-                ? "border border-primary text-primary bg-primary-50"
-                : "border border-primary/30 text-primary hover:border-primary hover:bg-primary-50"
-                }`}
-            >
-              Masuk
-            </button>
-            <button
-              onClick={() => setActiveTab("daftar")}
-              className="px-4 py-1.5 md:px-6 md:py-2 rounded-full text-xs md:text-sm font-semibold bg-primary text-white shadow-sm hover:bg-[#0e517a] transition-colors"
-            >
-              Daftar
-            </button>
-          </div>
-        </header>
-
-        {/* Mobile Dropdown Menu */}
-        {isMobileMenuOpen && (
-          <div className="w-full max-w-7xl mt-2 bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-lg md:hidden flex flex-col gap-3 animate-in fade-in slide-in-from-top-2">
-            <Link href="/" className="font-semibold text-neutral hover:text-primary px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">Beranda</Link>
-            <Link href="/" className="font-semibold text-neutral hover:text-primary px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">Acara</Link>
-            <Link href="/" className="font-semibold text-neutral hover:text-primary px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">Tentang</Link>
-            <Link href="/" className="font-semibold text-neutral hover:text-primary px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">Kontak</Link>
-          </div>
-        )}
-      </div>
+      {/* Top Navbar - Menggunakan komponen PublicNavbar yang sama dengan Beranda */}
+      <PublicNavbar />
 
       {/* Main Container - Fullscreen Background Gradient */}
       <main className="flex-1 flex items-start justify-center p-4 pt-28 md:pt-[120px] md:pb-12 md:px-[199px] bg-gradient-to-br from-[#0a2540] via-primary to-secondary min-h-screen">

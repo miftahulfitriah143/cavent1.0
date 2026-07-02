@@ -5,8 +5,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { UserNav } from "@/components/layout/UserNav";
-import { Menu, X, ChevronLeft } from "lucide-react";
+import { Menu, X, ChevronLeft, Globe } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export function PublicNavbar() {
   const pathname = usePathname();
@@ -20,16 +21,16 @@ export function PublicNavbar() {
 
   const getActiveClass = (path: string) => {
     return (path === "/" ? pathname === "/" : pathname.startsWith(path))
-      ? "text-primary font-bold"
-      : "text-neutral hover:text-primary";
+      ? "text-primary font-bold underline decoration-2 underline-offset-8"
+      : "text-neutral hover:text-primary font-normal";
   };
 
   return (
     <div className="fixed top-0 w-full z-50 flex flex-col items-center pt-4 md:pt-6 px-4 md:px-6">
-      <header className="w-full max-w-7xl bg-white/95 backdrop-blur-md rounded-full px-4 py-2 md:px-6 md:py-2 shadow-sm flex items-center justify-between border border-gray-100/50">
-        
+      <header className="w-full max-w-7xl h-16 bg-white/70 backdrop-blur-xl rounded-full px-4 md:px-6 shadow-sm flex items-center justify-between relative border border-white/50">
+
         {/* Bagian Kiri: Menu & Logo */}
-        <div className="flex items-center gap-1 md:gap-3">
+        <div className="flex items-center gap-2 md:gap-3">
           {isDetailPage ? (
             <button
               className="md:hidden p-1.5 -ml-1.5 text-accent rounded-full hover:bg-gray-100 transition-colors"
@@ -46,25 +47,19 @@ export function PublicNavbar() {
             </button>
           )}
 
-          <Link href="/" className="flex items-center gap-1 md:gap-2">
-            <div className="relative flex h-6 w-6 md:h-8 md:w-8 items-center justify-center">
-              <svg viewBox="0 0 24 24" fill="none" className="h-full w-full text-primary" stroke="currentColor" strokeWidth="1.5">
-                <path d="M12 2L20.66 7V17L12 22L3.34 17V7L12 2Z" />
-                <circle cx="12" cy="12" r="3" fill="currentColor" />
-              </svg>
-            </div>
-            <div className="font-bold text-lg md:text-xl tracking-tight">
-              <span className="text-primary">CA</span><span className="text-secondary">VENT</span>
+          <Link href="/" className="flex items-center">
+            <div className="relative h-5 w-28 md:h-7 md:w-32">
+              <Image src="/CAVENT5.svg" alt="Cavent Logo" fill className="object-contain object-left" priority />
             </div>
           </Link>
         </div>
 
         {/* Navigation Links - Tengah */}
-        <nav className="hidden md:flex items-center gap-10 text-sm font-medium transition-all">
-          <Link href="/" className={`${getActiveClass("/")} transition-colors`}>Beranda</Link>
-          <Link href="/events" className={`${getActiveClass("/events")} transition-colors`}>Acara</Link>
-          {!isStudent && <Link href="/#tentang" className="text-neutral hover:text-primary transition-colors">Tentang</Link>}
-          <Link href="/#kontak" className="text-neutral hover:text-primary transition-colors">Kontak</Link>
+        <nav className="hidden md:flex items-center gap-10 text-sm transition-all">
+          <Link href="/" className={`${getActiveClass("/")} hover:-translate-y-0.5 transition-all inline-block`}>Beranda</Link>
+          <Link href="/events" className={`${getActiveClass("/events")} hover:-translate-y-0.5 transition-all inline-block`}>Acara</Link>
+          {!isStudent && <Link href="/#tentang" className="text-neutral font-normal hover:text-primary hover:-translate-y-0.5 transition-all inline-block">Tentang</Link>}
+          <Link href="/#kontak" className="text-neutral font-normal hover:text-primary hover:-translate-y-0.5 transition-all inline-block">Kontak</Link>
         </nav>
 
         {/* Buttons Kanan */}
@@ -76,15 +71,9 @@ export function PublicNavbar() {
               <>
                 <Link
                   href="/login"
-                  className="px-3 py-1.5 md:px-5 md:py-2 rounded-full text-xs md:text-sm font-semibold border border-primary/30 text-primary hover:border-primary hover:bg-primary-50 transition-all"
+                  className="px-5 py-2 md:px-7 md:py-2.5 rounded-full text-xs md:text-sm font-bold bg-accent text-white shadow-sm hover:bg-amber-600 hover:-translate-y-0.5 transition-all"
                 >
-                  Masuk
-                </Link>
-                <Link
-                  href="/login"
-                  className="px-4 py-1.5 md:px-6 md:py-2 rounded-full text-xs md:text-sm font-semibold bg-primary text-white shadow-sm hover:bg-[#0e517a] transition-colors"
-                >
-                  Daftar
+                  Mulai Sekarang
                 </Link>
               </>
             )
@@ -94,7 +83,7 @@ export function PublicNavbar() {
 
       {/* Mobile Dropdown Menu */}
       {isMobileMenuOpen && (
-        <div className="w-full max-w-7xl mt-2 bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-lg md:hidden flex flex-col gap-3 border border-gray-100">
+        <div className="w-full max-w-7xl mt-2 bg-white/90 backdrop-blur-xl border border-white/50 rounded-2xl p-4 shadow-lg md:hidden flex flex-col gap-3 animate-in fade-in slide-in-from-top-2">
           <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className={`font-semibold px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors ${getActiveClass("/")}`}>Beranda</Link>
           <Link href="/events" onClick={() => setIsMobileMenuOpen(false)} className={`font-semibold px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors ${getActiveClass("/events")}`}>Acara</Link>
           {!isStudent && <Link href="/#tentang" onClick={() => setIsMobileMenuOpen(false)} className="font-semibold text-neutral hover:text-primary px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">Tentang</Link>}

@@ -9,7 +9,7 @@ import { Calendar, Users, BarChart3, TrendingUp, CheckCircle2, FileText, XCircle
 
 export default function AdminAnalyticsPage() {
   const { user, role } = useAuth();
-  
+
   const [events, setEvents] = useState<any[]>([]);
   const [registrations, setRegistrations] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -61,7 +61,7 @@ export default function AdminAnalyticsPage() {
   const totalEvents = events.length;
   const publishedEvents = events.filter((e) => e.status === "published").length;
   const pendingEvents = events.filter((e) => e.status === "pending").length;
-  
+
   const totalRegistrations = registrations.length;
   const totalAttended = registrations.filter((r) => r.status === "attended").length;
 
@@ -76,14 +76,14 @@ export default function AdminAnalyticsPage() {
 
   events.forEach((event) => {
     if (event.createdAt) {
-      const date = event.createdAt.seconds 
-        ? new Date(event.createdAt.seconds * 1000) 
+      const date = event.createdAt.seconds
+        ? new Date(event.createdAt.seconds * 1000)
         : new Date(event.createdAt);
-        
+
       const monthIdx = date.getMonth();
       const monthName = monthNames[monthIdx];
       const status = event.status || "draft";
-      
+
       if (eventsPerMonthMap[monthName][status] !== undefined) {
         eventsPerMonthMap[monthName][status] += 1;
       }
@@ -183,8 +183,8 @@ export default function AdminAnalyticsPage() {
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} />
                 <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6b7280' }} />
-                <RechartsTooltip 
-                  cursor={{ fill: '#f9fafb' }} 
+                <RechartsTooltip
+                  cursor={{ fill: '#f9fafb' }}
                   contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
                 />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '20px' }} />
@@ -224,7 +224,7 @@ export default function AdminAnalyticsPage() {
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <RechartsTooltip 
+                <RechartsTooltip
                   contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
                 />
               </PieChart>
@@ -237,7 +237,7 @@ export default function AdminAnalyticsPage() {
               <span className="text-[10px] text-neutral font-bold uppercase">Kehadiran</span>
             </div>
           </div>
-          
+
           <div className="flex justify-center gap-6 mt-4">
             {pieChartData.map((item, index) => (
               <div key={index} className="flex items-center gap-2">
@@ -260,7 +260,7 @@ export default function AdminAnalyticsPage() {
             <p className="text-xs text-neutral">Berdasarkan jumlah pendaftar terbanyak</p>
           </div>
         </div>
-        
+
         {topEvents.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
@@ -276,12 +276,11 @@ export default function AdminAnalyticsPage() {
                 {topEvents.map((event, index) => (
                   <tr key={event.id} className="hover:bg-gray-50/50 transition-colors">
                     <td className="p-5 text-center">
-                      <span className={`inline-flex items-center justify-center h-8 w-8 rounded-full font-black text-sm ${
-                        index === 0 ? "bg-amber-100 text-amber-600" :
-                        index === 1 ? "bg-gray-200 text-gray-600" :
-                        index === 2 ? "bg-orange-100 text-orange-700" :
-                        "bg-gray-50 text-neutral"
-                      }`}>
+                      <span className={`inline-flex items-center justify-center h-8 w-8 rounded-full font-black text-sm ${index === 0 ? "bg-amber-100 text-amber-600" :
+                          index === 1 ? "bg-gray-200 text-gray-600" :
+                            index === 2 ? "bg-orange-100 text-orange-700" :
+                              "bg-gray-50 text-neutral"
+                        }`}>
                         #{index + 1}
                       </span>
                     </td>

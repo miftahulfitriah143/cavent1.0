@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { 
-  Plus, 
-  Calendar, 
-  Users, 
-  CheckCircle, 
+import {
+  Plus,
+  Calendar,
+  Users,
+  CheckCircle,
   Star,
   ArrowUpRight,
   Loader2,
@@ -40,13 +40,13 @@ export default function OrganizerDashboard() {
     const unsubscribeEvents = onSnapshot(qEvents, async (snapshot) => {
       const events = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setRecentEvents(events.slice(0, 5));
-      
+
       // 2. Fetch Registrations for Stats
       const qRegs = query(
         collection(db, "registrations"),
         where("organizerId", "==", user.uid)
       );
-      
+
       const regsSnapshot = await getDocs(qRegs);
       const totalRegs = regsSnapshot.size;
       const attendedRegs = regsSnapshot.docs.filter(d => d.data().status === "attended").length;
@@ -58,7 +58,7 @@ export default function OrganizerDashboard() {
         attendanceRate: attendanceRate,
         avgRating: 4.8 // Placeholder for now
       });
-      
+
       setIsLoading(false);
     });
 
@@ -76,7 +76,7 @@ export default function OrganizerDashboard() {
 
   return (
     <div className="max-w-7xl mx-auto pb-10">
-      
+
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
         <div>
@@ -124,7 +124,7 @@ export default function OrganizerDashboard() {
             Lihat Semua
           </Link>
         </div>
-        
+
         <div className="overflow-x-auto">
           {recentEvents.length > 0 ? (
             <table className="w-full text-left">
@@ -147,11 +147,10 @@ export default function OrganizerDashboard() {
                       </div>
                     </td>
                     <td className="px-8 py-6">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${
-                        event.status === 'published' ? 'bg-green-50 text-green-600 border-green-100' : 
-                        event.status === 'pending' ? 'bg-amber-50 text-amber-600 border-amber-100' :
-                        'bg-red-50 text-red-600 border-red-100'
-                      }`}>
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${event.status === 'published' ? 'bg-green-50 text-green-600 border-green-100' :
+                          event.status === 'pending' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                            'bg-red-50 text-red-600 border-red-100'
+                        }`}>
                         {event.status === 'published' ? 'Aktif' : event.status === 'pending' ? 'Menunggu' : 'Ditolak'}
                       </span>
                     </td>
@@ -159,7 +158,7 @@ export default function OrganizerDashboard() {
                       {event.registeredCount || 0}
                     </td>
                     <td className="px-8 py-6 text-right">
-                      <Link 
+                      <Link
                         href="/organizer/events"
                         className="inline-flex items-center justify-center p-2 text-neutral hover:text-primary hover:bg-primary-50 rounded-lg transition-all"
                       >

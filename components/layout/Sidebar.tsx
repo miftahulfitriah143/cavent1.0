@@ -5,14 +5,14 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { db } from "@/lib/firebase";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
-import { 
-  Home, 
-  Calendar, 
-  Users, 
-  Settings, 
-  FileText, 
-  BarChart, 
-  QrCode, 
+import {
+  Home,
+  Calendar,
+  Users,
+  Settings,
+  FileText,
+  BarChart,
+  QrCode,
   LogOut,
   Menu,
   X,
@@ -50,9 +50,9 @@ export function Sidebar() {
   // Real-time Badge Counts
   useEffect(() => {
     if (!user) return;
-    
-    let unsubNotif = () => {};
-    let unsubApproval = () => {};
+
+    let unsubNotif = () => { };
+    let unsubApproval = () => { };
 
     // Notifications Count Listener
     if (role === "admin") {
@@ -156,7 +156,7 @@ export function Sidebar() {
     <>
       {/* Mobile Menu Button - Diposisikan di Navbar */}
       <div className="lg:hidden fixed top-0 left-0 z-[60] h-16 flex items-center pl-4 pr-2">
-        <button 
+        <button
           onClick={() => setIsOpen(!isOpen)}
           className="p-1.5 rounded-md bg-white border border-gray-200 shadow-sm text-gray-600 hover:text-gray-900 transition-colors"
         >
@@ -166,7 +166,7 @@ export function Sidebar() {
 
       {/* Overlay untuk Mobile */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-30 lg:hidden"
           onClick={() => setIsOpen(false)}
         />
@@ -178,7 +178,7 @@ export function Sidebar() {
         ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
       `}>
         <div className="flex h-full flex-col">
-          
+
           {/* User Profile Area */}
           <div className="flex items-center gap-4 px-6 py-8 border-b border-gray-100">
             {/* Avatar */}
@@ -191,7 +191,7 @@ export function Sidebar() {
                 </div>
               )}
             </div>
-            
+
             {/* Name & Role */}
             <div className="flex flex-col">
               <span className="font-bold text-dark text-sm truncate w-36">
@@ -213,18 +213,18 @@ export function Sidebar() {
                 <nav className="space-y-1">
                   {group.items.map((link) => {
                     // Logika isActive yang lebih cerdas untuk menangani rute bersarang (nested routes)
-                    const isActive = pathname === link.href || 
-                      (pathname.startsWith(link.href + "/") && 
-                       !group.items.some(other => other.href !== link.href && other.href.startsWith(link.href) && pathname.startsWith(other.href)));
-                    
+                    const isActive = pathname === link.href ||
+                      (pathname.startsWith(link.href + "/") &&
+                        !group.items.some(other => other.href !== link.href && other.href.startsWith(link.href) && pathname.startsWith(other.href)));
+
                     return (
                       <Link
                         key={link.name}
                         href={link.href}
                         className={`
                           flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all
-                          ${isActive 
-                            ? "bg-primary-50 text-primary shadow-sm" 
+                          ${isActive
+                            ? "bg-primary-50 text-primary shadow-sm"
                             : "text-neutral hover:bg-gray-50 hover:text-dark"
                           }
                         `}
