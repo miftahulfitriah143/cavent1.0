@@ -22,7 +22,9 @@ import {
   Mic2,
   Users,
   Menu,
-  X
+  X,
+  Eye,
+  EyeOff
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -39,6 +41,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState(""); // Dipakai untuk Nama Lengkap / Nama Organisasi
+  const [showPassword, setShowPassword] = useState(false);
 
   // Deteksi domain email reaktif untuk mahasiswa & dosen/HIMA
   const isStudentEmail = email.toLowerCase().trim().endsWith("@students.paramadina.ac.id");
@@ -347,14 +350,14 @@ export default function LoginPage() {
 
               <button
                 onClick={() => setActiveTab("masuk")}
-                className={`relative z-10 flex-1 py-2 text-sm font-semibold transition-colors duration-300 ${activeTab === "masuk" ? "text-dark" : "text-neutral hover:text-dark"
+                className={`relative z-10 flex-1 py-2 text-sm font-semibold transition-colors duration-300 cursor-pointer ${activeTab === "masuk" ? "text-dark" : "text-neutral hover:text-dark"
                   }`}
               >
                 Masuk
               </button>
               <button
                 onClick={() => setActiveTab("daftar")}
-                className={`relative z-10 flex-1 py-2 text-sm font-semibold transition-colors duration-300 ${activeTab === "daftar" ? "text-dark" : "text-neutral hover:text-dark"
+                className={`relative z-10 flex-1 py-2 text-sm font-semibold transition-colors duration-300 cursor-pointer ${activeTab === "daftar" ? "text-dark" : "text-neutral hover:text-dark"
                   }`}
               >
                 Daftar
@@ -386,14 +389,24 @@ export default function LoginPage() {
 
                     <div>
                       <label className="block text-xs font-semibold text-dark mb-1.5">Kata Sandi</label>
-                      <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="••••••••"
-                        className="w-full rounded-md border border-gray-200 px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-shadow"
-                        required
-                      />
+                      <div className="relative">
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          placeholder="••••••••"
+                          className="w-full rounded-md border border-gray-200 px-4 py-2.5 pr-10 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-shadow"
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral hover:text-dark transition-colors cursor-pointer"
+                          tabIndex={-1}
+                        >
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
                     </div>
 
                     <div className="flex items-center justify-between">
@@ -407,7 +420,7 @@ export default function LoginPage() {
                     <button
                       type="submit"
                       disabled={isProcessing}
-                      className="w-full rounded-md bg-primary px-4 py-3 text-sm font-semibold text-white transition-all hover:bg-[#0f527c] hover:shadow-md hover:shadow-primary/20 disabled:opacity-70 mt-4"
+                      className="w-full cursor-pointer rounded-md bg-primary px-4 py-3 text-sm font-semibold text-white transition-all hover:bg-[#0f527c] hover:shadow-md hover:shadow-primary/20 disabled:opacity-70 mt-4"
                     >
                       {isProcessing ? "Memproses..." : "Masuk"}
                     </button>
@@ -430,7 +443,7 @@ export default function LoginPage() {
                       className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-300 ${registerRole === "organizer"
                         ? "border-primary bg-primary-50 text-primary shadow-sm scale-[1.02]"
                         : "border-gray-100 bg-white text-neutral hover:border-gray-200 hover:bg-gray-50"
-                        } ${isStudentEmail ? "opacity-40 cursor-not-allowed border-gray-100" : ""}`}
+                        } ${isStudentEmail ? "opacity-40 cursor-not-allowed border-gray-100" : "cursor-pointer"}`}
                     >
                       <Mic2 className={`h-6 w-6 mb-2 transition-colors ${registerRole === "organizer" ? "text-primary" : "text-neutral"}`} />
                       <span className="text-sm font-bold">Penyelenggara</span>
@@ -440,7 +453,7 @@ export default function LoginPage() {
                     <button
                       type="button"
                       onClick={() => setRegisterRole("mahasiswa")}
-                      className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-300 ${registerRole === "mahasiswa"
+                      className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-300 cursor-pointer ${registerRole === "mahasiswa"
                         ? "border-primary bg-primary-50 text-primary shadow-sm scale-[1.02]"
                         : "border-gray-100 bg-white text-neutral hover:border-gray-200 hover:bg-gray-50"
                         }`}
@@ -494,21 +507,31 @@ export default function LoginPage() {
 
                     <div>
                       <label className="block text-xs font-semibold text-dark mb-1.5">Kata Sandi</label>
-                      <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="••••••••"
-                        className="w-full rounded-md border border-gray-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-shadow"
-                        required
-                        minLength={6}
-                      />
+                      <div className="relative">
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          placeholder="••••••••"
+                          className="w-full rounded-md border border-gray-200 px-4 py-2 pr-10 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-shadow"
+                          required
+                          minLength={6}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral hover:text-dark transition-colors cursor-pointer"
+                          tabIndex={-1}
+                        >
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
                     </div>
 
                     <button
                       type="submit"
                       disabled={isProcessing}
-                      className="w-full rounded-md bg-primary px-4 py-3 text-sm font-semibold text-white transition-all hover:bg-[#0f527c] hover:shadow-md hover:shadow-primary/20 disabled:opacity-70 mt-4"
+                      className="w-full cursor-pointer rounded-md bg-primary px-4 py-3 text-sm font-semibold text-white transition-all hover:bg-[#0f527c] hover:shadow-md hover:shadow-primary/20 disabled:opacity-70 mt-4"
                     >
                       {isProcessing ? "Memproses..." : "Daftar"}
                     </button>
@@ -533,7 +556,7 @@ export default function LoginPage() {
                 type="button"
                 onClick={handleGoogleAuth}
                 disabled={isProcessing}
-                className="flex w-full items-center justify-center gap-3 rounded-md border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-dark transition hover:bg-gray-50 disabled:opacity-70"
+                className="flex w-full cursor-pointer items-center justify-center gap-3 rounded-md border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-dark transition hover:bg-gray-50 disabled:opacity-70"
               >
                 <svg className="h-5 w-5" viewBox="0 0 24 24">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
