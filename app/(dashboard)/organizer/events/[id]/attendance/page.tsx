@@ -124,7 +124,7 @@ export default function AttendancePage({ params }: { params: Promise<{ id: strin
       const timestamp = Date.now();
       const payload = `${id}_${timestamp}`;
       try {
-        const url = await QRCode.toDataURL(payload, { width: 400, margin: 2, color: { dark: '#0F4C81', light: '#FFFFFF' } });
+        const url = await QRCode.toDataURL(payload, { width: 400, margin: 2, color: { dark: '#000000', light: '#FFFFFF' } });
         setQrDataUrl(url);
         setLastRefresh(timestamp);
         
@@ -229,11 +229,11 @@ export default function AttendancePage({ params }: { params: Promise<{ id: strin
 
       
       {isFullScreenQR && (
-        <div className="fixed inset-0 z-[100] bg-slate-950 overflow-hidden h-screen w-screen">
+        <div className="fixed inset-0 z-[100] bg-white overflow-hidden h-screen w-screen">
           <div className="h-full w-full flex flex-col items-center justify-center relative animate-in fade-in zoom-in-95 duration-500">
             {/* Decorative ambient background elements */}
-            <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
-            <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[150px] translate-x-1/3 translate-y-1/3 pointer-events-none" />
+            <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
+            <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-blue-600/5 rounded-full blur-[150px] translate-x-1/3 translate-y-1/3 pointer-events-none" />
             
             <button 
               onClick={() => {
@@ -242,7 +242,7 @@ export default function AttendancePage({ params }: { params: Promise<{ id: strin
                 }
                 setIsFullScreenQR(false);
               }} 
-              className="fixed top-6 right-6 p-3 lg:p-4 bg-white/10 hover:bg-white/20 text-white/70 hover:text-white rounded-full backdrop-blur-md transition-all z-50 border border-white/10 shadow-xl"
+              className="fixed top-6 right-6 p-3 lg:p-4 bg-gray-50 hover:bg-gray-100 text-neutral hover:text-dark rounded-full backdrop-blur-md transition-all z-50 border border-gray-200 shadow-md"
               title="Keluar dari mode layar penuh"
             >
               <X className="h-6 w-6" />
@@ -250,22 +250,22 @@ export default function AttendancePage({ params }: { params: Promise<{ id: strin
             
             <div className="z-10 flex flex-col items-center w-full max-w-4xl mx-auto my-auto">
               {/* Live Indicator */}
-              <div className="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md mb-6 shadow-lg">
+              <div className="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-emerald-50 border border-emerald-100 mb-6 shadow-sm">
                 <span className="relative flex h-2.5 w-2.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                 </span>
-                <span className="text-white/80 font-bold tracking-widest text-[10px] md:text-xs uppercase">Live Attendance</span>
+                <span className="text-emerald-700 font-bold tracking-widest text-[10px] md:text-xs uppercase">Live Attendance</span>
               </div>
 
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-white/70 text-center mb-3 tracking-tight leading-tight px-4">{event?.title}</h1>
-              <p className="text-base md:text-lg lg:text-xl text-blue-200/60 font-medium mb-10 text-center px-4">Scan QR Code di bawah untuk absensi otomatis</p>
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-dark text-center mb-3 tracking-tight leading-tight px-4">{event?.title}</h1>
+              <p className="text-base md:text-lg lg:text-xl text-neutral font-medium mb-10 text-center px-4">Scan QR Code di bawah untuk absensi otomatis</p>
               
               <div className="relative group mx-auto">
                 {/* Outer glow for QR */}
-                <div className="absolute -inset-1 bg-gradient-to-r from-primary to-blue-600 rounded-[2.5rem] md:rounded-[3rem] blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200 pointer-events-none"></div>
+                <div className="absolute -inset-1 bg-gradient-to-r from-primary to-blue-600 rounded-[2.5rem] md:rounded-[3rem] blur opacity-10 group-hover:opacity-20 transition duration-1000 group-hover:duration-200 pointer-events-none"></div>
                 
-                <div className="relative bg-white p-5 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-2xl w-full max-w-[280px] md:max-w-[360px] aspect-square flex items-center justify-center transform transition-transform duration-500 group-hover:scale-[1.02]">
+                <div className="relative bg-white p-5 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] border border-gray-100 w-full max-w-[280px] md:max-w-[360px] aspect-square flex items-center justify-center transform transition-transform duration-500 group-hover:scale-[1.02]">
                    {qrDataUrl ? (
                       <img src={qrDataUrl} alt="QR Code" className="w-full h-full object-contain mix-blend-multiply" />
                     ) : (
@@ -275,8 +275,8 @@ export default function AttendancePage({ params }: { params: Promise<{ id: strin
               </div>
               
               {/* Refresh Indicator */}
-              <div className="mt-12 flex items-center gap-3 text-white/50 bg-white/5 px-6 py-3 rounded-2xl backdrop-blur-md border border-white/5 shadow-lg">
-                 <RefreshCw className="h-4 w-4 md:h-5 md:w-5 animate-spin text-white/70" />
+              <div className="mt-12 flex items-center gap-3 text-neutral bg-gray-50 px-6 py-3 rounded-2xl border border-gray-200 shadow-sm">
+                 <RefreshCw className="h-4 w-4 md:h-5 md:w-5 animate-spin text-neutral" />
                  <span className="text-xs md:text-sm font-medium tracking-wide">Kode QR diperbarui setiap 30 detik</span>
               </div>
             </div>
