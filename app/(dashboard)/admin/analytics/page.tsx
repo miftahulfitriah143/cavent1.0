@@ -116,7 +116,7 @@ export default function AdminAnalyticsPage() {
     .slice(0, 5);
 
   return (
-    <div className="max-w-6xl mx-auto pb-10">
+    <div className="max-w-7xl mx-auto pb-10">
       <div className="mb-8">
         <h1 className="text-4xl font-black text-dark tracking-tight mb-2">Dasbor Analitik</h1>
         <p className="text-neutral text-sm">Pantau statistik keseluruhan platform CAVENT.</p>

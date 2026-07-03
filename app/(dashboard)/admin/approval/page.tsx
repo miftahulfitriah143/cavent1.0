@@ -159,7 +159,7 @@ export default function AdminApprovalPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto pb-20">
+    <div className="max-w-7xl mx-auto pb-10">
       <div className="mb-10">
         <h1 className="text-4xl font-black text-dark tracking-tight">Approval Acara</h1>
         <p className="text-neutral text-sm mt-1 font-medium">Tinjau dan kelola pengajuan acara dari penyelenggara</p>
@@ -173,7 +173,7 @@ export default function AdminApprovalPage() {
       ) : pendingEvents.length > 0 ? (
         <div className="grid grid-cols-1 gap-6">
           {pendingEvents.map((event) => (
-            <div key={event.id} className="bg-white rounded-[2.5rem] p-6 md:p-10 border border-gray-100 shadow-sm hover:shadow-2xl transition-all duration-500 flex flex-col lg:flex-row gap-10 items-start lg:items-center group">
+            <div key={event.id} className="bg-white rounded-xl p-6 md:p-10 border border-gray-100 shadow-sm hover:shadow-2xl transition-all duration-500 flex flex-col lg:flex-row gap-10 items-start lg:items-center group">
               {/* Poster Preview */}
               <div
                 className="h-40 w-full lg:w-64 rounded-[2rem] overflow-hidden bg-gray-50 shrink-0 shadow-inner cursor-pointer"
@@ -250,8 +250,8 @@ export default function AdminApprovalPage() {
           ))}
         </div>
       ) : (
-        <div className="bg-white rounded-[4rem] border border-dashed border-gray-200 py-32 flex flex-col items-center justify-center text-center px-10 shadow-sm">
-          <div className="h-24 w-24 bg-green-50 rounded-[2.5rem] flex items-center justify-center mb-8 shadow-inner">
+        <div className="bg-white rounded-xl border border-dashed border-gray-200 py-32 flex flex-col items-center justify-center text-center px-10 shadow-sm">
+          <div className="h-24 w-24 bg-green-50 rounded-2xl flex items-center justify-center mb-8 shadow-inner">
             <CheckCircle2 className="h-12 w-12 text-green-500/40" />
           </div>
           <h3 className="text-2xl font-black text-dark mb-3">Antrean Kosong</h3>

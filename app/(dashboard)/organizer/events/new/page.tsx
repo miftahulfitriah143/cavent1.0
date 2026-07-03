@@ -437,10 +437,10 @@ export default function NewEventPage() {
   const prevStep = () => setStep(prev => prev - 1);
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6 pb-20">
+    <div className="max-w-7xl mx-auto space-y-6 pb-10">
       <Link
         href="/organizer"
-        className="inline-flex items-center gap-2 text-accent hover:text-accent-600 font-bold text-sm transition-colors"
+        className="inline-flex lg:hidden items-center gap-2 text-accent hover:text-accent-600 font-bold text-sm transition-colors"
       >
         <ChevronLeft className="h-4 w-4" /> Kembali ke Dashboard
       </Link>
@@ -455,7 +455,7 @@ export default function NewEventPage() {
 
 
       {/* Stepper */}
-      <div className="bg-white rounded-3xl p-1 mb-8 shadow-sm border border-gray-100 flex overflow-hidden">
+      <div className="bg-white rounded-xl p-1 mb-8 shadow-sm border border-gray-100 flex overflow-hidden">
         {[
           { id: 1, label: "Informasi Dasar", icon: Info },
           { id: 2, label: "Detail Acara", icon: LayoutGrid },
@@ -482,7 +482,7 @@ export default function NewEventPage() {
       </div>
 
       {/* Form Content */}
-      <div className="bg-white rounded-[2.5rem] p-8 md:p-12 shadow-sm border border-gray-100 min-h-[500px]">
+      <div className="bg-white rounded-xl p-6 md:p-8 shadow-sm border border-gray-100 min-h-[500px]">
 
         {/* STEP 1: INFORMASI DASAR */}
         {step === 1 && (

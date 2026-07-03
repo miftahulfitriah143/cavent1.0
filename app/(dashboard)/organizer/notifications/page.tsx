@@ -105,7 +105,7 @@ export default function OrganizerNotificationsPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto pb-20">
+    <div className="max-w-7xl mx-auto pb-10">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-black text-dark tracking-tight">Notifikasi</h1>
@@ -126,7 +126,7 @@ export default function OrganizerNotificationsPage() {
           notifications.map((notif) => (
             <div 
               key={notif.id} 
-              className={`bg-white rounded-2xl p-5 md:p-6 border transition-all flex gap-4 md:gap-5 group hover:shadow-md ${notif.status === "unread" ? "border-primary/20 shadow-sm" : "border-gray-100"}`}
+              className={`bg-white rounded-xl p-5 md:p-6 border transition-all flex gap-4 md:gap-5 group hover:shadow-md ${notif.status === "unread" ? "border-primary/20 shadow-sm" : "border-gray-100"}`}
             >
               <div className={`h-12 w-12 rounded-full flex items-center justify-center shrink-0 ${getIconBg(notif.type, notif.status === "unread")}`}>
                 {getIcon(notif.type)}
@@ -171,8 +171,8 @@ export default function OrganizerNotificationsPage() {
             </div>
           ))
         ) : (
-          <div className="bg-white rounded-3xl p-16 border border-dashed border-gray-200 text-center flex flex-col items-center">
-             <div className="h-20 w-20 bg-gray-50 rounded-2xl flex items-center justify-center mb-6 shadow-inner">
+          <div className="bg-white rounded-xl p-16 border border-dashed border-gray-200 text-center flex flex-col items-center">
+             <div className="h-20 w-20 bg-gray-50 rounded-xl flex items-center justify-center mb-6 shadow-inner">
                 <Bell className="h-8 w-8 text-neutral/30" />
              </div>
              <h3 className="text-xl font-black text-dark mb-2">Belum ada notifikasi</h3>

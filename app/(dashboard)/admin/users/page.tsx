@@ -91,7 +91,7 @@ export default function UsersManagementPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto pb-10">
+    <div className="max-w-7xl mx-auto pb-10">
       <div className="mb-10">
         <h1 className="text-4xl font-black text-dark tracking-tight mb-2">Manajemen Akun</h1>
         <p className="text-neutral text-sm">Kelola pengguna, tetapkan role Penyelenggara, dan aktifkan/nonaktifkan akun.</p>

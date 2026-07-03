@@ -93,7 +93,7 @@ export default function AdminNotificationsPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto pb-20">
+    <div className="max-w-7xl mx-auto pb-10">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-black text-dark tracking-tight">Notifikasi</h1>

@@ -515,18 +515,18 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6 pb-20">
+    <div className="max-w-7xl mx-auto space-y-6 pb-10">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <Link href="/organizer/events" className="inline-flex items-center gap-2 text-accent hover:text-accent-600 mb-4 font-bold text-sm transition-colors"><ChevronLeft className="h-4 w-4" /> Batal & Kembali</Link><h1 className="text-3xl font-black text-dark tracking-tight">Edit Acara</h1><p className="text-neutral text-xs font-medium mt-1">Ubah rincian acara Anda di bawah. Acara akan diajukan ulang untuk verifikasi admin.</p>
+          <Link href="/organizer/events" className="inline-flex lg:hidden items-center gap-2 text-accent hover:text-accent-600 mb-4 font-bold text-sm transition-colors"><ChevronLeft className="h-4 w-4" /> Batal & Kembali</Link><h1 className="text-3xl font-black text-dark tracking-tight">Edit Acara</h1><p className="text-neutral text-xs font-medium mt-1">Ubah rincian acara Anda di bawah. Acara akan diajukan ulang untuk verifikasi admin.</p>
           
         </div>
       </div>
 
 
       {/* Stepper */}
-      <div className="bg-white rounded-3xl p-1 mb-8 shadow-sm border border-gray-100 flex overflow-hidden">
+      <div className="bg-white rounded-xl p-1 mb-8 shadow-sm border border-gray-100 flex overflow-hidden">
         {[
           { id: 1, label: "Informasi Dasar", icon: Info },
           { id: 2, label: "Detail Acara", icon: LayoutGrid },
@@ -553,7 +553,7 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
       </div>
 
       {/* Form Content */}
-      <div className="bg-white rounded-[2.5rem] p-8 md:p-12 shadow-sm border border-gray-100 min-h-[500px]">
+      <div className="bg-white rounded-xl p-6 md:p-8 shadow-sm border border-gray-100 min-h-[500px]">
 
         {/* STEP 1: INFORMASI DASAR */}
         {step === 1 && (
