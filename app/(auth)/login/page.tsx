@@ -382,7 +382,7 @@ export default function LoginPage() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="miftahul.fitriah@students.paramadina.ac.id"
-                        className="w-full rounded-md border border-gray-200 px-4 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-shadow"
+                        className="w-full rounded-md border border-gray-200 bg-white px-4 py-2.5 text-sm text-dark focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-shadow"
                         required
                       />
                     </div>
@@ -395,7 +395,7 @@ export default function LoginPage() {
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                           placeholder="••••••••"
-                          className="w-full rounded-md border border-gray-200 px-4 py-2.5 pr-10 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-shadow"
+                          className="w-full rounded-md border border-gray-200 bg-white px-4 py-2.5 pr-10 text-sm text-dark focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-shadow"
                           required
                         />
                         <button
@@ -488,7 +488,7 @@ export default function LoginPage() {
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
                         placeholder={registerRole === "organizer" ? "HIMTI" : "Budi Santoso"}
-                        className="w-full rounded-md border border-gray-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-shadow"
+                        className="w-full rounded-md border border-gray-200 bg-white px-4 py-2 text-sm text-dark focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-shadow"
                         required
                       />
                     </div>
@@ -500,7 +500,7 @@ export default function LoginPage() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder={registerRole === "organizer" ? "himti@paramadina.ac.id" : "budi@students.paramadina.ac.id"}
-                        className="w-full rounded-md border border-gray-200 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-shadow"
+                        className="w-full rounded-md border border-gray-200 bg-white px-4 py-2 text-sm text-dark focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-shadow"
                         required
                       />
                     </div>
@@ -513,7 +513,7 @@ export default function LoginPage() {
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
                           placeholder="••••••••"
-                          className="w-full rounded-md border border-gray-200 px-4 py-2 pr-10 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-shadow"
+                          className="w-full rounded-md border border-gray-200 bg-white px-4 py-2 pr-10 text-sm text-dark focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-shadow"
                           required
                           minLength={6}
                         />

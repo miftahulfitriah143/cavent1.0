@@ -176,7 +176,7 @@ export default function AdminApprovalPage() {
             <div key={event.id} className="bg-white rounded-xl p-6 md:p-10 border border-gray-100 shadow-sm hover:shadow-2xl transition-all duration-500 flex flex-col lg:flex-row gap-10 items-start lg:items-center group">
               {/* Poster Preview */}
               <div
-                className="h-40 w-full lg:w-64 rounded-[2rem] overflow-hidden bg-gray-50 shrink-0 shadow-inner cursor-pointer"
+                className="h-40 w-full lg:w-64 rounded-xl overflow-hidden bg-gray-50 shrink-0 shadow-sm border border-gray-100 cursor-pointer"
                 onClick={() => setSelectedEvent(event)}
               >
                 <img
@@ -223,7 +223,7 @@ export default function AdminApprovalPage() {
               <div className="flex items-center gap-4 w-full lg:w-auto pt-6 lg:pt-0 lg:border-l lg:pl-10 border-gray-50">
                 <button
                   onClick={() => setSelectedEvent(event)}
-                  className="p-4 bg-gray-50 text-neutral hover:text-primary hover:bg-primary/5 rounded-[1.25rem] transition-all"
+                  className="p-4 bg-gray-50 text-neutral hover:text-primary hover:bg-primary/5 rounded-xl border border-gray-100 transition-all"
                   title="Lihat Detail Lengkap"
                 >
                   <Eye className="h-5 w-5" />
@@ -231,7 +231,7 @@ export default function AdminApprovalPage() {
                 <button
                   onClick={() => handleApprove(event.id, event.organizerId, event.title)}
                   disabled={isProcessing}
-                  className="flex-1 lg:flex-none flex items-center justify-center gap-2.5 bg-green-500 text-white px-8 py-4 rounded-[1.25rem] font-black text-sm hover:bg-green-600 transition-all shadow-xl shadow-green-500/20 active:scale-95 disabled:opacity-50"
+                  className="flex-1 lg:flex-none flex items-center justify-center gap-2.5 bg-green-500 text-white px-8 py-4 rounded-xl font-bold text-sm hover:bg-green-600 transition-all shadow-sm active:scale-95 disabled:opacity-50"
                 >
                   <Check className="h-5 w-5" /> Setujui
                 </button>
@@ -241,7 +241,7 @@ export default function AdminApprovalPage() {
                     setIsRejectModalOpen(true);
                   }}
                   disabled={isProcessing}
-                  className="flex-1 lg:flex-none flex items-center justify-center gap-2.5 bg-red-50 text-red-600 px-8 py-4 rounded-[1.25rem] font-black text-sm hover:bg-red-100 border border-red-100 transition-all active:scale-95 disabled:opacity-50"
+                  className="flex-1 lg:flex-none flex items-center justify-center gap-2.5 bg-red-50 text-red-600 px-8 py-4 rounded-xl font-bold text-sm hover:bg-red-100 border border-red-100 transition-all active:scale-95 disabled:opacity-50"
                 >
                   <X className="h-5 w-5" /> Tolak
                 </button>
@@ -265,7 +265,7 @@ export default function AdminApprovalPage() {
       {selectedEvent && !isRejectModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
           <div className="absolute inset-0 bg-dark/60 backdrop-blur-md" onClick={() => setSelectedEvent(null)} />
-          <div className="relative bg-white w-full max-w-6xl max-h-[95vh] rounded-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300 flex flex-col">
+          <div className="relative bg-white w-full max-w-6xl max-h-[95vh] rounded-xl overflow-hidden shadow-xl border border-gray-100 animate-in zoom-in-95 duration-300 flex flex-col">
             {/* Modal Header */}
             <div className="px-10 py-8 border-b border-gray-100 flex items-center justify-between shrink-0 bg-white">
               <div>
@@ -291,7 +291,7 @@ export default function AdminApprovalPage() {
                 return (
                   <>
                     {/* Desktop/Tablet 1:1 Student View Poster Area */}
-                    <div className="relative w-full h-[320px] md:h-[420px] bg-dark rounded-2xl overflow-hidden flex items-center justify-center group/hero select-none shrink-0 shadow-lg">
+                    <div className="relative w-full h-[320px] md:h-[420px] bg-dark rounded-lg overflow-hidden flex items-center justify-center group/hero select-none shrink-0 shadow-sm border border-gray-200">
                       {/* Blurred Background */}
                       <img
                         src={allMedia[currentHeroIdx] || selectedEvent.bannerUrl}
@@ -341,7 +341,7 @@ export default function AdminApprovalPage() {
                     </div>
 
                     {/* CARD 1: HEADER (Judul + Info + Penyelenggara ala Tiket.com) */}
-                    <div className="bg-white rounded-2xl border border-gray-100 p-6 md:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.02)] space-y-6">
+                    <div className="bg-white rounded-xl border border-gray-200 p-6 md:p-10 shadow-sm space-y-6">
                       <div className="space-y-4">
                         {/* Kategori Kapsul */}
                         <div className="flex items-center gap-2 flex-wrap">
@@ -602,7 +602,7 @@ export default function AdminApprovalPage() {
                   setSelectedEvent(selectedEvent);
                   setIsRejectModalOpen(true);
                 }}
-                className="flex-1 bg-red-50 text-red-600 py-4 rounded-2xl font-bold text-sm hover:bg-red-100 transition-all"
+                className="flex-1 bg-red-50 text-red-600 py-4 rounded-xl font-bold text-sm hover:bg-red-100 border border-red-100 transition-all"
               >
                 Tolak Pengajuan
               </button>
@@ -611,7 +611,7 @@ export default function AdminApprovalPage() {
                   handleApprove(selectedEvent.id, selectedEvent.organizerId, selectedEvent.title);
                   setSelectedEvent(null);
                 }}
-                className="flex-[2] bg-green-500 text-white py-4 rounded-2xl font-bold text-sm hover:bg-green-600 shadow-lg shadow-green-500/20 transition-all"
+                className="flex-[2] bg-green-500 text-white py-4 rounded-xl font-bold text-sm hover:bg-green-600 shadow-sm transition-all"
               >
                 Setujui & Tayangkan Sekarang
               </button>
@@ -624,7 +624,7 @@ export default function AdminApprovalPage() {
       {isRejectModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
           <div className="absolute inset-0 bg-dark/60 backdrop-blur-md" onClick={() => !isProcessing && setIsRejectModalOpen(false)} />
-          <div className="relative bg-white w-full max-w-md rounded-[3rem] p-10 shadow-2xl animate-in zoom-in-95 duration-300">
+          <div className="relative bg-white w-full max-w-md rounded-2xl p-10 shadow-xl border border-gray-200 animate-in zoom-in-95 duration-300">
             <div className="h-16 w-16 bg-red-50 rounded-[1.5rem] flex items-center justify-center mb-8">
               <AlertCircle className="h-10 w-10 text-red-500" />
             </div>
@@ -633,13 +633,13 @@ export default function AdminApprovalPage() {
 
             <div className="space-y-6">
               <div className="space-y-3">
-                <label className="text-[10px] font-black text-neutral uppercase tracking-[0.2em] ml-1">Alasan Penolakan <span className="text-red-500">*</span></label>
+                <label className="text-[10px] font-bold text-neutral uppercase tracking-[0.2em] ml-1">Alasan Penolakan <span className="text-red-500">*</span></label>
                 <textarea
                   value={rejectionReason}
                   onChange={(e) => setRejectionReason(e.target.value)}
                   placeholder="Contoh: Poster kurang resolusi tinggi atau jam acara bentrok..."
                   rows={5}
-                  className="w-full bg-gray-50/50 border border-gray-100 rounded-[1.5rem] px-6 py-5 text-sm focus:outline-none focus:ring-4 focus:ring-red-500/10 focus:bg-white focus:border-red-500/20 transition-all resize-none shadow-inner"
+                  className="w-full bg-gray-50/50 border border-gray-200 rounded-xl px-6 py-5 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:bg-white focus:border-red-500/40 transition-all resize-none"
                 />
               </div>
 
@@ -647,14 +647,14 @@ export default function AdminApprovalPage() {
                 <button
                   onClick={() => setIsRejectModalOpen(false)}
                   disabled={isProcessing}
-                  className="flex-1 bg-gray-50 text-dark py-4.5 rounded-[1.25rem] font-black text-sm hover:bg-gray-100 transition-all active:scale-95 disabled:opacity-50"
+                  className="flex-1 bg-gray-50 text-dark py-4.5 rounded-xl font-bold text-sm hover:bg-gray-100 border border-gray-200 transition-all active:scale-95 disabled:opacity-50"
                 >
                   Batal
                 </button>
                 <button
                   onClick={handleReject}
                   disabled={isProcessing}
-                  className="flex-1 bg-red-500 text-white py-4.5 rounded-[1.25rem] font-black text-sm hover:bg-red-600 transition-all shadow-xl shadow-red-500/20 active:scale-95 disabled:opacity-50"
+                  className="flex-1 bg-red-500 text-white py-4.5 rounded-xl font-bold text-sm hover:bg-red-600 transition-all shadow-sm active:scale-95 disabled:opacity-50"
                 >
                   {isProcessing ? "Memproses..." : "Tolak Sekarang"}
                 </button>
