@@ -58,7 +58,7 @@ export function PublicNavbar() {
         <nav className="hidden md:flex items-center gap-10 text-sm transition-all">
           <Link href="/" className={`${getActiveClass("/")} hover:-translate-y-0.5 transition-all inline-block`}>Beranda</Link>
           <Link href="/events" className={`${getActiveClass("/events")} hover:-translate-y-0.5 transition-all inline-block`}>Acara</Link>
-          {!isStudent && <Link href="/#tentang" className="text-neutral font-normal hover:text-primary hover:-translate-y-0.5 transition-all inline-block">Tentang</Link>}
+          {!isStudent && <Link href="/tentang" className={`${getActiveClass("/tentang")} hover:-translate-y-0.5 transition-all inline-block`}>Tentang</Link>}
           <Link href="/#kontak" className="text-neutral font-normal hover:text-primary hover:-translate-y-0.5 transition-all inline-block">Kontak</Link>
         </nav>
 
@@ -86,7 +86,7 @@ export function PublicNavbar() {
         <div className="w-full max-w-7xl mt-2 bg-white/90 backdrop-blur-xl border border-white/50 rounded-2xl p-4 shadow-lg md:hidden flex flex-col gap-3 animate-in fade-in slide-in-from-top-2">
           <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className={`font-semibold px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors ${getActiveClass("/")}`}>Beranda</Link>
           <Link href="/events" onClick={() => setIsMobileMenuOpen(false)} className={`font-semibold px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors ${getActiveClass("/events")}`}>Acara</Link>
-          {!isStudent && <Link href="/#tentang" onClick={() => setIsMobileMenuOpen(false)} className="font-semibold text-neutral hover:text-primary px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">Tentang</Link>}
+          {!isStudent && <Link href="/tentang" onClick={() => setIsMobileMenuOpen(false)} className={`font-semibold px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors ${getActiveClass("/tentang")}`}>Tentang</Link>}
           <Link href="/#kontak" onClick={() => setIsMobileMenuOpen(false)} className="font-semibold text-neutral hover:text-primary px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">Kontak</Link>
         </div>
       )}

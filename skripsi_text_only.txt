@@ -1,0 +1,932 @@
+
+
+
+
+JUDUL
+
+Integrasi Metode Design Thinking dan Agile dalam Pengembangan Sistem Pusat Informasi Kegiatan Universitas Paramadina Berbasis Web
+
+
+
+
+
+KARYA AKHIR
+
+Diajukan untuk memenuhi salah satu syarat memperoleh Gelar Sarjana dalam Bidang Teknik Informatika
+
+
+
+
+
+Oleh
+
+Miftahul Fitriah
+
+122103027
+
+
+
+
+
+PROGRAM STUDI TEKNIK INFORMATIKA
+
+FAKULTAS ILMU REKAYASA
+
+UNIVERSITAS PARAMADINA
+
+JAKARTA
+
+2026
+
+BAB 1
+
+PENDAHULUAN
+
+Latar Belakang
+
+Perguruan tinggi merupakan pusat kegiatan akademik, sosial, dan budaya yang dinamis, menawarkan banyak kesempatan bagi mahasiswa untuk terlibat dalam kehidupan kampus. Berbagai kegiatan ini mencakup seminar akademik, lokakarya, festival budaya, acara olahraga, hingga pertemuan sosial. Namun, di balik banyaknya jumlah acara yang diselenggarakan, partisipasi mahasiswa sering kali tidak optimal akibat kurangnya sistem terpusat untuk penyebaran informasi. Masalah ini mungkin menghambat keterlibatan mahasiswa dan mengurangi semangat komunitas kampus [1].
+
+Dalam merancang sebuah sistem informasi yang efektif, evaluasi terhadap media komunikasi tidak dapat dilakukan hanya dari sudut pandang pengembang atau institusi. Menggali pendapat dan pengalaman langsung dari pengguna utama, yaitu mahasiswa, sangatlah esensial untuk memahami kendala nyata yang mereka hadapi di lapangan. Sebuah studi terbaru pada tahun 2025 mengenai perancangan sistem informasi menegaskan bahwa pendekatan kualitatif sangat diperlukan untuk memungkinkan pemahaman mendalam tentang pengalaman pengguna dan tantangan yang sedang mereka hadapi [2]. Fase analisis kebutuhan yang dilakukan secara langsung melalui teknik observasi dan wawancara bertujuan untuk memahami proses bisnis, masalah, serta harapan pengguna terhadap sistem yang akan dibangun [2]. Oleh karena itu, keterlibatan pengguna di tahap awal ini menjadi fondasi utama untuk mengukur efektivitas penyebaran informasi yang sedang berjalan, sekaligus merumuskan rancangan sistem baru yang tepat sasaran.
+
+Sebagai bagian dari tahapan studi pendahuluan, peneliti melakukan observasi dan wawancara acak (random sampling) pada bulan Oktober 2024 kepada sejumlah mahasiswa dan perwakilan organisasi di Universitas Paramadina. Dari hasil wawancara tersebut, ditemukan bahwa penyebaran informasi saat ini masih terfragmentasi dan sangat bergantung pada aplikasi pesan singkat (seperti grup WhatsApp) serta media sosial (Instagram), sebagaimana ditunjukkan pada Gambar 1.1.
+
+
+
+
+
+Gambar 1.1 Tangkapan Layar Penyebaran Informasi di Instagram (Kiri) dan Grup WhatsApp (Kanan)
+
+Laila Fairin Nisa seorang mahasiswa Hubungan Internasional mengungkapkan bahwa informasi acara sering kali diterima secara tidak konsisten, “biasanya informasinya ada di grup WhatsApp dan Instagram, dan bahkan saat itu pun kami tidak selalu membuka Instagram, kadang-kadang informasinya benar-benar mendadak dari grup kelas”. Ia juga menyebutkan peluang yang terlewatkan karena penyebaran informasi yang kurang baik, “ada satu… itu terjadi saat jam kuliah dan acaranya hanya berlangsung sampai jam 3”.
+
+M. Azzam Nahla, seorang mahasiswa Psikologi, menambahkan, “Saya cukup tertarik karena jika ada aplikasi ini menyediakan semua berita kampus saya, kenapa tidak?”. Meskipun ia sering menghadiri acara-acara, Azzam mengandalkan kode QR yang terhubung ke google form untuk mendaftar, dan menyatakan bahwa ia belum pernah menggunakan sistem umpan balik hingga saat ini.
+
+Dari sisi penyelenggara acara (seperti HIMA atau UKM), kurang optimalnya saluran komunikasi ini berdampak negatif pada tingkat kehadiran audiens. Penyelenggara kesulitan menjangkau target peserta secara menyeluruh, mengingat Universitas Paramadina memiliki operasional kegiatan di tiga lokasi kampus yang berbeda (Cipayung, Cikarang, dan Kuningan). Kondisi ini diperumit dengan sistem perkuliahan hybrid yang diterapkan. Pemasangan poster fisik di satu lokasi kampus tidak akan terbaca oleh mahasiswa di lokasi lain, sementara promosi melalui media sosial dibatasi oleh algoritma dan jumlah pengikut organisasi tersebut.
+
+Selain disrupsi promosi, metode pendaftaran acara juga tidak terstandarisasi. Suatu organisasi mungkin mewajibkan pendaftaran menggunakan tautan Google Form, sementara organisasi lain mengharuskan pendaftaran manual di hari H. Hal ini tidak hanya membingungkan calon peserta, tetapi juga menyulitkan penyelenggara dalam merekap data kehadiran secara real-time. Tidak adanya sistem ulasan pasca-acara yang terpusat juga menyulitkan penyelenggara untuk mengukur efektivitas kegiatan yang telah dilakukan.
+
+Urgensi kehadiran media komunikasi dan sistem informasi kegiatan yang terpusat sejalan dengan temuan di berbagai institusi pendidikan lainnya. Sebuah penelitian pada tahun 2024 membuktikan bahwa pengelolaan media informasi digital yang terstruktur sangat krusial dan terbukti secara langsung meningkatkan keterlibatan (engagement) audiens mahasiswa secara luas [3]. Lebih lanjut, pengembangan sistem informasi kegiatan mahasiswa berbasis website pada tahun 2025 juga menyimpulkan bahwa kehadiran sistem yang tersentralisasi memberikan solusi yang jauh lebih efisien dalam manajemen acara sekaligus mengatasi hambatan miskomunikasi [4].
+
+Walaupun beberapa penelitian sebelumnya telah berupaya mendigitalisasi sistem manajemen acara kampus, masih terdapat celah penelitian (research gap) yang krusial dari segi arsitektur teknis dan pengalaman pengguna. Studi oleh Sarthak et al. (2025) menyoroti pentingnya visualisasi data pada sistem acara [5], sementara Sonekar et al. (2025) membuktikan bahwa sistem berbasis web secara signifikan mampu menyederhanakan proses pendaftaran konvensional [6]. Di sisi lain, penelitian oleh Thankachan et al. (2025) menekankan urgensi keamanan sistem melalui penerapan kontrol akses berbasis peran (Role-Based Access Control) dan sistem persetujuan bertingkat untuk kegiatan kampus [7]. 
+
+Meskipun ketiga penelitian tersebut menawarkan solusi yang fungsional, pendekatan pengembangannya masih memiliki kelemahan. Sistem-sistem tersebut masih bergantung pada metode absensi konvensional tanpa adanya mekanisme validasi kehadiran mandiri. Secara infrastruktur, penelitian sebelumnya juga masih dibangun di atas arsitektur monolitik peladen tradisional yang menuntut konfigurasi serta pemeliharaan peladen yang berat. Selain itu, cara pengembangannya belum secara spesifik mengintegrasikan analisis pengalaman pengguna (human-centered) secara adaptif.
+
+Berdasarkan celah tersebut, studi ini menghadirkan kebaruan (novelty) dengan mengusulkan rancang bangun sistem Pusat Informasi Kegiatan Universitas Paramadina (Cavent) berbasis web. Sistem ini bertujuan memusatkan penyebaran informasi, memungkinkan pengguna untuk dengan mudah mengakses, mendaftar, dan meninjau acara kampus. Inovasi teknis sistem ini diperkuat dengan penerapan pemindaian kode QR terintegrasi untuk absensi mandiri, otorisasi akses (Single Sign-On) menggunakan domain email institusi, serta penggunaan arsitektur Backend-as-a-Service (Firebase). Pemanfaatan ekosistem Firebase mengeliminasi kompleksitas manajemen peladen monolitik tradisional, membedakan sistem ini dari penelitian sebelumnya, dan menjadikannya solusi yang lebih ringan serta responsif [8].
+
+Untuk merealisasikannya, pengembangan sistem ini mengintegrasikan metode hibrida: Design Thinking dan Agile Kanban. Design Thinking digunakan untuk memastikan perancangan antarmuka sepenuhnya berfokus pada empati terhadap kendala pengguna di lapangan. Sementara itu, Agile Kanban diterapkan untuk memberikan kecepatan dalam proses rekayasa perangkat lunak melalui visualisasi alur kerja yang berkelanjutan (continuous flow) [9]. Pendekatan Kanban dipilih karena sangat efisien bagi pengembang tunggal (solo developer) dan adaptif terhadap umpan balik pengguna secara dinamis, berbeda dengan kerangka Scrum yang terikat pada batasan waktu Sprint yang kaku.
+
+Pendekatan hibrida ini terbukti efektif dalam berbagai penelitian pengembangan web terbaru, seperti perancangan marketplace [10] maupun sistem informasi penjualan [11], di mana penggabungan keduanya memungkinkan adaptasi spesifikasi yang cepat. Dengan sistem yang efisien dan berpusat pada pengguna, platform ini diharapkan dapat merapikan tata kelola informasi, meningkatkan partisipasi mahasiswa, dan memperkuat rasa kebersamaan di lingkungan Universitas Paramadina.
+
+Rumusan Masalah
+
+Meskipun Universitas Paramadina memiliki banyak kegiatan akademik dan non-akademik, ekosistem komunitas kampus belum terkoneksi dengan baik akibat manajemen penyebaran informasi yang masih terfragmentasi. Berdasarkan hasil wawancara dengan beberapa perwakilan mahasiswa dan penyelenggara acara (Himpunan Mahasiswa), ditemukan kesenjangan antara tingginya jumlah acara yang diadakan dengan rendahnya partisipasi. Hal ini disebabkan oleh ketiadaan platform terpusat yang informatif, interaktif, dan mudah diakses. Selain itu, pihak penyelenggara acara tidak memiliki alat manajemen yang terintegrasi untuk mengelola pendaftar, memberikan pengumuman terpusat, dan mengevaluasi kegiatan melalui sistem feedback (ulasan) yang terstruktur. Oleh karena itu, diperlukan sebuah solusi berbasis teknologi untuk mengatasi kendala-kendala tersebut.
+
+Berdasarkan perumusan masalah di atas, pertanyaan penelitian yang akan dijawab pada penelitian ini adalah:
+
+Bagaimana merancang dan membangun sistem berbasis web sebagai pusat informasi kegiatan di Universitas Paramadina menggunakan integrasi metode Design Thinking dan Agile Kanban?
+
+Bagaimana mengimplementasikan fitur manajemen acara yang memfasilitasi mahasiswa dalam mengeksplorasi dan mendaftar acara, serta memfasilitasi penyelenggara acara dalam membuat kegiatan, mengelola pendaftar, dan menerima ulasan?
+
+Bagaimana penerapan kerangka kerja Kanban dan ekosistem Firebase sebagai Backend-as-a-Service (BaaS) dalam mempercepat proses pengembangan sistem agar responsif terhadap kebutuhan civitas akademika?
+
+Bagaimana tingkat usability dan penerimaan pengguna terhadap sistem Pusat informasi Kegiatan yang telah dibangun?
+
+
+
+Tujuan Penelitian
+
+Tujuan penelitian ini adalah:
+
+Menghasilkan platform web yang berfungsi sebagai pusat informasi acara kampus yang mudah diakses oleh mahasiswa Universitas Paramadina.
+
+Memfasilitasi mahasiswa untuk dengan mudah mencari, mendaftar, dan memberikan ulasan pada acara kampus, serta menyediakan manajemen acara bagi organisasi kampus untuk mengunggah, mengelola, dan mempromosikan acara mereka.
+
+Menerapkan sistem umpan balik dan penilaian terstruktur untuk membantu penyelenggara acara meningkatkan kualitas kegiatan di masa mendatang.
+
+Mengevaluasi tingkat usability dan penerimaan pengguna terhadap sistem Cavent melalui pengujian User Acceptance Testing (UAT) untuk memastikan sistem layak dan mudah digunakan.
+
+
+
+Manfaat Penelitian
+
+Berikut Adalah beberapa manfaat dari penelitian ini:
+
+Manfaat Teoretis, penelitian ini berkontribusi pada bidang rekayasa perangkat lunak dengan mendemonstrasikan efektivitas integrasi metode Design Thinking dan Agile Kanban dalam membangun sistem berbasis Backend-as-a-Service (BaaS).
+
+Manfaat Praktis, platform ini memberikan solusi satu pintu (one-stop solution) yang menghemat waktu. Mahasiswa dimudahkan dalam proses penemuan dan registrasi acara, sementara penyelenggara acara diuntungkan oleh efisiensi rekapitulasi kehadiran (melalui QR Code mandiri) tanpa perlu pendataan manual.
+
+Manfaat Sosial, dengan penyebaran informasi yang merata dan terpusat, platform ini mendorong peningkatan partisipasi mahasiswa yang akan memperkuat rasa kepemilikan (sense of belonging) dan kolaborasi dalam ekosistem komunitas kampus.
+
+
+
+Ruang Lingkup Penelitian
+
+Untuk menjaga agar penelitian ini tetap fokus dan terarah, Batasan dan ruang lingkup penelitian didefinisikan sebagai berikut:
+
+Penelitian ini berfokus pada perancangan dan pengembangan aplikasi web untuk komunitas akademik di lingkungan Universitas Paramadina.
+
+Sistem memiliki tiga peran utama dengan hak akses yang berbeda, yaitu Pengguna (Mahasiswa Paramadina), Pengelola Acara (OKUP, Fakultas, atau Universitas) dan Admin.
+
+Autentikasi pengguna (login/register) dibatasi menggunakan integrasi OAuth (Google Workspace) khusus untuk domain email Universitas Paramadina (@paramadina.ac.id dan @students.paramadina.ac.id).
+
+Pengembangan aplikasi menggunakan teknologi Next.js, Tailwind CSS untuk antarmuka pengguna, serta ekosistem Firebase (mencakup Firebase Authentication, Cloud Firestore, dan Firebase Storage) untuk manajemen basis data dan media.
+
+Metodologi pengembangan perangkat lunak yang digunakan adalah Agile Development berbasis Kanban.
+
+
+
+Sistematika Penulisan Penelitian
+
+Untuk memberikan gambaran yang sistematis dari penelitian ini, penyusunan laporan akan dibagi menjadi lima bab berurutan sebagai berikut:
+
+Bab 1 Pendahuluan: Membahas latar belakang masalah, perumusan masalah, pertanyaan penelitian, tujuan, manfaat, ruang lingkup, serta sistematika penulisan. 
+
+Bab 2 Studi Literatur: Menguraikan landasan teori yang relevan, tinjauan terhadap penelitian-penelitian terdahulu, dan kerangka teori yang mendukung pengembangan sistem. 
+
+Bab 3 Metodologi Penelitian: Menjelaskan metode pengumpulan data serta tahapan penelitian yang mengintegrasikan pendekatan Design Thinking dan Agile Development berbasis kanban.
+
+Bab 4 Hasil dan Pembahasan: Memaparkan proses implementasi sistem berdasarkan alur Kanban, menampilkan hasil antarmuka sistem yang telah dibangun, serta menganalisis hasil pengujian perangkat lunak.
+
+Bab 5 Kesimpulan: Menyajikan kesimpulan dari keseluruhan hasil Karya Akhir, beserta saran untuk pengembangan platform di masa mendatang.
+
+
+
+BAB 2
+
+STUDI LITERATUR
+
+2.1 Sistem Manajemen Acara
+
+Event dimaknai sebagai acara atau kegiatan yang dilakukan oleh sekelompok orang atau organisasi yang memiliki tujuan tertentu. Menurut Shone & Parry, event merupakan fenomena yang timbul dari orang-orang yang memiliki waktu luang, tujuan budaya, pribadi, maupun organisasi terpisah dari aktivitas normal dari kehidupan sehari-hari yang tujuannya adalah untuk mencerahkan, merayakan, menghibur, atau menantang pengalaman sekelompok orang [12].
+
+2.1.1 Definisi dan Konsep Manajemen Acara
+
+Manajemen acara adalah proses sistematis untuk merencanakan, mengorganisasi, dan melaksanakan serta mengevaluasi suatu kegiatan dengan tujuan mencapai hasil yang diharapkan dan menciptakan pengalaman yang berkesan bagi peserta acara. Manajemen acara dapat didefinisikan sebagai pengorganisasian sebuah kegiatan yang dikelola secara profesional, sistematis, efisien, dan efektif. Kegiatannya meliputi konsep (perencanaan), pelaksanaan, hingga pengawasan [13].
+
+2.1.2 Manajemen Acara dalam Konteks Kampus
+
+Manajemen acara memainkan peran penting dalam kehidupan kampus, yang mencakup beragam kegiatan seperti seminar akademik, festival budaya, lokakarya, kompetisi dan pertemuan organisasi. Acara-acara tersebut memberikan kesempatan kepada mahasiswa untuk meningkatkan pengetahuan teknis, kreativitas, kepemimpinan dan kemampuan kerja sama tim mereka. Namun, di banyak institusi, proses penyelenggaraan dan pengelolaan acara-acara tersebut masih sangat bergantung pada metode manual seperti pendaftaran berbasis kertas, pengumuman tulisan tangan, dan komunikasi dari mulut ke mulut yang tidak formal [14].
+
+Kondisi tersebut menunjukkan bahwa sistem acara yang terdigitalisasi kini telah menjadi hal krusial bagi universitas untuk merencanakan acara secara efisien, berkomunikasi dengan baik, dan melacak peserta. Akan tetapi, banyak universitas masih menghadapi tantangan berupa penyebaran informasi yang terfragmentasi. Sebagai upaya penyelesaian masalah, beberapa penelitian terdahulu telah mengusulkan digitalisasi [15]. Sarthak et al. (2025) mengembangkan University Event Management System dengan data visualization untuk membantu mahasiswa menemukan acara sesuai minat dan memberikan insight bagi pengelola [5]. Sementara itu, Sonekar et al. (2025) merancang web-based campus event management system untuk mengatasi inefisiensi pengelolaan event di kampus [6].
+
+2.2 Alur Proses Manajemen Acara
+
+Keberhasilan sebuah kegiatan sangat ditentukan oleh penguasaan terhdap setiap tahapan proses yang krusial. Merujuk pada pandangan Goldblatt (2013) sebagaimana dikutip dalam penelitian Lubis (2025), terdapat lima pilar utama dalam manajemen acara yang harus dijalankan secara sistematis untuk menjamin kualitas pelaksanaan [16].
+
+
+
+Gambar 2.1 Alur Proses Manajemen Acara
+
+Penelitian (Research): Tahap awal ini berfokus pada identifikasi tujuan fundamental acara serta pemahaman mendalam terhadap ekspektasi dan kebutuhan audiens. Melalui analisis lingkungan dan evaluasi faktor eksternal, penyelenggara dapat merumuskan konsep yang tepat sasaran, sesuai dengan tren pasar yang berkembang, serta didukung oleh estimasi anggaran yang akurat. Perencanaan yang matang pada fase riset menjadi fondasi agar acara dapat berjalan lancar dan memenuhi target pasar yang telah ditetapkan [16].
+
+Desain (Design): Tahap ini melibatkan perancangan konsep kreatif secara mendetail, mencakup pemilihan tema, format kegiatan, hingga pengalaman (experience) yang ingin diberikan kepada peserta. Perancangan desain yang inovatif sangat esensial untuk menciptakan impresi yang berkesan serta memberikan kepuasan melalui atmosfer acara yang nyaman dan menarik bagi pengunjung [16].
+
+Perencanaan (Planning): Fase ini merupakan penyusunan rencana kerja komprehensif yang mengintegrasikan seluruh elemen teknis, mulai dari pengelolaan anggaran, jadwal pelaksanaan, logistik, hingga alokasi sumber daya manusia. Perencanaan yang terstruktur dan matang menjadi penentu utama agar setiap langkah operasional tetap berada dalam koridor target dan rencana kerja yang telah disepakati [16].
+
+Koordinasi (Coordination): Tahapan ini menekankan pada sinkronisasi seluruh bagian acara agar bekerja secara harmonis. Hal ini mencakup manajemen aspek internal maupun eksternal, termasuk pengawasan terhadap penyedia layanan (vendor), staf, dan kelengkapan peralatan. Koordinasi yang terbuka dan terarah sangat diperlukan, terutama pada kegiatan berskala besar yang melibatkan berbagai pihak dari sektor swasta maupun instansi terkait, demi menjamin kelancaran hari-H sesuai rencana [16].
+
+Evaluasi (Evaluation): Dilakukan pasca-pelaksanaan kegiatan untuk mengukur tingkat keberhasilan berdasarkan sasaran awal yang telah ditetapkan. Proses evaluasi mencakup penilaian terhadap kepuasan peserta, efektivitas manajemen, hingga perhitungan nilai pengembalian investasi (return of investment). Hasil dari tahapan ini sangat berharga sebagai rujukan untuk mengidentifikasi area yang memerlukan perbaikan pada penyelenggaraan acara di masa depan [16].
+
+
+
+2.3 Metode Pengumpulan Data
+
+Untuk memperoleh data dan informasi yang valid, relevan, serta akurat dalam mendukung perancangan sistem, penelitian ini menggunakan dua metode pengumpulan data utama yaitu:
+
+Observasi: Peneliti melakukan pengamatan langsung terhadap proses penyebaran informasi kegiatan mahasiswa dan sistem pendaftaran acara yang saat ini berjalan di Universitas Paramadina. Mengingat kegiatan operasional universitas yang tersebar di tiga Lokasi kampus berbeda, observasi ini bertujuan untuk memetakan alur komunikasi kegiatan secara objektif dan mengidentifikasi inefisiensi pada metode manual yang digunakan (seperti penggunaan poster fisik atau penyebaran tautan pendaftaran yang sporadis).
+
+Wawancara: Peneliti melakukan sesi wawancara secara acak (random sampling) pada periode Oktober 2024 kepada sejumlah perwakilan mahasiswa aktif dan penyelenggara acara (Organisasi Mahasiswa). Teknik wawancara semi-terstruktur dipilih karena metode ini memberikan keseimbangan antara pedoman pertanyaan yang terarah dengan fleksibilitas untuk mengeksplorasi jawaban partisipan secara lebih mendalam (probing). Berbeda dengan wawancara terstruktur yang kaku, metode ini digunakan peneliti untuk mengajukan pertanyaan lanjutan (follow-up) secara adaptif guna menggali akar permasalahan/pengalaman (pain points), perilaku dan harapan pengguna yang secara mendalam terkait sistem pusat informasi kegiatan yang ideal. Hasil dari wawancara ini menjadi data utama (data primer) untuk merumuskan kebutuhan pengguna pada tahap Empathize dalam metode Design Thinking.
+
+2.4 Design Thinking
+
+Design Thinking adalah sebuah metodologi yang menawarkan pendekatan berbasis solusi untuk memecahkan masalah. Pendekatan ini sangat berguna ketika digunakan untuk menangani masalah-masalah kompleks yang belum jelas definisinya atau belum diketahui karena pendekatan ini membantu memahami kebutuhan manusia yang terlibat, memformulasikan ulang masalah dengan cara yang berpusat pada manusia, menghasilkan berbagai ide dalam sesi brainstorming, serta menerapkan pendekatan praktis dalam pembuatan prototipe dan pengujian [17].
+
+Metodologi Design Thinking  menjadi pedoman pada tahap-tahap awal konseptual dan desain sistem ini, yang terdiri dari lima tahap iteratif (berulang), yaitu: Empathize (Empati), Define (Definisi Masalah), Ideate (Ideasi), Prototype (Pembuatan Prototipe), dan Test (Pengujian) [17].
+
+
+
+Gambar 2.2 Tahapan Design Thinking [17].
+
+Tabel 2.2 Tahapan, Pengertian dan Output Design Thinking
+
+Tahapan
+
+Pengertian
+
+Dokumentasi/Output yang Dihasilkan
+
+Empathize
+
+Proses mengumpulkan empati dan pemahaman mendalam tentang masalah pengguna di lapangan tanpa asumsi pribadi. 
+
+Transkrip wawancara pengguna, lembar hasil observasi lapangan.
+
+Define
+
+Menganalisis data dari tahap empati untuk merumuskan masalah utama (core problem) yang dialami pengguna. 
+
+Dokumen Problem Statement, User Persona (Profil Pengguna). 
+
+Ideate
+
+Sesi brainstorming untuk merumuskan ide-ide solusi teknis dan fitur aplikasi yang dapat memecahkan masalah pengguna. 
+
+Daftar fitur aplikasi, User Flow (Alur Pengguna), Peta Situs (Sitemap) 
+
+Prototype
+
+Menerjemahkan ide ke dalam bentuk purwarupa (visual) atau kerangka sistem yang nyata untuk disimulasikan. 
+
+Wireframe (Desain kasar), Mockup High-Fidelity (Desain UI jadi di Figma), Dokumen Kebutuhan Sistem. 
+
+Test
+
+Menguji coba purwarupa kepada pengguna asli untuk mendapatkan umpan balik sebelum sistem dikembangkan secara utuh. 
+
+Kuesioner Usability Testing, Catatan revisi desain antarmuka. 
+
+
+
+2.5 Agile
+
+Agile software engineering menggabungkan sebuah filosofi dan seperangkat pedoman pengembangan yang mendorong kepuasan pelanggan, pengiriman perangkat lunak secara awal dan inkremental, serta kesederhanaan pengembangan secara keseluruhan. Berdasarkan Manifesto for Agile Software Development, pendekatan ini lebih mengutamakan kemampuan merespons perubahan daripada sekadar mengikuti rencana awal yang kaku [18].
+
+Dalam lingkungan yang cepat berubah, sering kali sulit untuk memprediksi kebutuhan sistem apa saja yang akan bertahan hingga akhir proyek. Oleh karena itu, strategi Agile dirancang untuk mengelola ketidakpastian tersebut melalui adaptasi yang dilakukan secara inkremental. Untuk merealisasikan adaptasi tersebut, penelitian ini secara spesifik menerapkan kerangka kerja Kanban di dalam metode Agile [18].
+
+
+
+Gambar 2.3 Tahapan Agile Kanban [18].
+
+Berdasarkan Gambar 2.3, alur kerja dalam kerangka Kanban direpresentasikan melalui sebuah papan visual yang dibagi menjadi beberapa kolom utama untuk melacak status pekerjaan perangkat lunak [18]. Papan ini umumnya terdiri dari:
+
+Tabel 2.3 Tahapan Kerja dan Proses Debugging pada Papan Kanban
+
+Kolom
+
+Aktivitas Utama
+
+Aktivitas Debugging
+
+Backlog
+
+Pengumpulan ide fitur
+
+Requirements debugging
+
+Selected
+
+Tugas yang diprioritaskan
+
+Validasi kelayakan teknis
+
+Analysis
+
+Analisis kebutuhan teknis dan desain
+
+Design Review dan validasi komponen
+
+Development
+
+Penulisan kode
+
+Code Debugging dan Unit Testing
+
+Testing
+
+Pengujian fitur
+
+Integrasi, menguji dan melakukan perbaikan bug
+
+Done
+
+Selesai
+
+Monitor keadaan sistem
+
+Expedite Lane
+
+Mitigasi insiden fatal / hotfix
+
+Melakukan debug darurat, dan perbaikan kritis
+
+
+
+Prinsip utama dari papan ini adalah membatasi jumlah pekerjaan yang sedang berjalan (Work-in-Progress Limit) pada kolom Analysis dan Development. Pembatasan ini mencegah penumpukan tugas hingga proses penyelesaian fitur aplikasi menjadi lebih cepat dan efisien [18].
+
+Pada penelitian ini, hasil Ideate dari Design Thinking langsung diterjemahkan menjadi Product Backlog. Selanjutnya, daftar tugas tersebut dikelola melalui papan Kanban dengan pendekatan continuous flow hingga menghasilkan purwarupa kode yang fungsional.
+
+2.6 Penggunaan Tools dan Definisi Kebutuhan
+
+Dalam mengeksekusi integrasi Design Thinking dan Agile Kanban, penelitian ini memanfaatkan perangkat lunak (tools) kolaboratif dan modern untuk menunjang efisiensi:
+
+Figma: Digunakan pada tahap perancangan visual antarmuka (UI/UX) karena kemampuannya dalam membuat desain secara terukur dan kemudahan ekspor aset front-end.
+
+Github Projects: Digunakan sebagai papan kanban virtual untuk melacak status pengerjaan Product Backlog (kode program) secara real-time.
+
+Next.js & Firebase: Kerangka kerja Next.js digunakan untuk membangun antarmuka web yang cepat dan responsif, sementara ekosistem Firebase (seperti Cloud Firestore dan Firebase Authentication) digunakan sebagai Backend-as-a-Service (BaaS) karena keandalannya dalam mengelola sinkronisasi data secara real-time dan mempercepat siklus pengembangan fitur.
+
+2.7 Pengujian Sistem
+
+User Acceptance Testing (UAT) adalah suatu proses pengujian yang dilakukan oleh pengguna akhir (end-user) untuk memvalidasi apakah sistem yang dibangun telah memenuhi kebutuhan bisnis dan dapat diterima pengguna. Untuk mengukur tingkat penerimaan dan usability secara kuantitatif, evaluasi UAT umumnya dihitung menggunakan instrumen kuesioner berskala Likert. Skala Likert mengukur persepsi pengguna melalui tingkatan persetujuan (misalnya: Sangat Setuju, Setuju, Netral, Tidak Setuju, Sangat Tidak Setuju) yang nantinya dikonversi menjadi persentase kelayakan sistem [19].
+
+2.8 Penelitian Terdahulu
+
+Tabel 2.4 Tabel Tinjauan Penelitian Terdahulu
+
+Referensi & Link Publikasi
+
+Judul Penelitian
+
+Kesimpulan Penelitian
+
+Yang Bisa Ditindak lanjuti (Research Gap)
+
+Kaur et al. (2024) [1].
+
+Campus Connect Revolutionizing Departmental Collaboration and Engagement 
+
+Pengelolaan media informasi digital yang terstruktur sangat krusial dalam menyebarkan berita kegiatan kampus dan terbukti langsung meningkatkan keterlibatan (engagement) audiens secara luas. 
+
+Mengembangkan infrastruktur komunikasi satu arah menjadi sistem interaktif yang dilengkapi fitur pendaftaran terpusat dan integrasi API (seperti SSO Simpul) untuk memvalidasi identitas mahasiswa. 
+
+Sarthak et al. (2025) [5].
+
+University Event Management System Using Data Visualization 
+
+Implementasi visualisasi data pada sistem acara membantu mahasiswa menemukan kegiatan sesuai minat dan memberikan wawasan (insight) operasional bagi pihak pengelola. 
+
+Pendekatan pengembangan belum berfokus pada pengalaman pengguna secara spesifik. Tindak lanjutnya adalah menerapkan metode Design Thinking agar antarmuka benar-benar menyelesaikan pain points (masalah) nyata di lapangan. 
+
+Sonekar et al. (2025) [6].
+
+Design and Implementation of a Web-Based Campus Event Management System
+
+Kehadiran sistem manajemen acara kampus berbasis web terbukti mampu menggantikan intervensi manual yang membuang waktu. Sistem digital terpusat ini meningkatkan komunikasi, koordinasi, dan partisipasi mahasiswa melalui fitur pendaftaran daring, pengingat otomatis, dan pelacakan peserta.
+
+Penelitian Sonekar et al. berfokus pada fungsionalitas dasar pendaftaran dan pelacakan peserta secara umum. Tindak lanjut pada sistem Cavent adalah mengintegrasikan presensi absensi berbasis pemindaian QR Code, menerapkan autentikasi SSO (Single Sign-On) melalui API Simpul kampus untuk keamanan data, serta menambahkan fitur evaluasi acara yang terstandarisasi dengan metrik akreditasi universitas.
+
+Chaturvedi et al. (2024)
+
+CU-EVENTS: A Comprehensive Event Management System for University 
+
+Digitalisasi manajemen acara sangat penting bagi universitas untuk merencanakan kegiatan, berkomunikasi secara efektif, dan melacak rekam jejak peserta. 
+
+Penelitian sebelumnya belum menyentuh aspek tata kelola mutu institusi. Tindak lanjutnya adalah menambahkan fitur pelaporan evaluasi otomatis yang parameternya terstandarisasi dengan kebutuhan akreditasi kampus. 
+
+Lelitasari et al. (2023) 
+
+Penerapan Metode Design Thinking dan Agile Development Pembangunan Aplikasi Marketplace "Hijab" 
+
+Penggabungan Design Thinking dan Agile Development memungkinkan adaptasi yang cepat terhadap perubahan spesifikasi, menghasilkan UI/UX yang tepat sasaran dengan waktu rilis yang efisien. 
+
+Penelitian sebelumnya berfokus pada pengerjaan dalam skala tim. Karena sistem Cavent dikembangkan oleh pengembang tunggal (solo developer), tindak lanjutnya adalah mengadopsi secara spesifik kerangka Agile Kanban. Kanban ideal untuk pengembang tunggal karena mengeliminasi birokrasi Scrum dan berfokus pada pembatasan beban kerja (Work-in-Progress limit) agar eksekusi fitur lebih terukur. 
+
+
+
+
+
+BAB 3
+
+METODOLOGI PENELITIAN
+
+Bab ini menguraikan secara rinci metodologi dan tahapan perancangan teknis yang digunakan dalam pengembangan Sistem Pusat Informasi Kegiatan Universitas berbasis web. Pembahasan pada bab ini difokuskan pada penerapan pendekatan hibrida Design Thinking dan Agile sebagai metode pengembangan, analisis spesifikasi kebutuhan sistem secara fungsional maupun non-fungsional, serta perancangan arsitektur perangkat lunak. Perancangan logika dan interaksi sistem tersebut divisualisasikan secara terstruktur menggunakan pemodelan Unified Modelling Language (UML) dan diagram alir (flowchart).
+
+3.1 Metodologi Pengembangan Perangkat Lunak
+
+Metode yang digunakan dalam pengembangan perangkat lunak adalah pendekatan hibrida yang menggabungkan Design Thinking untuk perancangan antarmuka (UI/UX) dan Agile Kanban untuk proses eksekusi kode. Pemilihan metode ini didasarkan pada alur kerjanya yang adaptif dan berpusat pada penyelesaian masalah pengguna nyata. Tahapan pengembangan dalam penelitian ini terbagi ke dalam lima fase hierarkis sebagai berikut:
+
+
+
+Gambar 3.1 Kerangka Penelitian Pendekatan Hibrida
+
+3.1.1 Tahap Empati (Empathize)
+
+Tahap ini difokuskan pada pengumpulan data lapangan untuk memahami kendala nyata pengguna. Aktivitas utama meliputi observasi langsung di tiga lokasi kampus Universitas Paramadina dan wawancara semi-terstruktur. Tujuannya adalah memvalidasi masalah penyebaran informasi acara yang terfragmentasi di grup komunikasi (WhatsApp) serta inefisiensi panitia dalam merekap peserta. Tabel 3.1 menjabarkan instrumen wawancara yang digunakan untuk menggali masalah dari dua sudut pandang pengguna.
+
+Tabel 3.1 Instrumen Wawancara Pengguna
+
+Target
+
+Dimensi Pertanyaan
+
+Pertanyaan
+
+Mahasiwa
+
+Perilaku dan Motivasi Keterlibatan
+
+Seberapa sering Anda menghadiri acara kampus seperti seminar, workshop, atau kegiatan OKUP? Kenapa alasannya?
+
+Apa jenis acara yang paling sering anda hadiri dan mengapa? Apakah ada acara tertentu yang anda anggap paling bermanfaat?
+
+Infrastruktur dan Efektivitas Komunikasi
+
+Di platform mana biasanya Anda mendapatkan informasi mengenai acara atau seminar yang ada di kampus?
+
+Seberapa mudah atau sulitkah Anda menemukan informasi detail tentang acara yang ingin anda ikuti melalui platform tersebut?
+
+Logistik, Jadwal dan Registrasi
+
+Seberapa sering Anda mendaftar acara melalui tautan digital dibandingkan dengan cara tradisional (seperti mendaftar langsung di tempat atau mendata nama di grup kelas)? 
+
+Apakah ada acara yang ingin Anda ikuti tetapi terpaksa tidak dapat menghadirinya? Mengingat kegiatan perkuliahan sering terbagi di lokasi yang berbeda seperti Cipayung, Cikarang, atau Kuningan, apakah faktor lokasi dan jadwal kelas menjadi hambatan utama? 
+
+Hambatan Utama
+
+Apakah Anda pernah memiliki pengalaman buruk atau rasa frustrasi saat mencoba mencari info, mendaftar, atau menghadiri acara kampus? Ceritakan lebih lanjut tentang pengalaman tersebut. 
+
+Evaluasi Pasca Acara
+
+Biasanya setelah selesai mengikuti sebuah acara, apakah Anda diberikan wadah untuk memberikan umpan balik (feedback) kepada panitia? Jika iya, melalui media apa? 
+
+Validasi Solusi dan Harapan
+
+Jika ada satu platform web terpusat yang menyediakan seluruh berita dan pendaftaran acara kampus, seberapa besar minat Anda untuk menggunakannya?
+
+Jika platform tersebut dapat merekam riwayat kehadiran dan memberikan notifikasi acara yang sesuai dengan minat Anda, fitur apa lagi yang menurut Anda paling krusial untuk ditambahkan?
+
+Penyelenggara Acara
+
+Profil dan Frekuensi Kegiatan
+
+Seberapa sering Anda menyelenggarakan acara di kampus dalam satu semester?
+
+Efektivitas Komunikasi dan Promosi (Infrastruktur)
+
+Bagaimana cara Anda menyebarluaskan informasi acara anda selama ini? Saluran mana (misal: grup WhatsApp, Instagram, poster fisik) yang paling efektif menurut anda?
+
+Mengingat kampus kita terbagi di tiga lokasi (Cipayung, Cikarang, Kuningan) dengan kuliah hybrid, seberapa sulitkah menjangkau seluruh target mahasiswa agar mereka aware dengan acara Anda?
+
+Manajemen Pendaftaran dan Absensi
+
+Apa tantangan terbesar secara teknis saat mengelola pendaftaran (misal: merekap Google Form) dan saat melakukan absensi/registrasi ulang pada hari H acara?
+
+Apakah Anda pernah mengalami penumpukan antrean atau kebingungan saat mendata kehadiran peserta?
+
+Partisipasi dan Keterlibatan Mahasiswa
+
+Seberapa sering Anda mendapati jumlah peserta yang hadir pada hari H tidak sesuai (kurang) dari jumlah yang mendaftar? Menurut anda, apa penyebab utamanya?
+
+Strategi apa yang biasanya Anda gunakan untuk “memaksa” atau mengingatkan mahasiswa agar tetap datang setelah mereka mendaftar?
+
+Evaluasi dan Umpan balik
+
+Bagaimana cara Anda mendapatkan umpan balik (feedback) atau ulasan dan peserta setelah acara selesai? Apakah metode tersebut efektif untuk dijadikan bahan evaluasi proker selanjutnya?
+
+Validasi Solusi & Ekspektasi Fitur
+
+Jika ada satu platform khusus yang bisa mewadahi publikasi acara, mendata pendaftar secara otomatis, dan merekap kehadiran peserta secara instan, seberapa besar platform ini akan membantu acara Anda?
+
+Apa fitur atau alat yang Anda anggap penting untuk mempermudah penyelenggaraan acara?
+
+
+
+3.1.2 Perumusan dan Ideasi (Define & Ideate)
+
+Tahap ini merupakan fase transisi dari identifikasi masalah menuju konseptualisasi solusi. Pada proses Define, disusun User Persona untuk memetakan perilaku mahasiswa dan panitia. Selanjutnya, pada proses Ideate, dilakukan perumusan fitur inti sistem. Gagasan utamanya mencakup: pembuatan dasbor eksplorasi acara, integrasi Single Sign-On (SSO) Google Workspace kampus (@paramadina.ac.id), fitur self-attendance berbasis pemindaian QR Code, serta mekanisme pemberian ulasan pasca-acara.
+
+Tabel 3.2 Rancangan Fitur Utama (Product Backlog)
+
+Kode
+
+Nama Fitur
+
+Deskripsi Singkat
+
+Prioritas
+
+F-01
+
+Google OAuth Login
+
+Autentikasi menggunakan e-mail @paramadina.ac.id.
+
+High
+
+F-02
+
+Event Dashboard
+
+Halaman eksplorasi acara kampus yang tersedia.
+
+High
+
+F-03
+
+Google Calendar Integration
+
+Integrasi sinkronisasi jadwal acara secara otomatis ke dalam Google Calendar pengguna sebagai pengingat.
+
+High
+
+F-04
+
+QR Attendance
+
+Fitur pemindaian kode QR untuk absensi mandiri.
+
+High
+
+F-05
+
+Event Approval
+
+Dasbor khusus admin untuk validasi acara.
+
+Medium
+
+F-06
+
+User Feedback
+
+Sistem penilaian dan ulasan setelah acara selesai.
+
+Medium
+
+
+
+3.1.3 Pembuatan Prototipe & Production (Agile Kanban Process)
+
+Tahap ini adalah fase eksekusi di mana seluruh tugas dalam Product Backlog dikerjakan secara berkelanjutan menggunakan papan Kanban. Tahap ini menggabungkan aktivitas perancangan purwarupa (prototyping) dan penulisan kode (production) ke dalam siklus iterasi yang sama.
+
+Prototyping: Perancangan visual antarmuka (wireframe dan High-Fidelity UI) dilakukan secara bertahap menggunakan Figma sebagai panduan sebelum diimplementasikan ke dalam kode.
+
+Production: Penulisan kode program menggunakan kerangka kerja Next.js dan ekosistem Firebase Cloud Firestore. Tugas bergerak melalui alur kerja: To Do (Akan Dikerjakan), In Progress (Sedang Dikerjakan), dan Done (Selesai).
+
+3.1.4 Pengujian (Testing)
+
+Fase ini bertujuan untuk mengevaluasi fungsionalitas komputasi dan penerimaan antarmuka (User Acceptance Testing) sebelum dirilis ke lingkungan kampus. Pengujian dibagi menjadi dua tahap: 
+
+Pengujian Internal (Black Box Testing): Dilakukan oleh pengembang untuk memvalidasi fungsionalitas logika kode, seperti validasi akses login domain kampus, akurasi generate QR Code, dan keberhasilan operasi Create, Read, Update, Delete (CRUD) pada basis data Firebase.
+
+Pengujian Eksternal (User Acceptance Testing / UAT): Melibatkan 7 orang perwakilan (5 mahasiswa aktif dan 2 pengurus HIMTI sebagai panitia). Tester akan menguji responsivitas sistem dengan melakukan skenario pendaftaran dan pemindaian QR Code. Hasil pengujian dikumpulkan melalui kuesioner kualitatif untuk mengukur kepuasan pengguna.
+
+3.2 Analisis Kebutuhan Sistem
+
+Sebelum melakukan perancangan arsitektur visual, diperlukan analisis untuk mendefinisikan batasan fungsionalitas dari sistem Cavent. Analisis kebutuhan system diklasifikasikan ke dalam dua kategori utama:
+
+3.2.1 Kebutuhan Fungsional
+
+Kebutuhan fungsional mendefinisikan proses komputasi dan interaksi apa saja yang harus dapat dieksekusi oleh sistem web. Spesifikasi tersebut meliputi:
+
+Sistem wajib terintegrasi dengan Google OAuth untuk memastikan autentikasi hanya berlaku bagi pendaftar dengan ekstensi email @paramadina.ac.id.
+
+Sistem wajib merespons input Mahasiswa untuk melihat katalog acara, melakukan registrasi, membatalkan pendaftaran, serta mengirimkan penilaian/ulasan pasca-acara.
+
+Sistem wajib memfasilitasi Penyelenggara Acara untuk mengajukan draf acara baru, meng-generate kode QR absensi spesifik, dan membaca grafik rekapitulasi data kehadiran peserta secara real-time.
+
+Sistem wajib mengakomodasi hak akses Admin Kampus untuk memvalidasi (menyetujui/menolak) pengajuan acara dari panitia, mengelola akun organisasi, dan mengakses laporan analitik kegiatan berskala universitas.
+
+Sistem wajib mengeksekusi fungsi pemindaian kamera pintar (QR Scanner) pada antarmuka mahasiswa untuk memperbarui status kehadiran mereka ke dalam basis data.
+
+3.2.2 Kebutuhan Non-Fungsional
+
+Kebutuhan non-fungsional merujuk pada spesifikasi teknis dan properti infrastruktur agar sistem dapat beroperasi secara optimal:
+
+Perangkat Keras (Hardware): Mahasiswa dapat mengakses sistem menggunakan perangkat telepon pintar (smartphone) berbasis Android/iOS yang memiliki fitur kamera berfungsi (untuk pemindaian QR), maupun menggunakan komputer/laptop.
+
+Perangkat Lunak (Software) dan Performa: Sistem berupa aplikasi web responsif yang dapat diakses melalui peramban web modern (Chrome/Safari). Sistem diwajibkan memiliki waktu muat (load time) antarmuka di bawah 3 detik dan menjamin perlindungan privasi data identitas mahasiswa di peladen Firebase.
+
+3.3 Spesifikasi dan Target Pengguna
+
+Untuk memberikan kejelasan mengenai logika pengelolaan data di dalam perangkat lunak, berikut adalah jabaran dari elemen kegiatan (Event), mekanisme kehadiran, serta target pengguna:
+
+Deskripsi Entitas Acara (Event): Objek acara dalam sistem ini bertindak sebagai entitas sentral yang menyimpan metadata kegiatan (judul, deskripsi, kuota, jadwal, lokasi, dan status persetujuan). Entitas ini berelasi langsung dengan entitas dokumen peserta yang mendaftar dan kumpulan ulasan (rating).
+
+Mekanisme Kehadiran Mandiri (Self-Attendance): Konsep ini diimplementasikan menggunakan arsitektur enkripsi string QR Code. Sistem menghilangkan kebutuhan panitia untuk mencentang nama peserta satu per satu. Panitia cukup menampilkan satu kode QR generik, dan aplikasi akan memvalidasi timestamp serta ID pengguna saat mahasiswa memindainya menggunakan kamera perangkat mereka sendiri.
+
+Target Pengguna: Perangkat lunak ini dirancang khusus untuk komunitas akademik Universitas Paramadina yang melek teknologi digital. Pengguna dipilah ke dalam tiga tingkat otorisasi: Mahasiswa umum (sebagai partisipan/konsumen informasi), OKUP/Unit kerja (sebagai produsen acara tingkat universitas/fakultas/program studi), dan Direktorat Kemahasiswaan (DKI) (sebagai validator administratif atau Admin).
+
+3.4 Perancangan Sistem
+
+Tahap perancangan sistem bertujuan untuk memberikan gambaran arsitektur perangkat lunak secara visual sebelum diimplementasikan ke dalam bahasa pemrograman. Perancangan ini memetakan batasan fungsional dan alur logika dari Sistem Pusat Informasi Kegiatan Universitas.
+
+3.4.1 Use Case Diagram
+
+Use Case Diagram digunakan untuk memodelkan fungsionalitas sistem dan interaksi antara aktor dengan sistem Cavent. Dalam perancangan ini, terdapat 3 (tiga) aktor utama yang berinteraksi berdasarkan batasan privilege masing-masing.
+
+
+
+Gambar 3.2 Use Case Diagram.
+
+3.4.2 Skenario Use Case
+
+Untuk menjabarkan aliran aktivitas dari antarmuka pengguna menuju logika sistem, disusun scenario Use Case berdasarkan interkasi-interaksi utama yang dilakukan oleh aktor.
+
+Tabel 3.3 Skenario Use Case: Mendaftar Acara
+
+Komponen
+
+Penjelasan
+
+Nama Use Case
+
+Mendaftar Acara
+
+Aktor Utama
+
+Mahasiswa (Peserta)
+
+Kondisi Awal
+
+Mahasiswa telah berhasil login melalui Google OAuth dan berada di halaman detail acara.
+
+Aksi Normal (Main Flow
+
+Mahasiswa menekan tombol "Daftar Acara".
+
+Sistem memeriksa ketersediaan kuota acara di basis data Firebase.
+
+Sistem menampilkan kotak dialog konfirmasi pendaftaran.
+
+Mahasiswa menekan tombol “Konfirmasi”.
+
+Sistem menyimpan data pendaftaran ke dalam koleksi dokumen dan memperbarui status pendaftaran pengguna.
+
+Sistem menampilkan notifikasi “Pendaftaran Berhasil”.
+
+Aksi Alternatif
+
+Jika kuota acara penuh, sistem akan menonaktifkan tombol pendaftaran dan menampilkan pesan "Kuota Telah Penuh". Jika mahasiswa sudah terdaftar, tombol berubah menjadi "Batalkan Pendaftaran".
+
+Kondisi Akhir
+
+Mahasiswa secara resmi terdaftar sebagai peserta dan mendapatkan akses ke fitur pemindai QR untuk acara tersebut.
+
+
+
+Tabel 3.4 Skenario Use Case: Pemindaian QR Code
+
+Komponen
+
+Penjelasan
+
+Nama Use Case
+
+Merekam Kehadiran (Self-Attendance)
+
+Aktor Utama
+
+Mahasiswa (Peserta)
+
+Kondisi Awal
+
+Mahasiswa sudah login, telah terdaftar pada acara tersebut, dan membuka fitur kamera QR Scanner di perangkatnya pada lokasi acara.
+
+Aksi Normal (Main Flow)1
+
+Mahasiswa mengarahkan kamera ke layar kode QR yang disediakan oleh panitia di lokasi acara.
+
+Sistem membaca string identitas acara dari QR Code tersebut.
+
+Sistem memvalidasi kecocokan ID acara dan mengecek apakah acara sedang berlangsung.
+
+Sistem memperbarui atribut status_kehadiran milik pengguna menjadi Hadie beserta pencatatan waktu (timestamp).
+
+Sistem memunculkan peringatan visual “Absensi Berhasil Direkam”.
+
+Aksi Alternatif
+
+Jika mahasiswa memindai kode QR yang salah, memindai sebelum waktu acara dimulai, atau belum terdaftar sebagai peserta, sistem menolak input dan memunculkan peringatan "QR Code Tidak Valid / Akses Ditolak".
+
+Kondisi Akhir
+
+Data kehadiran pengguna tercatat secara real-time dan langsung terbarui di dasbor rekapan panitia penyelenggara.
+
+
+
+Tabel 3.5 Skenario Use Case: Validasi Pengajuan Acara
+
+Komponen
+
+Penjelasan
+
+Nama Use Case
+
+Validasi dan Publikasi Acara
+
+Aktor Utama
+
+Admin (DKI)
+
+Kondisi Awal
+
+Admin login dan berada di halaman Dashboard Approval. Terdapat pengajuan acara baru dari Penyelenggara yang berstatus Pending.
+
+Aksi Normal (Main Flow)1
+
+Admin menekan tombol detail pada salah satu proposal acara yang diajukan.
+
+Admin meninjau kesesuaian informasi kegiatan (jadwal, Lokasi, deskripsi, dan poster).
+
+Admin menekan tombol “Approve’ (Setujui).
+
+Sistem memperbarui atribut status acara menjadi Published di basis data.
+
+Sistem secara otomatis menampilkan acara tersebut di halaman katalog utama mahasiswa.
+
+Aksi Alternatif
+
+Jika terdapat data yang tidak sesuai (misal: bentrok jadwal atau informasi kurang jelas), Admin menekan tombol "Reject" dan wajib memasukkan alasan penolakan. Sistem akan mengirimkan status Rejected dan alasannya kembali ke dasbor panitia.
+
+Kondisi Akhir
+
+Acara resmi memiliki izin publikasi dan secara otomatis membuka fitur pendaftaran untuk mahasiswa.
+
+
+
+3.4.3 Flowchart Sistem Utama
+
+Flowchart atau diagram alir dirancang untuk merepresentasikan secara logis algoritma dari siklus utama aplikasi Cavent, mulai dari proses inisialisasi hingga aktivitas spesifik berdasarkan hak akses (role) pengguna.
+
+
+
+Gambar 3.3 Flowchart Sistem Utama
+
+3.4.4 Activity Diagram Pemindaian QR Code
+
+Activity diagram memodelkan alur kerja (workflow) dari sistem secara lebih spesifik, memetakan proses komputasi yang terjadi secara paralel antara antarmuka pengguna (Klien) dan basis data (Peladen Firebase) saat fitur Self-Attendance dijalankan.
+
+
+
+Gambar 3.4 Activity Diagram Pemindaian QR Code
+
+3.4.6 Activity Diagram Pendaftaran Acara
+
+Activity diagram ini menggambarkan alur kerja sistem saat seorang mahasiswa memutuskan untuk berpartisipasi dalam sebuah kegiatan. Fokus utama dari diagram ini adalah visualisasi proses validasi data antara antarmuka pengguna dengan peladen database NoSQL. Proses ini mencakup pemeriksaan ketersediaan kuota secara real-time dan pembaruan status pendaftaran pengguna di dalam dokumen koleksi Firebase untuk memastikan tidak terjadi kelebihan kapasitas pendaftar pada sebuah acara.
+
+
+
+Gambar 3.5 Activity Diagram Pendaftaran Acara
+
+3.4.7 Activity Diagram Validasi Acara
+
+Activity diagram ini memodelkan alur kerja Admin Kampus dalam melakukan moderasi terhadap setiap kegiatan yang diajukan oleh penyelenggara. Proses ini krusial untuk memastikan bahwa informasi yang tayang di katalog utama telah memenuhi standar dan regulasi universitas.
+
+
+
+Gambar 3.6 Activity Diagram Validasi Acara
+
+BAB 4
+
+HASIL DAN PEMBAHASAN
+
+
+
+Hasil Implementasi Pendekatan Design Thinking
+
+Pada tahapan ini, hasil temuan dari fase Empathize (observasi dan wawancara) diterjemahkan ke dalam bentuk visualisasi perancangan sistem. Implementasi Design Thinking bertujuan untuk memastikan bahwa setiap fitur yang dibangun pada sistem Cavent berakar dari kebutuhan nyata pengguna, bukan sekadar asumsi pengembang.
+
+
+
+Hasil Empathize dan Define
+
+Berdasarkan hasil pengumpulan data melalui wawancara secara acak (random sampling) kepada berbagai perwakilan mahasiswa aktif dan pengurus organisasi mahasiswa (OKUP/HIMA) di Universitas Paramadina, peneliti menyintesiskan berbagai keluhan dan harapan responden ke dalam bentuk User Persona.
+
+User Persona ini merupakan representasi fiktif yang merangkum pola perilaku, motivasi, dan kendala (pain points) dari mayoritas target pengguna. Pada penelitian ini, dirumuskan 2 (dua) profil persona utama yang mewakili ekosistem acara kampus:
+
+Persona Mahasiswa Aktif
+
+Persona ini mewakili populasi mahasiswa umum Universitas Paramadina yang memiliki jadwal perkuliahan padat dan mobilitas tinggi di berbagai lokasi kampus (Cipayung, Cikarang, dan Kuningan), namun tetap memiliki ketertarikan untuk mengikuti kegiatan non-akademik guna menambah wawasan dan poin keaktifan.
+
+Tujuan (Goals):
+
+Mendapatkan informasi kegiatan kampus terbaru dan sesuai minat secara terpusat tanpa harus terus-menerus mengecek berbagai akun media sosial yang berbeda.
+
+Dapat mendaftar acara dengan cepat dan praktis melalui satu klik menggunakan identitas kampus.
+
+Mendapatkan pengingat (notifikasi) jadwal acara secara otomatis agar tidak terlewat.
+
+Kendala Utama (Frustrations / Pain Points):
+
+Informasi acara sering kali mendadak dan tenggelam (spam) di dalam grup obrolan WhatsApp.
+
+Merasa direpotkan karena harus mengisi formulir pendaftaran manual (seperti Google Form) berulang kali untuk acara yang berbeda.
+
+Memiliki keterbatasan waktu dan jarak, sehingga sering kesulitan menghadiri acara jika informasinya tidak jelas.
+
+Proses registrasi kehadiran (absensi) di hari-H yang lama dan mengharuskan antre.
+
+
+
+Persona Panitia Penyelenggara (Pengurus Okup)
+
+Persona ini mewakili para pengurus organisasi mahasiswa atau panitia pelaksana yang bertanggung jawab penuh terhadap perencanaan, publikasi, hingga evaluasi kegiatan acara di lingkungan kampus.
+
+Tujuan (Goals):
+
+Menjangkau target audiens yang lebih luas dan merata di seluruh wilayah kampus Universitas Paramadina.
+
+Memiliki sistem rekapitulasi data pendaftar dan data kehadiran peserta yang berjalan secara otomatis (real-time).
+
+Mendapatkan ulasan atau umpan balik (feedback) pasca-acara yang terstruktur sebagai bahan Laporan Pertanggungjawaban (LPJ) dan evaluasi program kerja selanjutnya.
+
+Kendala Utama (Frustrations / Pain Points):
+
+Penyebaran informasi melalui poster fisik atau broadcast pesan terbukti kurang efektif karena sistem perkuliahan hybrid dan lokasi kampus yang terpisah.
+
+Tingkat partisipasi semu (banyak mahasiswa yang mendaftar melalui tautan, tetapi tidak hadir pada hari pelaksanaan acara / no-show).
+
+Kesulitan teknis saat harus mencocokkan data pendaftar awal dengan absensi kehadiran fisik secara manual di lokasi acara.
+
+Sulitnya mengumpulkan kritik dan saran dari peserta setelah acara selesai karena tidak ada wadah evaluasi terpusat.
+
+Dengan memetakan kedua User Persona di atas pada tahap Define, pengembangan sistem Cavent difokuskan untuk menyelesaikan hambatan teknis tersebut melalui fitur katalog terpusat, sinkronisasi kalender, absensi kode QR, dan sistem rating otomatis.
+
+Hasil Ideate
+
+Setelah merumuskan User Persona dan menetapkan Product Backlog utama, tahap selanjutnya dalam pendekatan Design Thinking adalah Ideate. Pada tahap ini, gagasan fitur diterjemahkan ke dalam bentuk Arsitektur Informasi (Information Architecture). Arsitektur informasi ini memetakan hierarki navigasi dan struktur halaman web Cavent agar perjalanan pengguna (user journey) menjadi logis, intuitif, dan tidak membingungkan.
+
+Mengingat sistem ini mengakomodasi tiga tingkat hak akses otorisasi yang berbeda, arsitektur informasi Cavent dibagi menjadi tiga ruang lingkup navigasi utama:
+
+1. Arsitektur Navigasi Mahasiswa (Peserta) Berfokus pada kemudahan pencarian informasi dan kepraktisan registrasi acara.
+
+Halaman Utama (Katalog Acara): Menampilkan daftar acara yang berstatus Published.
+
+Halaman Detail Acara: Menampilkan deskripsi lengkap, kuota pendaftar, dan tombol aksi "Daftar" atau "Batalkan Pendaftaran".
+
+Halaman Riwayat Pendaftaran: Memuat daftar acara yang telah didaftar oleh mahasiswa, terintegrasi dengan tombol "Tambahkan ke Google Calendar".
+
+Halaman Scan QR: Mengaktifkan fungsi kamera perangkat untuk pemindaian kode kehadiran (Self-Attendance).
+
+Halaman Evaluasi: Formulir ulasan dan pemberian rating pasca-acara.
+
+2. Arsitektur Navigasi Penyelenggara (OKUP/HIMA) Berfokus pada alat manajemen kegiatan dan pemantauan data statistik peserta secara real-time.
+
+Dasbor Utama (Overview): Menampilkan metrik ringkasan jumlah acara aktif, total pendaftar, dan persentase kehadiran.
+
+Manajemen Acara: Formulir untuk mengajukan draf acara baru, mengedit informasi kegiatan, dan meninjau status persetujuan dari Admin.
+
+Dasbor Pemantauan (Monitoring): Menampilkan daftar nama peserta secara instan yang berhasil melakukan check-in via QR Code.
+
+Laporan & Feedback: Halaman rekapitulasi data kehadiran akhir dan daftar ulasan dari mahasiswa.
+
+3. Arsitektur Navigasi Admin (Direktorat Kemahasiswaan/DKI) Berfokus pada tata kelola aplikasi, moderasi kegiatan, dan keamanan akses akun organisasi.
+
+Dasbor Approval: Daftar antrean draf acara dari penyelenggara untuk divalidasi (tombol Approve atau Reject beserta kolom alasan).
+
+Manajemen Pengguna: Halaman untuk melihat, menambah, atau mencabut otorisasi akun pengguna (khususnya role Penyelenggara).
+
+Laporan Global: Visualisasi data keseluruhan aktivitas kampus di Universitas Paramadina.
+
+Pemetaan hierarki ini menjadi landasan ukur yang krusial sebelum peneliti masuk ke tahap perancangan purwarupa visual (wireframe dan high-fidelity) pada aplikasi desain antarmuka.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+DAFTAR PUSTAKA
+
+[1]	H. Kaur, B. Kumar, J. Mahna, D. Purve, N. Gond, and S. Ali, “Campus Connect Revolutionizing Departmental Collaboration and Engagement,” E3S Web Conf., vol. 556, 2024, doi: 10.1051/e3sconf/202455601003.
+
+[2]	C. A. Herdian, L. Kartika, T. Nur, A. Nissa, and S. Mulfawati, “Analisis Kebutuhan dan Desain Model Sistem Informasi Manajemen Perpustakaan SMAN 2 Subang,” vol. 12, no. 02, pp. 26–36, 2025.
+
+[3]	M. Balzano, I. Mustafa, M. K. Retu, and J. K. G. D. Gobang, “Pengelolaan Berita pada Facebook Universitas Nusa Nipa sebagai Media Informasi Universitas,” Arus J. Sos. dan Hum., vol. 4, no. 3, pp. 2167–2174, Dec. 2024, doi: 10.57250/ajsh.v4i3.870.
+
+[4]	R. Hartono and K. Wardany, “Sistem Informasi Poin Kegiatan Mahasiswa Berbasis Website pada Universitas Nahdlatul Ulama Lampung,” vol. 3, no. November, 2025.
+
+[5]	G. Sarthak et al., “University Event Management System Using Data Visualization,” vol. 14, no. 2, pp. 232–241, 2025, doi: 10.17148/IJARCCE.2025.14229.
+
+[6]	Sonekar, R. S.V., Kokate, and R. I. & Uikey, “Design and Implementation of a Web-Based Campus Event Management System,” Int. J. Nov. Res. Dev., vol. 10, May 2025.
+
+[7]	A. Thankachan, M. B. S. T.P., S. S. Nair, S. Kumar, S. S., and S. Ansar, “Design and Implementation of a Comprehensive College Event Management System,” Int. J. Comput. Appl., vol. 187, no. 16, pp. 1–5, 2025, doi: 10.5120/ijca2025925175.
+
+[8]	P. Okanda, A. Chhatbar, and O. Njeru, “DbAPI: A Backend-as-a-Service Platform for Rapid Deployment of Cloud Services,” 2024 IST-Africa Conf. IST-Africa 2024, pp. 1–12, 2024, doi: 10.23919/IST-Africa63983.2024.10569490.
+
+[9]	R. B. Fahrezi, U. Catur, and I. Cendekia, “REDESIGN UI / UX WEBSITE OF PROFESSIONAL CERTIFICATION INSTITUTE USING DESIGN THINKING,” vol. 4, no. 12, pp. 11841–11855, 2024.
+
+[10]	A. Lelitasari, R. Ilyasa, R. G. Satria, N. Effendi, and M. Qaddasa, “Penerapan Metode Design Thinking dan Agile Development Pembangunan Aplikasi Marketplace ‘ Hijab ,’” vol. 4, no. 4, pp. 1082–1092, 2023, doi: 10.47065/josh.v4i4.3695.
+
+[11]	Jumawir and Irwan, “Implementasi Metode Design Thinking dan Agile Development Pada Sistem Informasi Penjualan Berbasis Website,” vol. 7, no. 1, pp. 78–82, 2025.
+
+[12]	A. Shone and B. Parry, Successful Event Management, 5th ed. United Kingdom: Annabel Ainscow, 2019.
+
+[13]	R. Hermayanto, Manajemen Acara: Pengetahuan, Industri, dan Karier [Jilid 1]. Surabaya: Cipta Media Nusantara (CMN), 2026.
+
+[14]	G. Somanath Ashok, M. Jagdhane Sakshi Kishor, M. Aher Harshali Devidas, M. Rushikesh navnath, and C. Yashkumar Jitendra, “College Event Management System,” 2025.
+
+[15]	A. Chaturvedi, K. Sharma, A. Dua, and A. Gupta, “CU-EVENTS : A Comprehensive Event Management System for University,” no. November, 2024.
+
+[16]	A. Haries, “BAB II KERANGKA TEORI / KERANGKA KONSEP Penelitian Terdahulu Berbagai penelitian terdahulu menunjukkan bahwa sebagian besar studi tentang manajemen event menggunakan teori manajemen acara dari Joe Goldblatt acara , meskipun sering ditemukan hambatan tekni,” pp. 13–30, 2024.
+
+[17]	Rikke Friis Dam, “The 5 Stages in the Design Thinking Process.” [Online]. Available: https://ixdf.org/literature/article/5-stages-in-the-design-thinking-process
+
+[18]	R. S. Pressman and B. R. Maxim, Software Engineering: A Practitioner’s Approach, 9th ed. New York: McGraw-Hill Education, 2020.
+
+[19]	Aliyah Aliyah, Nahrun Hartono, and Asrul Azhari Muin, “Penggunaan User Acceptance Testing (UAT) Pada Pengujian Sistem Informasi Pengelolaan Keuangan Dan Inventaris Barang,” Switch  J. Sains dan Teknol. Inf., vol. 3, no. 1, pp. 84–100, 2024, doi: 10.62951/switch.v3i1.330.
+
+
+

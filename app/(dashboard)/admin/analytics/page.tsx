@@ -117,9 +117,9 @@ export default function AdminAnalyticsPage() {
 
   return (
     <div className="max-w-7xl mx-auto pb-10">
-      <div className="mb-8">
-        <h1 className="text-4xl font-black text-dark tracking-tight mb-2">Dasbor Analitik</h1>
-        <p className="text-neutral text-sm">Pantau statistik keseluruhan platform CAVENT.</p>
+      <div className="mb-10">
+        <h1 className="text-4xl font-black text-dark tracking-tight">Dasbor Analitik</h1>
+        <p className="text-neutral text-sm mt-1 font-medium">Pantau statistik keseluruhan platform CAVENT.</p>
       </div>
 
       {/* KPI Cards */}

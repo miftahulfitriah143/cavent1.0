@@ -93,8 +93,8 @@ export default function UsersManagementPage() {
   return (
     <div className="max-w-7xl mx-auto pb-10">
       <div className="mb-10">
-        <h1 className="text-4xl font-black text-dark tracking-tight mb-2">Manajemen Akun</h1>
-        <p className="text-neutral text-sm">Kelola pengguna, tetapkan role Penyelenggara, dan aktifkan/nonaktifkan akun.</p>
+        <h1 className="text-4xl font-black text-dark tracking-tight">Manajemen Akun</h1>
+        <p className="text-neutral text-sm mt-1 font-medium">Kelola pengguna, tetapkan role Penyelenggara, dan aktifkan/nonaktifkan akun.</p>
       </div>
 
       <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm mb-8 flex flex-col md:flex-row gap-4 justify-between items-center">

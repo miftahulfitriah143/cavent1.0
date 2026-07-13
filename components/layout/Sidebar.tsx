@@ -18,7 +18,8 @@ import {
   X,
   Bell,
   LayoutGrid,
-  Plus
+  Plus,
+  Globe
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -97,6 +98,7 @@ export function Sidebar() {
     {
       label: "LAINNYA",
       items: [
+        { name: "Beranda Acara", href: "/", icon: <Globe className="h-4 w-4" /> },
         { name: "Notifikasi", href: "/admin/notifications", icon: <Bell className="h-4 w-4" />, badge: unreadNotifCount },
         { name: "Pengaturan", href: "/admin/settings", icon: <Settings className="h-4 w-4" /> },
       ]
@@ -122,6 +124,7 @@ export function Sidebar() {
     {
       label: "LAINNYA",
       items: [
+        { name: "Beranda Acara", href: "/", icon: <Globe className="h-4 w-4" /> },
         { name: "Notifikasi", href: "/organizer/notifications", icon: <Bell className="h-4 w-4" />, badge: unreadNotifCount },
         { name: "Pengaturan", href: "/organizer/settings", icon: <Settings className="h-4 w-4" /> },
       ]

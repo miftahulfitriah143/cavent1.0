@@ -94,10 +94,10 @@ export default function AdminNotificationsPage() {
 
   return (
     <div className="max-w-7xl mx-auto pb-10">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-10">
         <div>
-          <h1 className="text-3xl font-black text-dark tracking-tight">Notifikasi</h1>
-          <p className="text-neutral text-sm mt-1">Pemberitahuan sistem dan aktivitas penyelenggara.</p>
+          <h1 className="text-4xl font-black text-dark tracking-tight">Notifikasi</h1>
+          <p className="text-neutral text-sm mt-1 font-medium">Pemberitahuan sistem dan aktivitas penyelenggara.</p>
         </div>
         {notifications.some(n => n.status === "unread") && (
           <button 
