@@ -16,6 +16,18 @@ import {
   Building2,
   Download
 } from "lucide-react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell
+} from "recharts";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -126,6 +138,18 @@ export default function EventReportPage({ params }: { params: Promise<{ id: stri
   const attendanceRate = totalRegistered > 0 ? Math.round((attendedCount / totalRegistered) * 100) : 0;
   const capacityRate = event.maxCapacity > 0 ? Math.round((totalRegistered / event.maxCapacity) * 100) : 0;
 
+  const funnelData = [
+    { name: 'Kapasitas', jumlah: Number(event.maxCapacity) || 0, fill: '#e5e7eb' },
+    { name: 'Pendaftar', jumlah: totalRegistered, fill: '#3b82f6' },
+    { name: 'Hadir', jumlah: attendedCount, fill: '#10b981' }
+  ];
+
+  const pieColors = ['#f59e0b', '#fbbf24', '#fcd34d', '#fde68a', '#fef3c7'];
+  const pieData = ratingBreakdown.map((count, idx) => ({
+    name: `${5 - idx} Bintang`,
+    value: count,
+  })).filter(data => data.value > 0);
+
   return (
     <div className="max-w-5xl mx-auto pb-20 print:p-0 print:max-w-full">
       {/* ── HEADER / NAVIGATION ── */}
@@ -225,45 +249,53 @@ export default function EventReportPage({ params }: { params: Promise<{ id: stri
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-4">
-            {/* Kehadiran Bar */}
-            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm print:border-gray-300 print:shadow-none">
-              <div className="flex justify-between items-end mb-4">
-                <div>
-                  <p className="text-sm font-bold text-dark print:text-black">Tingkat Kehadiran</p>
-                  <p className="text-xs text-neutral mt-1">Persentase peserta hadir dari total pendaftar</p>
+          <div className="bg-white p-6 md:p-8 rounded-2xl border border-gray-100 shadow-sm print:border-gray-300 print:shadow-none mb-4">
+            <div className="flex flex-col md:flex-row justify-between md:items-end mb-8 gap-4">
+              <div>
+                <p className="text-sm font-bold text-dark print:text-black">Tingkat Kehadiran & Keterisian Kuota</p>
+                <p className="text-xs text-neutral mt-1">Visualisasi perbandingan kapasitas acara, jumlah pendaftar, dan peserta yang hadir.</p>
+              </div>
+              <div className="flex gap-4">
+                <div className="text-right">
+                  <p className="text-2xl font-black text-blue-600 print:text-black">{capacityRate}%</p>
+                  <p className="text-[10px] font-bold text-neutral uppercase tracking-wider">Keterisian</p>
                 </div>
-                <p className="text-2xl font-black text-emerald-600 print:text-black">{attendanceRate}%</p>
+                <div className="text-right">
+                  <p className="text-2xl font-black text-emerald-600 print:text-black">{attendanceRate}%</p>
+                  <p className="text-[10px] font-bold text-neutral uppercase tracking-wider">Kehadiran</p>
+                </div>
               </div>
-              <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
-                <div
-                  className="bg-emerald-500 h-full rounded-full transition-all duration-1000 print:bg-emerald-600"
-                  style={{ width: `${attendanceRate}%` }}
-                />
-              </div>
-              <p className="text-[10px] font-bold text-neutral text-center mt-3 uppercase tracking-wider">
-                {attendedCount} Hadir / {totalRegistered} Pendaftar
-              </p>
             </div>
-
-            {/* Keterisian Bar */}
-            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm print:border-gray-300 print:shadow-none">
-              <div className="flex justify-between items-end mb-4">
-                <div>
-                  <p className="text-sm font-bold text-dark print:text-black">Keterisian Kuota</p>
-                  <p className="text-xs text-neutral mt-1">Persentase pendaftar dari kapasitas maksimal</p>
-                </div>
-                <p className="text-2xl font-black text-blue-600 print:text-black">{capacityRate}%</p>
-              </div>
-              <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
-                <div
-                  className="bg-blue-500 h-full rounded-full transition-all duration-1000 print:bg-blue-600"
-                  style={{ width: `${capacityRate}%` }}
-                />
-              </div>
-              <p className="text-[10px] font-bold text-neutral text-center mt-3 uppercase tracking-wider">
-                {totalRegistered} Terisi / {event.maxCapacity} Maksimal
-              </p>
+            
+            <div className="w-full h-[250px] print:h-[200px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={funnelData}
+                  layout="vertical"
+                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f3f4f6" />
+                  <XAxis type="number" hide />
+                  <YAxis 
+                    dataKey="name" 
+                    type="category" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fill: '#4b5563', fontSize: 12, fontWeight: 'bold' }} 
+                  />
+                  <RechartsTooltip 
+                    cursor={{fill: '#f9fafb'}}
+                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                  />
+                  <Bar dataKey="jumlah" radius={[0, 8, 8, 0]} barSize={40}>
+                    {
+                      funnelData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                      ))
+                    }
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </div>
         </div>
@@ -327,8 +359,10 @@ export default function EventReportPage({ params }: { params: Promise<{ id: stri
           {reviews.length > 0 ? (
             <div className="space-y-8 print:space-y-6">
               {/* Review Breakdown */}
-              <div className="flex flex-col md:flex-row items-center gap-8 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm print:border-gray-300 print:shadow-none">
-                <div className="text-center md:w-1/3 md:border-r border-gray-100 md:pr-8">
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-8 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm print:border-gray-300 print:shadow-none items-center">
+                
+                {/* Average Rating */}
+                <div className="md:col-span-3 text-center md:border-r border-gray-100 md:pr-4">
                   <p className="text-5xl font-black text-dark tracking-tighter mb-2 print:text-black">{averageRating}</p>
                   <div className="flex justify-center gap-1 mb-2">
                     {[1, 2, 3, 4, 5].map((s) => (
@@ -337,7 +371,9 @@ export default function EventReportPage({ params }: { params: Promise<{ id: stri
                   </div>
                   <p className="text-xs font-bold text-neutral uppercase tracking-widest">{reviews.length} Ulasan</p>
                 </div>
-                <div className="flex-1 w-full space-y-2">
+                
+                {/* Progress Bar Breakdown */}
+                <div className="md:col-span-5 space-y-2">
                   {[5, 4, 3, 2, 1].map((s, idx) => {
                     const count = ratingBreakdown[idx] || 0;
                     const percent = reviews.length > 0 ? (count / reviews.length) * 100 : 0;
@@ -352,6 +388,32 @@ export default function EventReportPage({ params }: { params: Promise<{ id: stri
                       </div>
                     );
                   })}
+                </div>
+
+                {/* Pie Chart Visual */}
+                <div className="md:col-span-4 h-[160px] flex items-center justify-center print:hidden">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={pieData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={45}
+                        outerRadius={70}
+                        paddingAngle={2}
+                        dataKey="value"
+                        stroke="none"
+                      >
+                        {pieData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
+                        ))}
+                      </Pie>
+                      <RechartsTooltip 
+                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '12px', fontWeight: 'bold' }}
+                        itemStyle={{ color: '#4b5563' }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
                 </div>
               </div>
 

@@ -115,6 +115,26 @@ export default function AdminAnalyticsPage() {
     .sort((a, b) => b.registrationCount - a.registrationCount)
     .slice(0, 5);
 
+  const popularEventChartData = topEvents.map(event => ({
+    name: event.title.length > 20 ? event.title.substring(0, 20) + "..." : event.title,
+    pendaftar: event.registrationCount,
+  }));
+
+  const categoryMap: Record<string, number> = {};
+  events.forEach(event => {
+    const categories = Array.isArray(event.category) ? event.category : [event.category || "Lainnya"];
+    categories.forEach((cat: string) => {
+       const key = cat.trim();
+       if (key) {
+         categoryMap[key] = (categoryMap[key] || 0) + 1;
+       }
+    });
+  });
+
+  const categoryChartData = Object.entries(categoryMap)
+    .map(([name, value]) => ({ name, value }))
+    .sort((a, b) => b.value - a.value);
+
   return (
     <div className="max-w-7xl mx-auto pb-10">
       <div className="mb-10">
@@ -249,68 +269,66 @@ export default function AdminAnalyticsPage() {
         </div>
       </div>
 
-      {/* Top Events Table */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-rose-50 flex items-center justify-center">
-            <Star className="h-5 w-5 text-rose-500 fill-rose-500" />
+      {/* Popular Events and Categories */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+        
+        {/* Bar Chart - Acara Terpopuler */}
+        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="h-10 w-10 rounded-xl bg-rose-50 flex items-center justify-center">
+              <Star className="h-5 w-5 text-rose-500 fill-rose-500" />
+            </div>
+            <div>
+              <h3 className="font-bold text-dark">Acara Terpopuler</h3>
+              <p className="text-xs text-neutral">Berdasarkan jumlah pendaftar (Top 5)</p>
+            </div>
           </div>
-          <div>
-            <h3 className="font-bold text-dark">Acara Terpopuler</h3>
-            <p className="text-xs text-neutral">Berdasarkan jumlah pendaftar terbanyak</p>
+          <div className="h-80 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={popularEventChartData} layout="vertical" margin={{ top: 0, right: 30, left: 10, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f3f4f6" />
+                <XAxis type="number" hide />
+                <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#6b7280', fontWeight: 'bold' }} />
+                <RechartsTooltip cursor={{ fill: '#f9fafb' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
+                <Bar dataKey="pendaftar" name="Total Pendaftar" fill="#f43f5e" radius={[0, 4, 4, 0]} barSize={32} />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
 
-        {topEvents.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-white border-b border-gray-100 text-[10px] font-bold text-neutral uppercase tracking-wider">
-                  <th className="p-5">Peringkat</th>
-                  <th className="p-5">Nama Acara</th>
-                  <th className="p-5">Status</th>
-                  <th className="p-5 text-right">Jumlah Pendaftar</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {topEvents.map((event, index) => (
-                  <tr key={event.id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="p-5 text-center">
-                      <span className={`inline-flex items-center justify-center h-8 w-8 rounded-full font-black text-sm ${index === 0 ? "bg-amber-100 text-amber-600" :
-                          index === 1 ? "bg-gray-200 text-gray-600" :
-                            index === 2 ? "bg-orange-100 text-orange-700" :
-                              "bg-gray-50 text-neutral"
-                        }`}>
-                        #{index + 1}
-                      </span>
-                    </td>
-                    <td className="p-5 font-bold text-dark text-sm max-w-[200px] truncate">
-                      {event.title}
-                    </td>
-                    <td className="p-5">
-                      {event.status === "published" ? (
-                        <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">Disetujui</span>
-                      ) : event.status === "pending" ? (
-                        <span className="text-xs font-bold text-amber-600 bg-amber-50 px-3 py-1 rounded-full">Menunggu</span>
-                      ) : event.status === "rejected" ? (
-                        <span className="text-xs font-bold text-red-600 bg-red-50 px-3 py-1 rounded-full">Ditolak</span>
-                      ) : (
-                        <span className="text-xs font-bold text-gray-600 bg-gray-50 px-3 py-1 rounded-full">Draft</span>
-                      )}
-                    </td>
-                    <td className="p-5 text-right font-black text-primary text-lg">
-                      {event.registrationCount}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        {/* Pie Chart - Kategori Acara Terbanyak */}
+        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+           <div className="flex items-center gap-3 mb-2">
+            <div className="h-10 w-10 rounded-xl bg-blue-50 flex items-center justify-center">
+              <FileText className="h-5 w-5 text-blue-600" />
+            </div>
+            <div>
+              <h3 className="font-bold text-dark">Kategori Acara</h3>
+              <p className="text-xs text-neutral">Distribusi jenis acara yang diselenggarakan</p>
+            </div>
           </div>
-        ) : (
-          <div className="p-10 text-center text-neutral text-sm">
-            Belum ada data acara dan pendaftar.
+          <div className="h-64 w-full flex items-center justify-center">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={categoryChartData}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={90}
+                  paddingAngle={2}
+                  dataKey="value"
+                  stroke="none"
+                >
+                  {categoryChartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#f43f5e'][index % 7]} />
+                  ))}
+                </Pie>
+                <RechartsTooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '20px' }} />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
