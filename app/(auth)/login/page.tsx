@@ -92,7 +92,8 @@ export default function LoginPage() {
       // PROTEKSI: Cek verifikasi email (kecuali akun superadmin/developer dan email dummy penyelenggara)
       const isBypassed = result.user.email === "miftahulfitriah143@gmail.com" ||
         result.user.email === "mita@paramadina.ac.id" ||
-        result.user.email === "testing@paramadina.ac.id";
+        result.user.email === "testing@paramadina.ac.id" ||
+        result.user.email === "dummy@students.paramadina.ac.id";
       if (!result.user.emailVerified && !isBypassed) {
         await auth.signOut();
         toast.error("Email Anda belum terverifikasi! Harap verifikasi email Anda terlebih dahulu.");

@@ -34,7 +34,7 @@ import toast from "react-hot-toast";
 export default function EventDetail({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const { user } = useAuth();
-  const isEmailVerified = user?.emailVerified || user?.email === "mita@paramadina.ac.id" || user?.email === "miftahulfitriah143@gmail.com";
+  const isEmailVerified = user?.emailVerified || user?.email === "mita@paramadina.ac.id" || user?.email === "miftahulfitriah143@gmail.com" || user?.email === "testing@paramadina.ac.id" || user?.email === "dummy@students.paramadina.ac.id";
   const { id } = React.use(params);
   const [event, setEvent] = useState<any>(null);
   const [activeTab, setActiveTab] = useState("detail");
