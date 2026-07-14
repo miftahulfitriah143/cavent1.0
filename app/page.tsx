@@ -33,16 +33,21 @@ export default function LandingPage() {
   useEffect(() => {
     const q = query(
       collection(db, "events"),
-      where("status", "==", "published"),
-      limit(3)
+      where("status", "==", "published")
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const events = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
-      }));
-      setUpcomingEvents(events);
+      })).filter(e => e.eventState !== "completed")
+        .sort((a: any, b: any) => {
+          const dateA = a.createdAt?.seconds || 0;
+          const dateB = b.createdAt?.seconds || 0;
+          return dateB - dateA; // Descending
+        });
+      
+      setUpcomingEvents(events.slice(0, 3));
       setIsLoading(false);
     });
 

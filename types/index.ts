@@ -37,6 +37,11 @@ export interface Event {
   isFree: boolean
   price?: number
   registrationDeadline?: Date
+  documentation?: {
+    photos?: string[]
+    video?: string
+    gdriveLink?: string
+  }
   createdAt: Date
   updatedAt: Date
 }

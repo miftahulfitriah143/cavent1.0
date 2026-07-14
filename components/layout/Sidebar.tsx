@@ -215,10 +215,16 @@ export function Sidebar() {
                 </h3>
                 <nav className="space-y-1">
                   {group.items.map((link) => {
-                    // Logika isActive yang lebih cerdas untuk menangani rute bersarang (nested routes)
+                    // Kumpulkan semua item dari semua grup untuk pengecekan nested routes yang akurat
+                    const allItems = groups.flatMap(g => g.items);
+                    
                     const isActive = pathname === link.href ||
                       (pathname.startsWith(link.href + "/") &&
-                        !group.items.some(other => other.href !== link.href && other.href.startsWith(link.href) && pathname.startsWith(other.href)));
+                        !allItems.some(other => 
+                          other.href !== link.href && 
+                          other.href.length > link.href.length && 
+                          pathname.startsWith(other.href)
+                        ));
 
                     return (
                       <Link

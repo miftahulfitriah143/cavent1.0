@@ -32,6 +32,8 @@ const getCategoryBadgeClass = (category: string) => {
   return "text-primary bg-primary/5 border border-primary/10";
 };
 
+import { uploadImage } from "@/lib/cloudinary";
+
 export default function MyEventsPage() {
   const { user } = useAuth();
   const [events, setEvents] = useState<any[]>([]);
@@ -39,8 +41,12 @@ export default function MyEventsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRejection, setSelectedRejection] = useState<{title: string, reason: string} | null>(null);
   
-  
-  
+  // Documentation Modal State
+  const [completeModalData, setCompleteModalData] = useState<{eventId: string, title: string} | null>(null);
+  const [docPhotos, setDocPhotos] = useState<File[]>([]);
+  const [docVideo, setDocVideo] = useState("");
+  const [docGdrive, setDocGdrive] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleDelete = async (eventId: string, title: string) => {
     if (!window.confirm(`Apakah Anda yakin ingin menghapus acara "${title}"?`)) return;
@@ -68,16 +74,40 @@ export default function MyEventsPage() {
     }
   };
 
-  const handleCompleteEvent = async (eventId: string, title: string) => {
-    if (!window.confirm(`Apakah Anda yakin ingin menyelesaikan acara "${title}"? Setelah selesai, peserta yang hadir dapat memberikan rating dan ulasan.`)) return;
+  const openCompleteModal = (eventId: string, title: string) => {
+    setCompleteModalData({ eventId, title });
+    setDocPhotos([]);
+    setDocVideo("");
+    setDocGdrive("");
+  };
+
+  const submitCompleteEvent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!completeModalData) return;
+    setIsUploading(true);
     try {
-      await updateDoc(doc(db, "events", eventId), {
-        eventState: "completed"
+      const uploadedPhotos: string[] = [];
+      for (const file of docPhotos) {
+        if (uploadedPhotos.length >= 5) break;
+        const url = await uploadImage(file);
+        uploadedPhotos.push(url);
+      }
+
+      await updateDoc(doc(db, "events", completeModalData.eventId), {
+        eventState: "completed",
+        documentation: {
+          photos: uploadedPhotos,
+          video: docVideo,
+          gdriveLink: docGdrive
+        }
       });
-      toast.success(`Acara "${title}" telah diselesaikan! Terima kasih.`);
+      toast.success(`Acara "${completeModalData.title}" telah diselesaikan beserta dokumentasinya!`);
+      setCompleteModalData(null);
     } catch (error) {
       console.error("Complete Event Error:", error);
-      toast.error("Gagal menyelesaikan acara");
+      toast.error("Gagal mengunggah dokumentasi");
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -254,6 +284,18 @@ export default function MyEventsPage() {
                     <MapPin className="h-4 w-4 text-primary/40 shrink-0" />
                     <span className="truncate">{event.venue}</span>
                   </div>
+
+                  {event.status === "published" && (
+                    <div className="mt-4 pt-4 border-t border-gray-50">
+                      <div className="flex justify-between items-center mb-1.5">
+                        <span className="text-[10px] font-bold text-neutral uppercase tracking-widest">Kapasitas Pendaftar</span>
+                        <span className="text-xs font-black text-dark">{event.registeredCount || 0} / {event.maxCapacity}</span>
+                      </div>
+                      <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                        <div className="bg-primary h-full rounded-full transition-all duration-1000" style={{ width: `${event.maxCapacity ? Math.min(Math.round(((event.registeredCount || 0) / event.maxCapacity) * 100), 100) : 0}%` }} />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Event Control Button (Penyelenggara) */}
@@ -261,7 +303,7 @@ export default function MyEventsPage() {
                   <div className="mb-6">
                     {event.eventState === "started" ? (
                       <button
-                        onClick={() => handleCompleteEvent(event.id, event.title)}
+                        onClick={() => openCompleteModal(event.id, event.title)}
                         className="w-full py-3 bg-red-50 hover:bg-red-500 text-red-600 hover:text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 border border-red-100 hover:border-red-500 shadow-sm"
                         title="Selesaikan Acara"
                       >
@@ -376,6 +418,118 @@ export default function MyEventsPage() {
                 Tutup
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Complete Event & Documentation Modal */}
+      {completeModalData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6 overflow-y-auto">
+          <div className="absolute inset-0 bg-dark/60 backdrop-blur-sm" onClick={() => !isUploading && setCompleteModalData(null)} />
+          <div className="relative bg-white w-full max-w-2xl rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300 my-8">
+            <div className="bg-primary p-8 text-white relative">
+              <button 
+                onClick={() => setCompleteModalData(null)}
+                disabled={isUploading}
+                className="absolute top-6 right-6 p-2 bg-white/20 hover:bg-white/30 rounded-full transition-colors disabled:opacity-50"
+              >
+                <X className="h-5 w-5" />
+              </button>
+              <div className="h-14 w-14 bg-white/20 rounded-xl flex items-center justify-center mb-6">
+                <CheckCircle2 className="h-8 w-8" />
+              </div>
+              <h3 className="text-2xl font-black mb-2">Selesaikan Acara</h3>
+              <p className="text-white/80 text-sm font-medium">{completeModalData.title}</p>
+            </div>
+            
+            <form onSubmit={submitCompleteEvent} className="p-8">
+              <div className="mb-6">
+                <p className="text-sm text-neutral mb-6">
+                  Selamat! Acara Anda telah selesai. Silakan unggah dokumentasi acara agar dapat dilihat oleh peserta di profil Anda. (Opsional)
+                </p>
+                
+                <div className="space-y-5">
+                  {/* Photos */}
+                  <div>
+                    <label className="block text-xs font-bold text-dark uppercase tracking-wider mb-2">
+                      Foto Acara (Maks 5)
+                    </label>
+                    <input 
+                      type="file" 
+                      accept="image/*"
+                      multiple
+                      disabled={isUploading}
+                      onChange={(e) => {
+                        const files = Array.from(e.target.files || []);
+                        if (files.length > 5) {
+                          alert("Maksimal 5 foto.");
+                          setDocPhotos(files.slice(0, 5));
+                        } else {
+                          setDocPhotos(files);
+                        }
+                      }}
+                      className="w-full p-3 border border-gray-200 rounded-lg text-sm bg-gray-50 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
+                    />
+                    <p className="text-[10px] text-neutral mt-1">Pilih hingga 5 foto terbaik dari acara Anda.</p>
+                  </div>
+
+                  {/* Video */}
+                  <div>
+                    <label className="block text-xs font-bold text-dark uppercase tracking-wider mb-2">
+                      Link Video Recap (YouTube/Tiktok/dsb)
+                    </label>
+                    <input 
+                      type="url" 
+                      value={docVideo}
+                      disabled={isUploading}
+                      onChange={(e) => setDocVideo(e.target.value)}
+                      placeholder="https://..."
+                      className="w-full p-3 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                    />
+                  </div>
+
+                  {/* GDrive */}
+                  <div>
+                    <label className="block text-xs font-bold text-dark uppercase tracking-wider mb-2">
+                      Link Google Drive (Folder Dokumentasi)
+                    </label>
+                    <input 
+                      type="url" 
+                      value={docGdrive}
+                      disabled={isUploading}
+                      onChange={(e) => setDocGdrive(e.target.value)}
+                      placeholder="https://drive.google.com/..."
+                      className="w-full p-3 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-6 border-t border-gray-100">
+                <button 
+                  type="button"
+                  onClick={() => setCompleteModalData(null)}
+                  disabled={isUploading}
+                  className="px-6 py-3 text-neutral font-bold text-sm hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  Batal
+                </button>
+                <button 
+                  type="submit"
+                  disabled={isUploading}
+                  className="px-6 py-3 bg-primary text-white font-bold text-sm rounded-lg hover:bg-primary-600 transition-colors flex items-center gap-2 disabled:opacity-70"
+                >
+                  {isUploading ? (
+                    <>
+                      <div className="h-4 w-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                      Mengunggah...
+                    </>
+                  ) : (
+                    "Selesaikan Acara"
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

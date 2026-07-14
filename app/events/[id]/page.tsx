@@ -452,7 +452,9 @@ export default function EventDetail({ params }: { params: Promise<{ id: string }
                 </div>
                 <div>
                   <p className="text-[10px] font-black text-neutral uppercase tracking-widest mb-0.5">Diselenggarakan oleh</p>
-                  <p className="text-dark font-bold text-sm">{event.organizerName}</p>
+                  <Link href={`/organizers/${event.organizerId}`} className="text-primary hover:underline font-bold text-sm">
+                    {event.organizerName}
+                  </Link>
                   <p className="text-neutral text-xs">{Array.isArray(event.organizerProdi) ? event.organizerProdi.join(", ") : event.organizerProdi}</p>
                 </div>
               </div>
@@ -757,7 +759,9 @@ export default function EventDetail({ params }: { params: Promise<{ id: string }
               <div className="space-y-4 mb-6">
                 <div className="flex justify-between items-center py-2.5 border-b border-gray-100">
                   <span className="text-neutral font-medium text-sm">Penyelenggara</span>
-                  <span className="text-dark font-extrabold text-sm">{event.organizerName}</span>
+                  <Link href={`/organizers/${event.organizerId}`} className="text-primary hover:underline font-extrabold text-sm">
+                    {event.organizerName}
+                  </Link>
                 </div>
                 <div className="flex justify-between items-center py-2.5 border-b border-gray-100">
                   <span className="text-neutral font-medium text-sm">Kapasitas</span>
