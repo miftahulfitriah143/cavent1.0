@@ -73,6 +73,7 @@ export default function EventsPage() {
   const [sortBy, setSortBy] = useState("Terbaru");
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [organizers, setOrganizers] = useState<any[]>([]);
 
   useEffect(() => {
     // Fetch real events from Firestore
@@ -93,7 +94,15 @@ export default function EventsPage() {
       setIsLoading(false);
     });
 
-    return () => unsubscribe();
+    const qOrganizers = query(collection(db, "users"), where("role", "==", "organizer"));
+    const unsubOrganizers = onSnapshot(qOrganizers, (snapshot) => {
+      setOrganizers(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
+
+    return () => {
+      unsubscribe();
+      unsubOrganizers();
+    };
   }, []);
 
   const toggleStatus = (s: string) =>
@@ -116,7 +125,7 @@ export default function EventsPage() {
       e.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       e.venue?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       e.organizerName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      e.organizerProdi?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (typeof e.organizerProdi === "string" && e.organizerProdi.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (Array.isArray(e.organizerProdi) && e.organizerProdi.some((prodi: string) => prodi.toLowerCase().includes(searchQuery.toLowerCase())));
 
     // 3. Penyelenggara
@@ -171,6 +180,10 @@ export default function EventsPage() {
     }
     return 0;
   });
+
+  const matchedOrganizer = searchQuery.length >= 2 
+    ? organizers.find(o => o.displayName?.toLowerCase().includes(searchQuery.toLowerCase()))
+    : null;
 
   return (
     <div className="flex min-h-screen flex-col bg-[#f4f6fa] font-sans">
@@ -353,6 +366,35 @@ export default function EventsPage() {
 
             {/* ── EVENT GRID ── */}
             <div className="w-full md:flex-1 md:min-w-0">
+
+              {/* Banner Penyelenggara yang Terkait (Mirip UI Shopee) */}
+              {searchQuery.length >= 2 && matchedOrganizer && (
+                <div className="mb-6 bg-white rounded-2xl border border-primary/20 shadow-sm p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in fade-in zoom-in duration-300">
+                  <div className="flex items-center gap-4">
+                    <img 
+                      src={matchedOrganizer.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(matchedOrganizer.displayName)}&background=0e517a&color=fff`}
+                      alt={matchedOrganizer.displayName}
+                      className="w-14 h-14 rounded-full object-cover border-2 border-primary/20 shadow-sm"
+                    />
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-bold text-dark text-base">{matchedOrganizer.displayName}</h3>
+                        <span className="text-[9px] bg-red-500 text-white px-1.5 py-0.5 rounded-sm font-bold uppercase tracking-wider">Penyelenggara</span>
+                      </div>
+                      <p className="text-xs text-neutral flex items-center gap-1 mt-1">
+                        Penyelenggara terkait dengan &quot;{searchQuery}&quot;
+                      </p>
+                    </div>
+                  </div>
+                  <Link
+                    href={`/organizers/${matchedOrganizer.id}`}
+                    className="flex items-center justify-center gap-1 text-sm font-semibold text-primary border border-primary px-5 py-2.5 rounded-xl hover:bg-primary hover:text-white transition-colors whitespace-nowrap"
+                  >
+                    Kunjungi Profil
+                  </Link>
+                </div>
+              )}
+
               {/* Header row */}
               <div className="flex items-center justify-between mb-5">
                 <p className="text-sm text-neutral">
