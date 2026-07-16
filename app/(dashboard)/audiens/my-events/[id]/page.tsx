@@ -70,7 +70,7 @@ export default function TicketPage({ params }: { params: Promise<{ id: string }>
           }
         } else {
           toast.error("Data pendaftaran tidak ditemukan");
-          router.push("/mahasiswa/my-events");
+          router.push("/audiens/my-events");
         }
       } catch (error) {
         console.error("Error:", error);
@@ -185,7 +185,7 @@ export default function TicketPage({ params }: { params: Promise<{ id: string }>
           eventId: registration.eventId,
           eventTitle: registration.eventTitle,
           userId: user.uid,
-          userName: user.displayName || "Mahasiswa Cavent",
+          userName: user.displayName || "Audiens Cavent",
           rating: rating,
           comment: comment.trim(),
           editCount: 0,
@@ -296,7 +296,7 @@ export default function TicketPage({ params }: { params: Promise<{ id: string }>
     <div className="max-w-7xl mx-auto pb-20">
       {/* Back Button */}
       <Link 
-        href="/mahasiswa/my-events" 
+        href="/audiens/my-events" 
         className="inline-flex items-center gap-2 text-accent hover:text-accent-600 mb-6 font-bold text-sm transition-colors"
       >
         <ChevronLeft className="h-4 w-4" /> Kembali ke Daftar

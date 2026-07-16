@@ -18,7 +18,7 @@ import { db } from "@/lib/firebase";
 import { collection, query, where, onSnapshot, limit, orderBy } from "firebase/firestore";
 import { useAuth } from "@/components/providers/AuthProvider";
 
-export default function MahasiswaDashboard() {
+export default function AudiensDashboard() {
   const { user } = useAuth();
   const [recentRegistrations, setRecentRegistrations] = useState<any[]>([]);
   const [stats, setStats] = useState({
@@ -63,9 +63,9 @@ export default function MahasiswaDashboard() {
   }, [user]);
 
   const QUICK_ACTIONS = [
-    { title: "Profil Saya", icon: User, href: "/mahasiswa/profile", color: "bg-blue-50 text-blue-600" },
-    { title: "Acara Saya", icon: CalendarDays, href: "/mahasiswa/my-events", color: "bg-teal-50 text-teal-600" },
-    { title: "Ulasan Saya", icon: Star, href: "/mahasiswa/ratings", color: "bg-amber-50 text-amber-600" },
+    { title: "Profil Saya", icon: User, href: "/audiens/profile", color: "bg-blue-50 text-blue-600" },
+    { title: "Acara Saya", icon: CalendarDays, href: "/audiens/my-events", color: "bg-teal-50 text-teal-600" },
+    { title: "Ulasan Saya", icon: Star, href: "/audiens/ratings", color: "bg-amber-50 text-amber-600" },
   ];
 
   if (isLoading) {
@@ -99,7 +99,7 @@ export default function MahasiswaDashboard() {
         <div className="lg:col-span-2 space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-black text-dark tracking-tight">Pendaftaran Terakhir</h2>
-            <Link href="/mahasiswa/my-events" className="text-primary text-xs font-bold hover:underline">Lihat Semua</Link>
+            <Link href="/audiens/my-events" className="text-primary text-xs font-bold hover:underline">Lihat Semua</Link>
           </div>
 
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
@@ -108,7 +108,7 @@ export default function MahasiswaDashboard() {
                 {recentRegistrations.map((reg) => (
                   <Link
                     key={reg.id}
-                    href={`/mahasiswa/my-events/${reg.id}`}
+                    href={`/audiens/my-events/${reg.id}`}
                     className="p-6 flex items-center justify-between hover:bg-gray-50 transition-colors group"
                   >
                     <div className="flex items-center gap-5">

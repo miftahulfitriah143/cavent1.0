@@ -10,6 +10,7 @@ import toast from "react-hot-toast";
 interface AuthContextType {
   user: User | null;
   role: UserRole | null;
+  isApproved: boolean;
   isLoading: boolean;
   logout: () => Promise<void>;
 }
@@ -17,6 +18,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
   user: null,
   role: null,
+  isApproved: true,
   isLoading: true,
   logout: async () => {},
 });
@@ -24,6 +26,7 @@ const AuthContext = createContext<AuthContextType>({
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<UserRole | null>(null);
+  const [isApproved, setIsApproved] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -56,19 +59,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 toast.error("Akun Anda telah dinonaktifkan oleh Admin.");
                 auth.signOut(); // Ini akan memicu onAuthStateChanged dengan user=null
               } else {
-                setRole((data.role as UserRole) || "mahasiswa");
+                const fetchedRole = data.role as string;
+                const normalizedRole = fetchedRole === "mahasiswa" ? "audiens" : fetchedRole;
+                setRole((normalizedRole as UserRole) || "audiens");
+                setIsApproved(data.isApproved !== false);
               }
             } else {
-              setRole("mahasiswa"); // Fallback
+              setRole("audiens"); // Fallback
+              setIsApproved(true);
             }
           });
         } catch (error) {
           console.error("Gagal mendengarkan role:", error);
-          setRole("mahasiswa"); // Fallback jika terjadi error
+          setRole("audiens"); // Fallback jika terjadi error
+          setIsApproved(true);
         }
       } else {
         setUser(null);
         setRole(null);
+        setIsApproved(true);
       }
       setIsLoading(false);
     });
@@ -89,7 +98,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, role, isLoading, logout }}>
+    <AuthContext.Provider value={{ user, role, isApproved, isLoading, logout }}>
       {children}
     </AuthContext.Provider>
   );

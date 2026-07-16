@@ -14,7 +14,7 @@ export function PublicNavbar() {
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, role, isLoading } = useAuth();
-  const isStudent = role === "mahasiswa";
+  const isStudent = role === "audiens";
 
   // Deteksi apakah sedang di halaman detail (misal: /events/[id])
   const isDetailPage = pathname.startsWith("/events/") && pathname !== "/events";

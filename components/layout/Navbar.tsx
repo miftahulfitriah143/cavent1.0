@@ -11,7 +11,7 @@ export function Navbar() {
   const roleLabels: Record<string, string> = {
     admin: "Admin",
     organizer: "Penyelenggara",
-    mahasiswa: "Mahasiswa",
+    audiens: "Audiens",
   };
 
   const displayRole = role ? roleLabels[role] || role : "Penyelenggara";

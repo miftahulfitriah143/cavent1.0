@@ -32,7 +32,7 @@ import { PublicNavbar } from "@/components/layout/PublicNavbar";
 
 export default function LoginPage() {
   const [activeTab, setActiveTab] = useState<"masuk" | "daftar">("masuk");
-  const [registerRole, setRegisterRole] = useState<"organizer" | "mahasiswa">("mahasiswa");
+  const [registerRole, setRegisterRole] = useState<"organizer" | "audiens">("audiens");
   const [isProcessing, setIsProcessing] = useState(false);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState("");
@@ -43,13 +43,13 @@ export default function LoginPage() {
   const [fullName, setFullName] = useState(""); // Dipakai untuk Nama Lengkap / Nama Organisasi
   const [showPassword, setShowPassword] = useState(false);
 
-  // Deteksi domain email reaktif untuk mahasiswa & dosen/HIMA
+  // Deteksi domain email reaktif untuk audiens & dosen/HIMA
   const isStudentEmail = email.toLowerCase().trim().endsWith("@students.paramadina.ac.id");
   const isParamadinaEmail = email.toLowerCase().trim().endsWith("@paramadina.ac.id");
 
   useEffect(() => {
     if (activeTab === "daftar" && isStudentEmail) {
-      setRegisterRole("mahasiswa");
+      setRegisterRole("audiens");
     }
   }, [email, activeTab, isStudentEmail]);
 
@@ -61,7 +61,7 @@ export default function LoginPage() {
     if (!isLoading && user && role) {
       if (role === "admin") router.push("/admin");
       else if (role === "organizer") router.push("/organizer");
-      else router.push("/"); // Mahasiswa diarahkan ke Beranda
+      else router.push("/"); // Audiens diarahkan ke Beranda
     }
   }, [user, role, isLoading, router]);
 
@@ -104,10 +104,12 @@ export default function LoginPage() {
       // Ambil role dari Firestore
       const userRef = doc(db, "users", result.user.uid);
       const userSnap = await getDoc(userRef);
-      let assignedRole = "mahasiswa";
+      let assignedRole = "audiens";
+      let isApproved = true;
       if (userSnap.exists()) {
         const userData = userSnap.data();
         assignedRole = userData.role;
+        isApproved = userData.isApproved !== false;
 
         // SINKRONISASI STATUS VERIFIKASI: Update ke true jika sebelumnya masih false/belum ada
         if (!userData.emailVerified) {
@@ -116,9 +118,17 @@ export default function LoginPage() {
       }
 
       toast.success("Berhasil masuk!");
-      if (assignedRole === "admin") router.push("/admin");
-      else if (assignedRole === "organizer") router.push("/organizer");
-      else router.push("/");
+      if (assignedRole === "admin") {
+        router.push("/admin");
+      } else if (assignedRole === "organizer") {
+        if (!isApproved) {
+          router.push("/pending-approval");
+        } else {
+          router.push("/organizer");
+        }
+      } else {
+        router.push("/");
+      }
 
     } catch (error: any) {
       console.error("Login error:", error);
@@ -160,6 +170,7 @@ export default function LoginPage() {
         displayName: fullName,
         photoURL: "",
         role: registerRole, // Sesuai pilihan di form
+        isApproved: registerRole === "organizer" ? false : true, // Penyelenggara butuh approval
         emailVerified: false, // Ditandai sebagai belum terverifikasi
         createdAt: serverTimestamp(),
       });
@@ -220,23 +231,30 @@ export default function LoginPage() {
       const userRef = doc(db, "users", currentUser.uid);
       const userSnap = await getDoc(userRef);
 
-      let assignedRole = "mahasiswa";
+      let assignedRole = "audiens";
+      let isApproved = true;
 
       // Jika belum ada, ini berarti PENDAFTARAN BARU via Google
       if (!userSnap.exists()) {
-        // Tentukan role: Jika user menekan tombol di tab 'Daftar', gunakan pilihan rolenya
-        // Jika dia menekan dari tab 'Masuk', default ke mahasiswa, kecuali email admin
-        if (activeTab === "daftar") {
-          // PROTEKSI: Mahasiswa dengan email @students.paramadina.ac.id dipaksa role mahasiswa
-          const isStudent = userEmail.toLowerCase().trim().endsWith("@students.paramadina.ac.id");
-          assignedRole = isStudent ? "mahasiswa" : registerRole;
-        } else {
-          // Fallback logika lama
-          const isParamadina = userEmail.endsWith("@paramadina.ac.id");
-          if (userEmail === "miftahulfitriah143@gmail.com" || isParamadina) {
-            assignedRole = "admin";
-          }
+        if (activeTab === "masuk" && userEmail !== "miftahulfitriah143@gmail.com") {
+          // Tolak akses jika mencoba masuk tapi akun belum terdaftar
+          await auth.signOut();
+          toast.error("Akun belum terdaftar. Silakan ke tab 'Daftar' terlebih dahulu untuk memilih peran Anda.", { duration: 6000 });
+          setActiveTab("daftar"); // Arahkan otomatis ke tab daftar
+          setIsProcessing(false);
+          return;
         }
+
+        // Tentukan role untuk yang mendaftar dari tab 'Daftar' atau superadmin
+        if (activeTab === "daftar") {
+          // PROTEKSI: Audiens dengan email @students.paramadina.ac.id dipaksa role audiens
+          const isStudent = userEmail.toLowerCase().trim().endsWith("@students.paramadina.ac.id");
+          assignedRole = isStudent ? "audiens" : registerRole;
+        } else if (userEmail === "miftahulfitriah143@gmail.com") {
+          assignedRole = "admin";
+        }
+        
+        isApproved = assignedRole === "organizer" ? false : true;
 
         await setDoc(userRef, {
           uid: currentUser.uid,
@@ -244,24 +262,35 @@ export default function LoginPage() {
           displayName: currentUser.displayName || "Pengguna",
           photoURL: currentUser.photoURL || "",
           role: assignedRole,
+          isApproved: isApproved,
           emailVerified: true, // Google login otomatis terverifikasi
           createdAt: serverTimestamp(),
         });
         toast.success("Pendaftaran dengan Google berhasil!");
       } else {
         // Jika sudah ada, ini berarti LOGIN via Google
-        assignedRole = userSnap.data().role;
+        const userData = userSnap.data();
+        assignedRole = userData.role;
+        isApproved = userData.isApproved !== false;
 
         // SINKRONISASI STATUS VERIFIKASI: Pastikan ter-update ke true di Firestore
-        if (!userSnap.data().emailVerified) {
+        if (!userData.emailVerified) {
           await setDoc(userRef, { emailVerified: true }, { merge: true });
         }
         toast.success("Berhasil masuk!");
       }
 
-      if (assignedRole === "admin") router.push("/admin");
-      else if (assignedRole === "organizer") router.push("/organizer");
-      else router.push("/");
+      if (assignedRole === "admin") {
+        router.push("/admin");
+      } else if (assignedRole === "organizer") {
+        if (!isApproved) {
+          router.push("/pending-approval");
+        } else {
+          router.push("/organizer");
+        }
+      } else {
+        router.push("/");
+      }
 
     } catch (error: any) {
       console.error("Google Auth error:", error);
@@ -453,13 +482,13 @@ export default function LoginPage() {
 
                     <button
                       type="button"
-                      onClick={() => setRegisterRole("mahasiswa")}
-                      className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-300 cursor-pointer ${registerRole === "mahasiswa"
+                      onClick={() => setRegisterRole("audiens")}
+                      className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-300 cursor-pointer ${registerRole === "audiens"
                         ? "border-primary bg-primary-50 text-primary shadow-sm scale-[1.02]"
                         : "border-gray-100 bg-white text-neutral hover:border-gray-200 hover:bg-gray-50"
                         }`}
                     >
-                      <Users className={`h-6 w-6 mb-2 transition-colors ${registerRole === "mahasiswa" ? "text-primary" : "text-neutral"}`} />
+                      <Users className={`h-6 w-6 mb-2 transition-colors ${registerRole === "audiens" ? "text-primary" : "text-neutral"}`} />
                       <span className="text-sm font-bold">Audiens</span>
                       <span className="text-[10px] opacity-80 mt-1">Daftar & ikuti acara</span>
                     </button>
@@ -469,7 +498,7 @@ export default function LoginPage() {
                   {isStudentEmail && (
                     <div className="text-[11px] text-[#0e517a] bg-blue-50/50 border border-blue-100/50 rounded-xl p-3 mb-6 font-semibold animate-in fade-in slide-in-from-top-1 duration-300 flex items-start gap-2">
                       <span className="text-xs">💡</span>
-                      <span>Email mahasiswa (<strong>@students.paramadina.ac.id</strong>) otomatis dikunci sebagai peran <strong>Audiens</strong>.</span>
+                      <span>Email student (<strong>@students.paramadina.ac.id</strong>) otomatis dikunci sebagai peran <strong>Audiens</strong>.</span>
                     </div>
                   )}
                   {isParamadinaEmail && (

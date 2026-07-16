@@ -33,7 +33,7 @@ export function UserNav() {
   const roleLabels: Record<string, string> = {
     admin: "Administrator",
     organizer: "Penyelenggara",
-    mahasiswa: "Mahasiswa",
+    audiens: "Audiens",
   };
 
   return (
@@ -57,7 +57,7 @@ export function UserNav() {
           <div className="px-4 py-3 border-b border-gray-50 mb-1">
             <p className="text-sm font-bold text-dark truncate">{user.displayName || "User"}</p>
             <p className="text-[10px] font-medium text-primary uppercase tracking-wider mt-0.5">
-              {roleLabels[role || "mahasiswa"]}
+              {roleLabels[role || "audiens"]}
             </p>
           </div>
 
@@ -74,9 +74,9 @@ export function UserNav() {
               </Link>
             )}
 
-            {/* Link Khusus Mahasiswa / Umum */}
+            {/* Link Khusus Audiens / Umum */}
             <Link 
-              href="/mahasiswa/profile" 
+              href="/audiens/profile" 
               className="flex items-center gap-3 px-4 py-2.5 text-sm text-neutral hover:text-primary hover:bg-primary-50 transition-colors"
               onClick={() => setIsOpen(false)}
             >
@@ -84,10 +84,10 @@ export function UserNav() {
               Profil Saya
             </Link>
 
-            {role === 'mahasiswa' && (
+            {role === 'audiens' && (
               <>
                 <Link 
-                  href="/mahasiswa/my-events" 
+                  href="/audiens/my-events" 
                   className="flex items-center gap-3 px-4 py-2.5 text-sm text-neutral hover:text-primary hover:bg-primary-50 transition-colors"
                   onClick={() => setIsOpen(false)}
                 >
@@ -95,7 +95,7 @@ export function UserNav() {
                   Acara Saya
                 </Link>
                 <Link 
-                  href="/mahasiswa/ratings" 
+                  href="/audiens/ratings" 
                   className="flex items-center gap-3 px-4 py-2.5 text-sm text-neutral hover:text-primary hover:bg-primary-50 transition-colors"
                   onClick={() => setIsOpen(false)}
                 >

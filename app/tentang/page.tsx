@@ -36,11 +36,11 @@ export default function TentangPage() {
             CAVENT adalah platform Campus Event Management System yang memiliki teknologi unggul dalam mendukung penyelenggara acara kampus mulai dari publikasi, manajemen pendaftaran, hingga penyediaan laporan kehadiran dan analitik di akhir acara.
           </p>
           <p>
-            Beberapa fitur yang kami sediakan siap untuk memfasilitasi penyelenggara acara (organizer) dan mahasiswa dalam setiap tahap yang meliputi:
+            Beberapa fitur yang kami sediakan siap untuk memfasilitasi penyelenggara acara (organizer) dan audiens dalam setiap tahap yang meliputi:
           </p>
           <ul className="list-disc pl-6 space-y-3 mt-4 text-gray-700">
             <li>
-              <strong>Publikasi acara terpusat</strong> yang memudahkan mahasiswa untuk mengeksplorasi dan menemukan berbagai kegiatan menarik di kampus.
+              <strong>Publikasi acara terpusat</strong> yang memudahkan audiens untuk mengeksplorasi dan menemukan berbagai kegiatan menarik di kampus.
             </li>
             <li>
               <strong>Sistem pendaftaran dan ticketing yang mudah</strong> memberikan kenyamanan bagi calon peserta, meminimalisir proses manual, dan mendapatkan konversi partisipasi yang lebih tinggi.
@@ -53,7 +53,7 @@ export default function TentangPage() {
             </li>
           </ul>
           <p className="pt-4">
-            Sudah ada berbagai acara kampus yang terbantu dengan sistem kami. Kini, saatnya perkenalkan acara organisasi Anda pada seluruh mahasiswa untuk membawa peserta yang lebih banyak lagi bersama CAVENT!
+            Sudah ada berbagai acara kampus yang terbantu dengan sistem kami. Kini, saatnya perkenalkan acara organisasi Anda pada seluruh audiens untuk membawa peserta yang lebih banyak lagi bersama CAVENT!
           </p>
         </div>
       </main>

@@ -52,7 +52,7 @@ export default function MyEventsPage() {
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       <Link 
-        href="/mahasiswa/profile" 
+        href="/audiens/profile" 
         className="inline-flex items-center gap-2 text-accent hover:text-accent-600 font-bold text-sm transition-colors"
       >
         <ChevronLeft className="h-4 w-4" /> Kembali ke Profil
@@ -169,7 +169,7 @@ function RegistrationCard({ reg, user }: { reg: any; user: any }) {
 
       <div className="flex items-center gap-3 md:pl-6 md:border-l border-gray-50">
         <Link 
-          href={`/mahasiswa/my-events/${reg.id}`}
+          href={`/audiens/my-events/${reg.id}`}
           className="flex items-center justify-center gap-3 bg-gray-50 text-dark px-6 py-3.5 rounded-2xl text-sm font-bold hover:bg-primary hover:text-white transition-all shadow-sm active:scale-95 group/btn"
         >
           <Ticket className="h-4 w-4" />

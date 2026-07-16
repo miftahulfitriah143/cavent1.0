@@ -32,9 +32,9 @@ service cloud.firestore {
       return isSignedIn() && getUserRole() == 'organizer';
     }
 
-    // Apakah user memiliki role mahasiswa?
-    function isMahasiswa() {
-      return isSignedIn() && getUserRole() == 'mahasiswa';
+    // Apakah user memiliki role audiens?
+    function isAudiens() {
+      return isSignedIn() && getUserRole() == 'audiens';
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -142,7 +142,7 @@ service cloud.firestore {
       );
 
       // Admin & Organizer bisa buat notifikasi apa saja
-      // Mahasiswa hanya boleh membuat notifikasi pendaftaran (NEW_REGISTRATION)
+      // Audiens hanya boleh membuat notifikasi pendaftaran (NEW_REGISTRATION)
       allow create: if isSignedIn() && (
         isAdmin() || 
         isOrganizer() || 

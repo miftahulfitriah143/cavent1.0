@@ -40,7 +40,7 @@ export default function UsersManagementPage() {
       return;
     }
 
-    const newRole = currentRole === "organizer" ? "mahasiswa" : "organizer";
+    const newRole = currentRole === "organizer" ? "audiens" : "organizer";
 
     if (!window.confirm(`Apakah Anda yakin ingin mengubah role akun ini menjadi ${newRole.toUpperCase()}?`)) return;
 
@@ -76,6 +76,20 @@ export default function UsersManagementPage() {
     } catch (error) {
       console.error("Error toggling active status:", error);
       toast.error(`Gagal ${actionText} akun.`);
+    }
+  };
+
+  const handleApproveOrganizer = async (userId: string) => {
+    if (!window.confirm("Apakah Anda yakin ingin menyetujui pendaftaran Penyelenggara ini?")) return;
+
+    try {
+      await updateDoc(doc(db, "users", userId), {
+        isApproved: true
+      });
+      toast.success("Penyelenggara berhasil disetujui!");
+    } catch (error) {
+      console.error("Error approving organizer:", error);
+      toast.error("Gagal menyetujui Penyelenggara.");
     }
   };
 
@@ -132,8 +146,9 @@ export default function UsersManagementPage() {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {filteredUsers.map((u) => {
-                  const roleName = u.role || "mahasiswa";
+                  const roleName = u.role || "audiens";
                   const isDeactivated = u.isActive === false;
+                  const isPendingOrganizer = roleName === "organizer" && u.isApproved === false;
 
                   return (
                     <tr key={u.id} className="hover:bg-gray-50/50 transition-colors">
@@ -154,7 +169,7 @@ export default function UsersManagementPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="p-5">
+                      <td className="p-5 flex flex-col gap-1 items-start justify-center">
                         <span className={`inline-flex px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${roleName === "admin"
                             ? "bg-purple-100 text-purple-700"
                             : roleName === "organizer"
@@ -163,6 +178,11 @@ export default function UsersManagementPage() {
                           }`}>
                           {roleName}
                         </span>
+                        {isPendingOrganizer && (
+                          <span className="inline-flex px-2 py-0.5 rounded border border-amber-200 bg-amber-50 text-[9px] font-bold text-amber-700 uppercase tracking-widest mt-1">
+                            Pending Approval
+                          </span>
+                        )}
                       </td>
                       <td className="p-5">
                         {isDeactivated ? (
@@ -177,6 +197,16 @@ export default function UsersManagementPage() {
                       </td>
                       <td className="p-5">
                         <div className="flex items-center justify-end gap-2">
+                          {isPendingOrganizer && (
+                            <button
+                              onClick={() => handleApproveOrganizer(u.id)}
+                              className="px-4 py-2 rounded-lg text-xs font-bold transition-colors bg-green-100 text-green-700 hover:bg-green-600 hover:text-white"
+                              title="Setujui Penyelenggara"
+                            >
+                              Setujui
+                            </button>
+                          )}
+
                           <button
                             onClick={() => handleRoleChange(u.id, roleName)}
                             disabled={roleName === "admin"}

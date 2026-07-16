@@ -136,7 +136,7 @@ export default function EventDetail({ params }: { params: Promise<{ id: string }
       const newRegRef = await addDoc(collection(db, "registrations"), {
         userId: user.uid || "",
         userEmail: user.email || "",
-        userName: user.displayName || "Mahasiswa",
+        userName: user.displayName || "Audiens",
         eventId: id,
         eventTitle: event.title || "Acara Tanpa Judul",
         eventDate: event.startDate || "",
@@ -158,7 +158,7 @@ export default function EventDetail({ params }: { params: Promise<{ id: string }
           userId: event.organizerId,
           type: "NEW_REGISTRATION",
           title: "Pendaftar Baru",
-          message: `${user.displayName || "Mahasiswa"} baru saja mendaftar ke acara Anda: ${event.title || "Acara Tanpa Judul"}`,
+          message: `${user.displayName || "Audiens"} baru saja mendaftar ke acara Anda: ${event.title || "Acara Tanpa Judul"}`,
           eventId: id,
           status: "unread",
           createdAt: serverTimestamp(),
@@ -648,7 +648,7 @@ export default function EventDetail({ params }: { params: Promise<{ id: string }
               <div className="bg-white px-6 md:px-8 py-8 rounded-xl border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.02)] space-y-8 animate-in fade-in duration-500">
                 <div>
                   <h2 className="text-xl font-bold text-dark mb-1">Rating &amp; Ulasan</h2>
-                  <p className="text-neutral text-xs">Ulasan jujur dari mahasiswa yang telah mengikuti acara ini.</p>
+                  <p className="text-neutral text-xs">Ulasan jujur dari audiens yang telah mengikuti acara ini.</p>
                 </div>
 
                 {reviews.length > 0 ? (
@@ -802,7 +802,7 @@ export default function EventDetail({ params }: { params: Promise<{ id: string }
                   if (event.eventState === "completed") {
                     if (isRegistered && registrationData?.status === "attended") {
                       return (
-                        <Link href={`/mahasiswa/my-events/${registrationData.id}`} className="w-full bg-amber-500 hover:bg-amber-600 text-white font-extrabold py-4 rounded-2xl text-center shadow-lg shadow-amber-500/20 transition-all active:scale-95 text-sm flex items-center justify-center gap-2">
+                        <Link href={`/audiens/my-events/${registrationData.id}`} className="w-full bg-amber-500 hover:bg-amber-600 text-white font-extrabold py-4 rounded-2xl text-center shadow-lg shadow-amber-500/20 transition-all active:scale-95 text-sm flex items-center justify-center gap-2">
                           <Star className="h-4 w-4 fill-white" /> Berikan Ulasan
                         </Link>
                       );
@@ -833,7 +833,7 @@ export default function EventDetail({ params }: { params: Promise<{ id: string }
                   if (isRegistered) {
                     return (
                       <div className="flex flex-col gap-2">
-                        <Link href={`/mahasiswa/my-events/${registrationData?.id}`} className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold py-4 rounded-2xl text-center shadow-lg transition-all active:scale-95 text-sm flex items-center justify-center gap-2">
+                        <Link href={`/audiens/my-events/${registrationData?.id}`} className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold py-4 rounded-2xl text-center shadow-lg transition-all active:scale-95 text-sm flex items-center justify-center gap-2">
                           <Ticket className="h-4 w-4" /> Lihat Tiket
                         </Link>
                         {event.eventState !== "started" && (
@@ -893,7 +893,7 @@ export default function EventDetail({ params }: { params: Promise<{ id: string }
           if (event.eventState === "completed") {
             if (isRegistered && registrationData?.status === "attended") {
               return (
-                <Link href={`/mahasiswa/my-events/${registrationData.id}`} className="bg-amber-500 hover:bg-amber-600 text-white font-black px-6 py-4 rounded-2xl text-sm shadow-lg active:scale-95 transition-all flex gap-2 items-center">
+                <Link href={`/audiens/my-events/${registrationData.id}`} className="bg-amber-500 hover:bg-amber-600 text-white font-black px-6 py-4 rounded-2xl text-sm shadow-lg active:scale-95 transition-all flex gap-2 items-center">
                   <Star className="h-4 w-4 fill-white" /> Ulasan
                 </Link>
               );
@@ -923,7 +923,7 @@ export default function EventDetail({ params }: { params: Promise<{ id: string }
 
           if (isRegistered) {
             return (
-              <Link href={`/mahasiswa/my-events/${registrationData?.id}`} className="bg-emerald-500 text-white font-black px-8 py-4 rounded-2xl text-sm border border-emerald-500 shadow-lg active:scale-95 transition-all flex items-center gap-2">
+              <Link href={`/audiens/my-events/${registrationData?.id}`} className="bg-emerald-500 text-white font-black px-8 py-4 rounded-2xl text-sm border border-emerald-500 shadow-lg active:scale-95 transition-all flex items-center gap-2">
                 <Ticket className="h-4 w-4" /> Tiket
               </Link>
             );

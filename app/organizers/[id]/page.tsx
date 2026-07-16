@@ -154,7 +154,7 @@ export default function OrganizerProfilePage() {
           <div className="text-center md:text-left">
             <h1 className="text-4xl md:text-5xl font-black mb-4">{organizer.displayName}</h1>
             <p className="text-white/80 font-medium max-w-2xl mb-6">
-              {organizer.orgDescription || "Penyelenggara resmi di Universitas Paramadina yang aktif membuat acara berkualitas untuk mahasiswa."}
+              {organizer.orgDescription || "Penyelenggara resmi di Universitas Paramadina yang aktif membuat acara berkualitas untuk audiens."}
             </p>
             
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-4">

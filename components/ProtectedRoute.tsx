@@ -24,7 +24,7 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
         // Arahkan ke dashboard masing-masing sesuai role-nya
         if (role === "admin") router.push("/admin");
         else if (role === "organizer") router.push("/organizer");
-        else router.push("/mahasiswa");
+        else router.push("/audiens");
       }
     }
   }, [user, role, isLoading, router, allowedRoles]);

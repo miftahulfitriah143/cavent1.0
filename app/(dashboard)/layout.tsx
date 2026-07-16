@@ -17,8 +17,8 @@ export default function GlobalDashboardLayout({ children }: { children: React.Re
     );
   }
 
-  // Jika Mahasiswa: Tampilan Bersih (tanpa sidebar)
-  if (role === "mahasiswa") {
+  // Jika Audiens: Tampilan Bersih (tanpa sidebar)
+  if (role === "audiens") {
     return (
       <div className="min-h-screen flex flex-col bg-[#f8f9fa]">
         <PublicNavbar />

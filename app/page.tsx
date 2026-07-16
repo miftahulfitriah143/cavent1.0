@@ -26,7 +26,7 @@ import { collection, query, where, onSnapshot, orderBy, limit } from "firebase/f
 
 export default function LandingPage() {
   const { role } = useAuth();
-  const isStudent = role === "mahasiswa";
+  const isStudent = role === "audiens";
   const [upcomingEvents, setUpcomingEvents] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -55,9 +55,9 @@ export default function LandingPage() {
   }, []);
 
   const QUICK_ACTIONS = [
-    { title: "Profil Saya", icon: User, href: "/mahasiswa/profile", color: "bg-blue-50 text-blue-600" },
-    { title: "Acara Saya", icon: CalendarDays, href: "/mahasiswa/my-events", color: "bg-teal-50 text-teal-600" },
-    { title: "Ulasan Saya", icon: Star, href: "/mahasiswa/ratings", color: "bg-amber-50 text-amber-600" },
+    { title: "Profil Saya", icon: User, href: "/audiens/profile", color: "bg-blue-50 text-blue-600" },
+    { title: "Acara Saya", icon: CalendarDays, href: "/audiens/my-events", color: "bg-teal-50 text-teal-600" },
+    { title: "Ulasan Saya", icon: Star, href: "/audiens/ratings", color: "bg-amber-50 text-amber-600" },
   ];
 
   return (
@@ -196,7 +196,7 @@ export default function LandingPage() {
                 Solusi Terpadu untuk Manajemen Event Kampus
               </h2>
               <p className="text-neutral text-sm max-w-xl mx-auto">
-                CAVENT hadir dengan fitur lengkap untuk mendukung kesuksesan setiap kegiatan organisasi dan mahasiswa
+                CAVENT hadir dengan fitur lengkap untuk mendukung kesuksesan setiap kegiatan organisasi dan audiens
               </p>
             </div>
 

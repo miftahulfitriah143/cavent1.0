@@ -378,7 +378,7 @@ export default function MyEventsPage() {
           </div>
           <h3 className="text-2xl font-black text-dark mb-3">Tidak Ada Acara</h3>
           <p className="text-neutral text-sm max-w-sm leading-relaxed mb-10 font-medium">
-            Sepertinya kamu belum pernah mengajukan acara. Mulai buat acaramu sekarang agar bisa dilihat oleh ribuan mahasiswa!
+            Sepertinya kamu belum pernah mengajukan acara. Mulai buat acaramu sekarang agar bisa dilihat oleh ribuan audiens!
           </p>
           <Link href="/organizer/events/new" className="bg-dark text-white px-10 py-4 rounded-xl font-bold text-sm hover:bg-black transition-all shadow-xl shadow-black/10 active:scale-[0.98]">
             Buat Acara Pertama

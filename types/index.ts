@@ -2,13 +2,13 @@
 // Tipe Data Utama Cavent
 // ============================================================
 
-export type UserRole = 'admin' | 'organizer' | 'mahasiswa'
+export type UserRole = 'admin' | 'organizer' | 'audiens'
 
 export interface UserProfile {
   uid: string
   email: string
   displayName: string
-  nim?: string          // Khusus mahasiswa
+  nim?: string          // Khusus audiens
   role: UserRole
   photoURL?: string
   createdAt: Date

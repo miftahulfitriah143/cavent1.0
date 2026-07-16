@@ -131,13 +131,13 @@ export function Sidebar() {
     }
   ];
 
-  const mahasiswaGroups: NavGroup[] = [
+  const audiensGroups: NavGroup[] = [
     {
       label: "MENU UTAMA",
       items: [
-        { name: "Eksplor Acara", href: "/mahasiswa", icon: <Home className="h-4 w-4" /> },
-        { name: "Tiket Saya", href: "/mahasiswa/tickets", icon: <Calendar className="h-4 w-4" /> },
-        { name: "Scan QR Absensi", href: "/mahasiswa/scan", icon: <QrCode className="h-4 w-4" /> },
+        { name: "Eksplor Acara", href: "/audiens", icon: <Home className="h-4 w-4" /> },
+        { name: "Tiket Saya", href: "/audiens/tickets", icon: <Calendar className="h-4 w-4" /> },
+        { name: "Scan QR Absensi", href: "/audiens/scan", icon: <QrCode className="h-4 w-4" /> },
       ]
     }
   ];
@@ -145,13 +145,13 @@ export function Sidebar() {
   let groups: NavGroup[] = [];
   if (role === "admin") groups = adminGroups;
   else if (role === "organizer") groups = organizerGroups;
-  else if (role === "mahasiswa") groups = mahasiswaGroups;
+  else if (role === "audiens") groups = audiensGroups;
 
   // Mapping role ke label
   const roleLabels: Record<string, string> = {
     admin: "Admin",
     organizer: "Penyelenggara",
-    mahasiswa: "Mahasiswa",
+    audiens: "Audiens",
   };
   const displayRole = role ? roleLabels[role] || role : "Pengguna";
 

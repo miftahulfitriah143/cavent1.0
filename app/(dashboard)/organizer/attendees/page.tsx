@@ -87,7 +87,7 @@ export default function AttendeesPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h1 className="text-4xl font-black text-dark tracking-tight">Daftar Peserta</h1>
-          <p className="text-neutral text-sm mt-2">Pantau mahasiswa yang mendaftar dan hadir di acaramu.</p>
+          <p className="text-neutral text-sm mt-2">Pantau audiens yang mendaftar dan hadir di acaramu.</p>
         </div>
 
         <button className="flex items-center gap-2 bg-dark text-white px-8 py-4 rounded-xl font-bold text-sm hover:bg-black shadow-xl shadow-black/10 transition-all active:scale-95 w-fit">
@@ -142,7 +142,7 @@ export default function AttendeesPage() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-gray-50/50 border-b border-gray-100">
-                  <th className="px-8 py-5 text-[10px] font-black text-neutral uppercase tracking-widest">Mahasiswa</th>
+                  <th className="px-8 py-5 text-[10px] font-black text-neutral uppercase tracking-widest">Audiens</th>
                   <th className="px-8 py-5 text-[10px] font-black text-neutral uppercase tracking-widest">Acara</th>
                   <th className="px-8 py-5 text-[10px] font-black text-neutral uppercase tracking-widest">Status</th>
                   <th className="px-8 py-5 text-[10px] font-black text-neutral uppercase tracking-widest">Waktu Daftar</th>
