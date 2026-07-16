@@ -114,7 +114,10 @@ export default function EventsPage() {
     const matchSearch =
       !searchQuery ||
       e.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      e.venue?.toLowerCase().includes(searchQuery.toLowerCase());
+      e.venue?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      e.organizerName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      e.organizerProdi?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (Array.isArray(e.organizerProdi) && e.organizerProdi.some((prodi: string) => prodi.toLowerCase().includes(searchQuery.toLowerCase())));
 
     // 3. Penyelenggara
     const matchPenyelenggara =
@@ -151,6 +154,22 @@ export default function EventsPage() {
     }
 
     return matchCat && matchSearch && matchPenyelenggara;
+  }).sort((a, b) => {
+    // Pengurutan (Sorting)
+    if (sortBy === "Terbaru") {
+      const dateA = a.createdAt?.seconds || 0;
+      const dateB = b.createdAt?.seconds || 0;
+      return dateB - dateA;
+    } else if (sortBy === "Terlama") {
+      const dateA = a.createdAt?.seconds || 0;
+      const dateB = b.createdAt?.seconds || 0;
+      return dateA - dateB;
+    } else if (sortBy === "Populer") {
+      const popA = a.registeredCount || 0;
+      const popB = b.registeredCount || 0;
+      return popB - popA;
+    }
+    return 0;
   });
 
   return (
@@ -201,7 +220,7 @@ export default function EventsPage() {
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral/50" />
               <input
                 type="text"
-                placeholder="Cari acara, seminar, workshop..."
+                placeholder="Cari nama acara, penyelenggara, atau lokasi..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-11 pr-4 py-3 rounded-xl border-0 bg-white text-sm text-dark focus:outline-none focus:ring-2 focus:ring-accent/50 transition-shadow shadow-md"
