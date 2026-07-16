@@ -40,7 +40,7 @@ export default function LandingPage() {
       const events = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
-      })).filter(e => e.eventState !== "completed")
+      })).filter((e: any) => e.eventState !== "completed")
         .sort((a: any, b: any) => {
           const dateA = a.createdAt?.seconds || 0;
           const dateB = b.createdAt?.seconds || 0;
