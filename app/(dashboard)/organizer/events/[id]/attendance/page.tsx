@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { 
-  Users, 
-  Search, 
-  Download, 
-  CheckCircle2, 
+import {
+  Users,
+  Search,
+  Download,
+  CheckCircle2,
   RefreshCw,
   ChevronLeft,
   Maximize,
@@ -24,7 +24,7 @@ export default function AttendancePage({ params }: { params: Promise<{ id: strin
   const router = useRouter();
   const { id } = React.use(params);
   const { user } = useAuth();
-  
+
   const [event, setEvent] = useState<any>(null);
   const [attendees, setAttendees] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -80,7 +80,7 @@ export default function AttendancePage({ params }: { params: Promise<{ id: strin
         const timeB = b.attendedAt?.seconds || b.registeredAt?.seconds || 0;
         return timeB - timeA;
       });
-      
+
       setAttendees(attendeeData);
       setIsLoading(false);
     }, (error) => {
@@ -91,7 +91,7 @@ export default function AttendancePage({ params }: { params: Promise<{ id: strin
     return () => unsubscribe();
   }, [id, user]);
 
-  
+
   useEffect(() => {
     const handleFullscreenChange = () => {
       if (!document.fullscreenElement) {
@@ -117,9 +117,9 @@ export default function AttendancePage({ params }: { params: Promise<{ id: strin
   // Dynamic QR Code Generator
   useEffect(() => {
     if (!event) return;
-    
+
     let interval: NodeJS.Timeout;
-    
+
     const generateDynamicQR = async () => {
       const timestamp = Date.now();
       const payload = `${id}_${timestamp}`;
@@ -127,7 +127,7 @@ export default function AttendancePage({ params }: { params: Promise<{ id: strin
         const url = await QRCode.toDataURL(payload, { width: 400, margin: 2, color: { dark: '#000000', light: '#FFFFFF' } });
         setQrDataUrl(url);
         setLastRefresh(timestamp);
-        
+
         // Save payload to Firestore
         await updateDoc(doc(db, "events", id), {
           currentQrPayload: payload,
@@ -155,12 +155,28 @@ export default function AttendancePage({ params }: { params: Promise<{ id: strin
     try {
       await updateDoc(doc(db, "registrations", registrationId), {
         status: "attended",
-        attendedAt: serverTimestamp()
+        attendedAt: serverTimestamp(),
+        checkInMethod: "manual"
       });
       toast.success(`${userName} berhasil di-check-in!`);
     } catch (error) {
       console.error("Check-in Error:", error);
       toast.error("Gagal melakukan check-in manual.");
+    }
+  };
+
+  const handleCancelCheckIn = async (registrationId: string, userName: string) => {
+    if (!window.confirm(`Batalkan check-in untuk ${userName}?`)) return;
+    try {
+      await updateDoc(doc(db, "registrations", registrationId), {
+        status: "registered",
+        attendedAt: null,
+        checkInMethod: null
+      });
+      toast.success(`Check-in ${userName} dibatalkan.`);
+    } catch (error) {
+      console.error("Cancel Check-in Error:", error);
+      toast.error("Gagal membatalkan check-in.");
     }
   };
 
@@ -194,8 +210,8 @@ export default function AttendancePage({ params }: { params: Promise<{ id: strin
   };
 
   const filteredAttendees = attendees.filter(a => {
-    return a.userName?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-           a.userEmail?.toLowerCase().includes(searchTerm.toLowerCase());
+    return a.userName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      a.userEmail?.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
   const attendedCount = attendees.filter(a => a.status === "attended").length;
@@ -220,34 +236,34 @@ export default function AttendancePage({ params }: { params: Promise<{ id: strin
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-20">
-      <Link 
-        href="/organizer/events" 
+      <Link
+        href="/organizer/events"
         className="inline-flex items-center gap-2 text-accent hover:text-accent-600 font-bold text-sm transition-colors mb-4"
       >
         <ChevronLeft className="h-4 w-4" /> Kembali ke Daftar Acara
       </Link>
 
-      
+
       {isFullScreenQR && (
         <div className="fixed inset-0 z-[100] bg-white overflow-hidden h-screen w-screen">
           <div className="h-full w-full flex flex-col items-center justify-center relative animate-in fade-in zoom-in-95 duration-500">
             {/* Decorative ambient background elements */}
             <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
             <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-blue-600/5 rounded-full blur-[150px] translate-x-1/3 translate-y-1/3 pointer-events-none" />
-            
-            <button 
+
+            <button
               onClick={() => {
                 if (document.fullscreenElement) {
                   document.exitFullscreen();
                 }
                 setIsFullScreenQR(false);
-              }} 
+              }}
               className="fixed top-6 right-6 p-3 lg:p-4 bg-gray-50 hover:bg-gray-100 text-neutral hover:text-dark rounded-full backdrop-blur-md transition-all z-50 border border-gray-200 shadow-md"
               title="Keluar dari mode layar penuh"
             >
               <X className="h-6 w-6" />
             </button>
-            
+
             <div className="z-10 flex flex-col items-center w-full max-w-4xl mx-auto my-auto">
               {/* Live Indicator */}
               <div className="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-emerald-50 border border-emerald-100 mb-6 shadow-sm">
@@ -260,24 +276,24 @@ export default function AttendancePage({ params }: { params: Promise<{ id: strin
 
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-dark text-center mb-3 tracking-tight leading-tight px-4">{event?.title}</h1>
               <p className="text-base md:text-lg lg:text-xl text-neutral font-medium mb-10 text-center px-4">Scan QR Code di bawah untuk absensi otomatis</p>
-              
+
               <div className="relative group mx-auto">
                 {/* Outer glow for QR */}
                 <div className="absolute -inset-1 bg-gradient-to-r from-primary to-blue-600 rounded-[2.5rem] md:rounded-[3rem] blur opacity-10 group-hover:opacity-20 transition duration-1000 group-hover:duration-200 pointer-events-none"></div>
-                
+
                 <div className="relative bg-white p-5 md:p-8 rounded-[2rem] md:rounded-[2.5rem] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] border border-gray-100 w-full max-w-[280px] md:max-w-[360px] aspect-square flex items-center justify-center transform transition-transform duration-500 group-hover:scale-[1.02]">
-                   {qrDataUrl ? (
-                      <img src={qrDataUrl} alt="QR Code" className="w-full h-full object-contain mix-blend-multiply" />
-                    ) : (
-                      <div className="animate-pulse bg-gray-100 w-full h-full rounded-2xl border-2 border-dashed border-gray-200"></div>
-                    )}
+                  {qrDataUrl ? (
+                    <img src={qrDataUrl} alt="QR Code" className="w-full h-full object-contain mix-blend-multiply" />
+                  ) : (
+                    <div className="animate-pulse bg-gray-100 w-full h-full rounded-2xl border-2 border-dashed border-gray-200"></div>
+                  )}
                 </div>
               </div>
-              
+
               {/* Refresh Indicator */}
               <div className="mt-12 flex items-center gap-3 text-neutral bg-gray-50 px-6 py-3 rounded-2xl border border-gray-200 shadow-sm">
-                 <RefreshCw className="h-4 w-4 md:h-5 md:w-5 animate-spin text-neutral" />
-                 <span className="text-xs md:text-sm font-medium tracking-wide">Kode QR diperbarui setiap 30 detik</span>
+                <RefreshCw className="h-4 w-4 md:h-5 md:w-5 animate-spin text-neutral" />
+                <span className="text-xs md:text-sm font-medium tracking-wide">Kode QR diperbarui setiap 30 detik</span>
               </div>
             </div>
           </div>
@@ -286,11 +302,11 @@ export default function AttendancePage({ params }: { params: Promise<{ id: strin
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-        
+
         {/* LEFT PANEL - QR Code */}
         <div className="lg:col-span-4">
           <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm flex flex-col items-center relative">
-            <button 
+            <button
               className="absolute top-6 right-6 p-2 text-neutral hover:text-dark transition-colors"
               onClick={() => {
                 const elem = document.documentElement;
@@ -325,7 +341,7 @@ export default function AttendancePage({ params }: { params: Promise<{ id: strin
             </div>
 
             <div className="grid grid-cols-2 gap-4 w-full">
-              <button 
+              <button
                 onClick={handleManualRefresh}
                 disabled={isRefreshing}
                 className="flex items-center justify-center gap-2 bg-primary text-white py-3 rounded-xl font-bold text-sm hover:bg-primary-900 transition-all disabled:opacity-50 shadow-lg shadow-primary/20"
@@ -333,7 +349,7 @@ export default function AttendancePage({ params }: { params: Promise<{ id: strin
                 <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
                 Refresh
               </button>
-              <button 
+              <button
                 onClick={handleExport}
                 className="flex items-center justify-center gap-2 bg-white text-orange-500 border border-orange-200 py-3 rounded-xl font-bold text-sm hover:bg-orange-50 transition-all"
               >
@@ -362,8 +378,8 @@ export default function AttendancePage({ params }: { params: Promise<{ id: strin
             <div className="flex items-center gap-4 mb-6">
               <div className="relative flex-1">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral/40" />
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   placeholder="Cari Nama/NIM Peserta.."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -395,8 +411,8 @@ export default function AttendancePage({ params }: { params: Promise<{ id: strin
                         <td className="py-4 px-4 text-sm font-bold text-dark">{a.userName}</td>
                         <td className="py-4 px-4 text-sm text-neutral">{extractNim(a.userEmail)}</td>
                         <td className="py-4 px-4 text-sm text-dark font-medium">
-                          {a.attendedAt 
-                            ? a.attendedAt.toDate().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB' 
+                          {a.attendedAt
+                            ? a.attendedAt.toDate().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB'
                             : '-'}
                         </td>
                         <td className="py-4 px-4 text-sm text-dark font-medium">
@@ -410,8 +426,15 @@ export default function AttendancePage({ params }: { params: Promise<{ id: strin
                             >
                               Check-in
                             </button>
+                          ) : a.checkInMethod === "manual" ? (
+                            <button 
+                              onClick={() => handleCancelCheckIn(a.id, a.userName)}
+                              className="bg-red-50 hover:bg-red-500 text-red-600 hover:text-white border border-red-100 px-3 py-2 rounded-lg text-xs font-bold transition-all"
+                            >
+                              Batal
+                            </button>
                           ) : (
-                            <span className="text-neutral font-bold text-xs px-4">-</span>
+                            <span className="text-neutral font-bold text-xs px-4" title="Check-in via QR">-</span>
                           )}
                         </td>
                       </tr>

@@ -19,7 +19,7 @@ service cloud.firestore {
 
     // Ambil data role user dari koleksi users
     function getUserRole() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+      return request.auth != null ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role : null;
     }
 
     // Apakah user memiliki role admin?
@@ -41,11 +41,11 @@ service cloud.firestore {
     // KOLEKSI: users
     // ─────────────────────────────────────────────────────────────
     match /users/{userId} {
-      // Siapa saja yang login bisa baca profil sendiri
-      allow read: if isSignedIn() && isOwner(userId);
+      // Izinkan publik membaca profil user (terutama untuk profil penyelenggara)
+      allow read: if true;
 
-      // Admin bisa baca semua profil user
-      allow read: if isAdmin();
+      // Publik bisa membaca profil penyelenggara acara
+      allow read: if resource.data.role == 'organizer';
 
       // User bisa buat dokumen profil sendiri (saat register)
       allow create: if isSignedIn() && isOwner(userId);

@@ -51,12 +51,6 @@ export default function MyEventsPage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
-      <Link 
-        href="/audiens/profile" 
-        className="inline-flex items-center gap-2 text-accent hover:text-accent-600 font-bold text-sm transition-colors"
-      >
-        <ChevronLeft className="h-4 w-4" /> Kembali ke Profil
-      </Link>
 
       <div>
         <h1 className="text-4xl font-black text-dark tracking-tight">Acara Saya</h1>

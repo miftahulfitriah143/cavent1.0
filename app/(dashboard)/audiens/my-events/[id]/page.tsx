@@ -17,7 +17,7 @@ import {
 import Link from "next/link";
 import { db, auth } from "@/lib/firebase";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { doc, getDoc, updateDoc, serverTimestamp, collection, query, where, getDocs, addDoc, increment } from "firebase/firestore";
+import { doc, getDoc, updateDoc, serverTimestamp, collection, query, where, getDocs, addDoc, increment, deleteDoc } from "firebase/firestore";
 import { useAuth } from "@/components/providers/AuthProvider";
 import toast from "react-hot-toast";
 import { Html5QrcodeScanner } from "html5-qrcode";
@@ -148,6 +148,28 @@ export default function TicketPage({ params }: { params: Promise<{ id: string }>
       toast.error("Gagal mencatat absensi");
     } finally {
       setIsScanning(false);
+    }
+  };
+
+  const handleCancelRegistration = async () => {
+    if (!window.confirm("Apakah Anda yakin ingin membatalkan pendaftaran acara ini? Tiket Anda akan hangus.")) return;
+    try {
+      setIsLoading(true);
+      
+      // Hapus dokumen pendaftaran
+      await deleteDoc(doc(db, "registrations", id));
+      
+      // Kurangi registeredCount di dokumen event
+      await updateDoc(doc(db, "events", registration.eventId), {
+        registeredCount: increment(-1)
+      });
+      
+      toast.success("Pendaftaran berhasil dibatalkan.");
+      router.push("/audiens/my-events");
+    } catch (error) {
+      console.error("Cancel Registration Error:", error);
+      toast.error("Gagal membatalkan pendaftaran.");
+      setIsLoading(false);
     }
   };
 
@@ -535,6 +557,16 @@ export default function TicketPage({ params }: { params: Promise<{ id: string }>
                 <p className="text-neutral text-[10px] font-bold uppercase tracking-widest mt-6">
                   Silakan scan QR Code di meja panitia saat acara dimulai
                 </p>
+
+                {/* Batalkan Pendaftaran Button */}
+                {eventState !== "started" && eventState !== "completed" && (
+                   <button 
+                     onClick={handleCancelRegistration}
+                     className="mt-8 text-xs font-bold text-red-500 hover:text-red-700 underline decoration-red-500/30 transition-colors"
+                   >
+                     Batalkan Pendaftaran
+                   </button>
+                )}
               </div>
             )}
           </div>

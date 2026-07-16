@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { 
-  Plus, 
-  Search, 
-  Filter, 
-  Calendar, 
-  MapPin, 
+import {
+  Plus,
+  Search,
+  Filter,
+  Calendar,
+  MapPin,
   MoreVertical,
   Edit3,
   Trash2,
@@ -28,7 +28,7 @@ const getCategoryBadgeClass = (category: string) => {
   if (norm.includes("workshop")) return "text-rose-600 bg-rose-50 border border-rose-100";
   if (norm.includes("kompetisi") || norm.includes("competition")) return "text-amber-600 bg-amber-50 border border-amber-100";
   if (norm.includes("diskusi")) return "text-violet-600 bg-violet-50 border border-violet-100";
-  
+
   return "text-primary bg-primary/5 border border-primary/10";
 };
 
@@ -39,10 +39,10 @@ export default function MyEventsPage() {
   const [events, setEvents] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedRejection, setSelectedRejection] = useState<{title: string, reason: string} | null>(null);
-  
+  const [selectedRejection, setSelectedRejection] = useState<{ title: string, reason: string } | null>(null);
+
   // Documentation Modal State
-  const [completeModalData, setCompleteModalData] = useState<{eventId: string, title: string} | null>(null);
+  const [docModalData, setDocModalData] = useState<{ eventId: string, title: string } | null>(null);
   const [docPhotos, setDocPhotos] = useState<File[]>([]);
   const [docVideo, setDocVideo] = useState("");
   const [docGdrive, setDocGdrive] = useState("");
@@ -67,23 +67,62 @@ export default function MyEventsPage() {
         eventState: "started"
       });
       toast.success(`Acara "${title}" berhasil dimulai!`);
-      
+
     } catch (error) {
       console.error("Start Event Error:", error);
       toast.error("Gagal memulai acara");
     }
   };
 
-  const openCompleteModal = (eventId: string, title: string) => {
-    setCompleteModalData({ eventId, title });
-    setDocPhotos([]);
-    setDocVideo("");
-    setDocGdrive("");
+  const handleCancelStartEvent = async (eventId: string, title: string) => {
+    if (!window.confirm(`Batal memulai acara "${title}"? Status akan kembali seperti sebelum dimulai.`)) return;
+    try {
+      await updateDoc(doc(db, "events", eventId), {
+        eventState: null
+      });
+      toast.success(`Berhasil membatalkan status mulai untuk acara "${title}".`);
+    } catch (error) {
+      console.error("Cancel Start Error:", error);
+      toast.error("Gagal membatalkan status mulai");
+    }
   };
 
-  const submitCompleteEvent = async (e: React.FormEvent) => {
+  const handleCancelEvent = async (eventId: string, title: string) => {
+    if (!window.confirm(`Apakah Anda yakin ingin MEMBATALKAN acara "${title}"? Tindakan ini tidak dapat diurungkan.`)) return;
+    try {
+      await updateDoc(doc(db, "events", eventId), {
+        status: "cancelled"
+      });
+      toast.success(`Acara "${title}" berhasil dibatalkan.`);
+    } catch (error) {
+      console.error("Cancel Event Error:", error);
+      toast.error("Gagal membatalkan acara");
+    }
+  };
+
+  const handleCompleteEvent = async (eventId: string, title: string) => {
+    if (!window.confirm(`Selesaikan acara "${title}"? Status akan berubah menjadi Selesai.`)) return;
+    try {
+      await updateDoc(doc(db, "events", eventId), {
+        eventState: "completed"
+      });
+      toast.success(`Acara "${title}" berhasil diselesaikan.`);
+    } catch (error) {
+      console.error("Complete Event Error:", error);
+      toast.error("Gagal menyelesaikan acara");
+    }
+  };
+
+  const openDocModal = (eventId: string, title: string, existingDoc?: any) => {
+    setDocModalData({ eventId, title });
+    setDocPhotos([]); // Reset photos array (re-upload required for photos right now)
+    setDocVideo(existingDoc?.video || "");
+    setDocGdrive(existingDoc?.gdriveLink || "");
+  };
+
+  const submitDocumentation = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!completeModalData) return;
+    if (!docModalData) return;
     setIsUploading(true);
     try {
       const uploadedPhotos: string[] = [];
@@ -93,18 +132,17 @@ export default function MyEventsPage() {
         uploadedPhotos.push(url);
       }
 
-      await updateDoc(doc(db, "events", completeModalData.eventId), {
-        eventState: "completed",
+      await updateDoc(doc(db, "events", docModalData.eventId), {
         documentation: {
           photos: uploadedPhotos,
           video: docVideo,
           gdriveLink: docGdrive
         }
       });
-      toast.success(`Acara "${completeModalData.title}" telah diselesaikan beserta dokumentasinya!`);
-      setCompleteModalData(null);
+      toast.success(`Dokumentasi acara "${docModalData.title}" berhasil diunggah!`);
+      setDocModalData(null);
     } catch (error) {
-      console.error("Complete Event Error:", error);
+      console.error("Upload Documentation Error:", error);
       toast.error("Gagal mengunggah dokumentasi");
     } finally {
       setIsUploading(false);
@@ -130,7 +168,7 @@ export default function MyEventsPage() {
         const dateB = b.createdAt?.seconds || 0;
         return dateB - dateA;
       });
-      
+
       setEvents(eventData);
       setIsLoading(false);
     }, (error) => {
@@ -141,7 +179,7 @@ export default function MyEventsPage() {
     return () => unsubscribe();
   }, [user]);
 
-  const filteredEvents = events.filter(event => 
+  const filteredEvents = events.filter(event =>
     event.title?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -151,7 +189,7 @@ export default function MyEventsPage() {
         return <span className="bg-green-50 text-green-600 px-3 py-1 rounded-full text-[10px] font-bold flex items-center gap-1.5 shadow-sm border border-green-100"><CheckCircle2 className="h-3 w-3" /> Disetujui</span>;
       case "rejected":
         return (
-          <button 
+          <button
             onClick={(e) => {
               e.preventDefault();
               setSelectedRejection({ title: event.title, reason: event.rejectionReason || "Tidak ada alasan spesifik." });
@@ -161,6 +199,8 @@ export default function MyEventsPage() {
             <XCircle className="h-3 w-3" /> Ditolak (Lihat Alasan)
           </button>
         );
+      case "cancelled":
+        return <span className="bg-gray-50 text-gray-600 px-3 py-1 rounded-full text-[10px] font-bold flex items-center gap-1.5 shadow-sm border border-gray-100"><XCircle className="h-3 w-3" /> Dibatalkan</span>;
       default:
         return <span className="bg-amber-50 text-amber-600 px-3 py-1 rounded-full text-[10px] font-bold flex items-center gap-1.5 shadow-sm border border-amber-100"><Clock className="h-3 w-3" /> Menunggu</span>;
     }
@@ -185,7 +225,7 @@ export default function MyEventsPage() {
           { label: "Total Acara", value: events.length, color: "text-dark", bg: "bg-white" },
           { label: "Disetujui", value: events.filter(e => e.status === "published").length, color: "text-green-600", bg: "bg-green-50/30" },
           { label: "Menunggu", value: events.filter(e => e.status === "pending").length, color: "text-amber-600", bg: "bg-amber-50/30" },
-          { label: "Ditolak", value: events.filter(e => e.status === "rejected").length, color: "text-red-600", bg: "bg-red-50/30" },
+          { label: "Ditolak/Batal", value: events.filter(e => e.status === "rejected" || e.status === "cancelled").length, color: "text-red-600", bg: "bg-red-50/30" },
         ].map((stat, i) => (
           <div key={i} className={`${stat.bg} p-6 rounded-xl border border-gray-100 shadow-sm transition-transform hover:scale-[1.02]`}>
             <p className="text-[10px] font-bold text-neutral uppercase tracking-[0.2em]">{stat.label}</p>
@@ -198,8 +238,8 @@ export default function MyEventsPage() {
       <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm mb-10 flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral/50" />
-          <input 
-            type="text" 
+          <input
+            type="text"
             placeholder="Cari judul acara..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -223,8 +263,8 @@ export default function MyEventsPage() {
             <div key={event.id} className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 group flex flex-col h-full">
               {/* Card Image */}
               <div className="aspect-[16/10] relative overflow-hidden">
-                <img 
-                  src={event.bannerUrl || "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2070&auto=format&fit=crop"} 
+                <img
+                  src={event.bannerUrl || "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2070&auto=format&fit=crop"}
                   alt={event.title}
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
@@ -270,11 +310,11 @@ export default function MyEventsPage() {
                     </>
                   )}
                 </div>
-                
+
                 <h3 className="font-black text-dark text-xl leading-tight mb-5 line-clamp-2 min-h-[3.5rem] group-hover:text-primary transition-colors">
                   {event.title}
                 </h3>
-                
+
                 <div className="space-y-3 mb-6 flex-1">
                   <div className="flex items-center gap-3 text-xs text-neutral/70 font-medium">
                     <Calendar className="h-4 w-4 text-primary/40 shrink-0" />
@@ -302,70 +342,107 @@ export default function MyEventsPage() {
                 {event.status === "published" && (
                   <div className="mb-6">
                     {event.eventState === "started" ? (
-                      <button
-                        onClick={() => openCompleteModal(event.id, event.title)}
-                        className="w-full py-3 bg-red-50 hover:bg-red-500 text-red-600 hover:text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 border border-red-100 hover:border-red-500 shadow-sm"
-                        title="Selesaikan Acara"
-                      >
-                        <CheckCircle2 className="h-4.5 w-4.5" /> Selesaikan Acara
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleCancelStartEvent(event.id, event.title)}
+                          className="flex-1 py-3 bg-gray-50 hover:bg-gray-200 text-gray-600 rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 border border-gray-200 shadow-sm"
+                          title="Batal Mulai Acara"
+                        >
+                          <XCircle className="h-4 w-4" /> Batal Mulai
+                        </button>
+                        <button
+                          onClick={() => handleCompleteEvent(event.id, event.title)}
+                          className="flex-1 py-3 bg-red-50 hover:bg-red-500 text-red-600 hover:text-white rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 border border-red-100 hover:border-red-500 shadow-sm"
+                          title="Selesaikan Acara"
+                        >
+                          <CheckCircle2 className="h-4 w-4" /> Selesaikan
+                        </button>
+                      </div>
                     ) : event.eventState === "completed" ? (
-                      <Link
-                        href={`/organizer/events/${event.id}/report`}
-                        className="w-full py-3 bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 border border-blue-100 hover:border-blue-600 shadow-sm"
-                        title="Lihat Laporan Acara"
-                      >
-                        <FileText className="h-4.5 w-4.5" /> Laporan Acara
-                      </Link>
+                      <div className="flex gap-2">
+                        <Link
+                          href={`/organizer/events/${event.id}/report`}
+                          className="flex-[0.8] py-3 bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 border border-blue-100 hover:border-blue-600 shadow-sm"
+                          title="Lihat Laporan Acara"
+                        >
+                          <FileText className="h-4 w-4" /> Laporan
+                        </Link>
+                        {(() => {
+                          const hasDoc = event.documentation && (
+                            (event.documentation.photos && event.documentation.photos.length > 0) ||
+                            event.documentation.video ||
+                            event.documentation.gdriveLink
+                          );
+                          return (
+                            <button
+                              onClick={() => openDocModal(event.id, event.title, event.documentation)}
+                              className="flex-1 py-3 bg-amber-50 hover:bg-amber-500 text-amber-600 hover:text-white rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 border border-amber-100 hover:border-amber-500 shadow-sm"
+                              title={hasDoc ? "Edit Dokumentasi" : "Unggah Dokumentasi"}
+                            >
+                              {hasDoc ? <Edit3 className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                              {hasDoc ? "Edit Dokumentasi" : "Dokumentasi"}
+                            </button>
+                          );
+                        })()}
+                      </div>
                     ) : (
-                      <button
-                        onClick={() => handleStartEvent(event.id, event.title)}
-                        className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/15"
-                        title="Mulai Acara & Aktifkan Absensi"
-                      >
-                        <Play className="h-4.5 w-4.5 fill-white" /> Mulai Acara
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleCancelEvent(event.id, event.title)}
+                          className="flex-1 py-3 bg-red-50 hover:bg-red-500 text-red-600 hover:text-white rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 border border-red-100 hover:border-red-500 shadow-sm"
+                          title="Batalkan Acara"
+                        >
+                          <XCircle className="h-4 w-4" /> Batalkan
+                        </button>
+                        <button
+                          onClick={() => handleStartEvent(event.id, event.title)}
+                          className="flex-[1.5] py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-600/15"
+                          title="Mulai Acara & Aktifkan Absensi"
+                        >
+                          <Play className="h-4 w-4 fill-white" /> Mulai Acara
+                        </button>
+                      </div>
                     )}
                   </div>
                 )}
 
                 {/* Card Actions */}
                 <div className="flex items-center justify-between pt-6 border-t border-gray-50 mt-auto">
-                    <div className="flex items-center gap-2">
-                      <Link 
-                       href={`/events/${event.id}`} 
-                       target="_blank" 
-                       className="p-3 bg-gray-50 text-neutral hover:text-primary hover:bg-primary/5 rounded-2xl transition-all"
-                       title="Lihat Detail"
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                      </Link>
+                  <div className="flex items-center gap-2">
+                    <Link
+                      href={`/events/${event.id}`}
+                      target="_blank"
+                      className="p-3 bg-gray-50 text-neutral hover:text-primary hover:bg-primary/5 rounded-2xl transition-all"
+                      title="Lihat Detail"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                    </Link>
 
-                      {event.status === "published" && event.eventState === "started" && (
-                        <Link 
-                         href={`/organizer/events/${event.id}/attendance`}
-                         className="p-3 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-2xl transition-all"
-                         title="Manajemen Absensi"
-                        >
-                          <QrCode className="h-4 w-4" />
-                        </Link>
-                      )}
-
-                      <Link 
-                       href={`/organizer/events/${event.id}/edit`}
-                       className="p-3 bg-gray-50 text-neutral hover:text-blue-600 hover:bg-blue-50 rounded-2xl transition-all"
-                       title="Edit Acara"
+                    {event.status === "published" && event.eventState === "started" && (
+                      <Link
+                        href={`/organizer/events/${event.id}/attendance`}
+                        className="p-3 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-2xl transition-all"
+                        title="Manajemen Absensi"
                       >
-                        <Edit3 className="h-4 w-4" />
+                        <QrCode className="h-4 w-4" />
                       </Link>
-                    </div>
-                   <button 
+                    )}
+
+                    <Link
+                      href={`/organizer/events/${event.id}/edit`}
+                      className="p-3 bg-gray-50 text-neutral hover:text-blue-600 hover:bg-blue-50 rounded-2xl transition-all"
+                      title="Edit Acara"
+                    >
+                      <Edit3 className="h-4 w-4" />
+                    </Link>
+                  </div>
+                  <button
                     onClick={() => handleDelete(event.id, event.title)}
                     className="p-3 bg-gray-50 text-neutral hover:text-red-600 hover:bg-red-50 rounded-2xl transition-all"
                     title="Hapus Acara"
-                   >
-                     <Trash2 className="h-4 w-4" />
-                   </button>
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
                 </div>
               </div>
             </div>
@@ -392,7 +469,7 @@ export default function MyEventsPage() {
           <div className="absolute inset-0 bg-dark/60 backdrop-blur-sm" onClick={() => setSelectedRejection(null)} />
           <div className="relative bg-white w-full max-w-lg rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
             <div className="bg-red-500 p-8 text-white relative">
-              <button 
+              <button
                 onClick={() => setSelectedRejection(null)}
                 className="absolute top-6 right-6 p-2 bg-white/20 hover:bg-white/30 rounded-full transition-colors"
               >
@@ -411,7 +488,7 @@ export default function MyEventsPage() {
                   {selectedRejection.reason}
                 </p>
               </div>
-              <button 
+              <button
                 onClick={() => setSelectedRejection(null)}
                 className="w-full mt-8 bg-dark text-white font-bold py-4 rounded-lg hover:bg-black transition-all"
               >
@@ -422,14 +499,14 @@ export default function MyEventsPage() {
         </div>
       )}
 
-      {/* Complete Event & Documentation Modal */}
-      {completeModalData && (
+      {/* Documentation Modal */}
+      {docModalData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6 overflow-y-auto">
-          <div className="absolute inset-0 bg-dark/60 backdrop-blur-sm" onClick={() => !isUploading && setCompleteModalData(null)} />
+          <div className="absolute inset-0 bg-dark/60 backdrop-blur-sm" onClick={() => !isUploading && setDocModalData(null)} />
           <div className="relative bg-white w-full max-w-2xl rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300 my-8">
             <div className="bg-primary p-8 text-white relative">
-              <button 
-                onClick={() => setCompleteModalData(null)}
+              <button
+                onClick={() => setDocModalData(null)}
                 disabled={isUploading}
                 className="absolute top-6 right-6 p-2 bg-white/20 hover:bg-white/30 rounded-full transition-colors disabled:opacity-50"
               >
@@ -438,24 +515,24 @@ export default function MyEventsPage() {
               <div className="h-14 w-14 bg-white/20 rounded-xl flex items-center justify-center mb-6">
                 <CheckCircle2 className="h-8 w-8" />
               </div>
-              <h3 className="text-2xl font-black mb-2">Selesaikan Acara</h3>
-              <p className="text-white/80 text-sm font-medium">{completeModalData.title}</p>
+              <h3 className="text-2xl font-black mb-2">Unggah Dokumentasi</h3>
+              <p className="text-white/80 text-sm font-medium">{docModalData.title}</p>
             </div>
-            
-            <form onSubmit={submitCompleteEvent} className="p-8">
+
+            <form onSubmit={submitDocumentation} className="p-8">
               <div className="mb-6">
                 <p className="text-sm text-neutral mb-6">
-                  Selamat! Acara Anda telah selesai. Silakan unggah dokumentasi acara agar dapat dilihat oleh peserta di profil Anda. (Opsional)
+                  Silakan unggah dokumentasi acara agar dapat dilihat oleh audiens di halaman profil Penyelenggara Anda.
                 </p>
-                
+
                 <div className="space-y-5">
                   {/* Photos */}
                   <div>
                     <label className="block text-xs font-bold text-dark uppercase tracking-wider mb-2">
                       Foto Acara (Maks 5)
                     </label>
-                    <input 
-                      type="file" 
+                    <input
+                      type="file"
                       accept="image/*"
                       multiple
                       disabled={isUploading}
@@ -478,8 +555,8 @@ export default function MyEventsPage() {
                     <label className="block text-xs font-bold text-dark uppercase tracking-wider mb-2">
                       Link Video Recap (YouTube/Tiktok/dsb)
                     </label>
-                    <input 
-                      type="url" 
+                    <input
+                      type="url"
                       value={docVideo}
                       disabled={isUploading}
                       onChange={(e) => setDocVideo(e.target.value)}
@@ -493,8 +570,8 @@ export default function MyEventsPage() {
                     <label className="block text-xs font-bold text-dark uppercase tracking-wider mb-2">
                       Link Google Drive (Folder Dokumentasi)
                     </label>
-                    <input 
-                      type="url" 
+                    <input
+                      type="url"
                       value={docGdrive}
                       disabled={isUploading}
                       onChange={(e) => setDocGdrive(e.target.value)}
@@ -506,15 +583,15 @@ export default function MyEventsPage() {
               </div>
 
               <div className="flex justify-end gap-3 pt-6 border-t border-gray-100">
-                <button 
+                <button
                   type="button"
-                  onClick={() => setCompleteModalData(null)}
+                  onClick={() => setDocModalData(null)}
                   disabled={isUploading}
                   className="px-6 py-3 text-neutral font-bold text-sm hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
                 >
                   Batal
                 </button>
-                <button 
+                <button
                   type="submit"
                   disabled={isUploading}
                   className="px-6 py-3 bg-primary text-white font-bold text-sm rounded-lg hover:bg-primary-600 transition-colors flex items-center gap-2 disabled:opacity-70"
@@ -525,7 +602,7 @@ export default function MyEventsPage() {
                       Mengunggah...
                     </>
                   ) : (
-                    "Selesaikan Acara"
+                    "Simpan Dokumentasi"
                   )}
                 </button>
               </div>
@@ -534,6 +611,6 @@ export default function MyEventsPage() {
         </div>
       )}
 
-          </div>
+    </div>
   );
 }
