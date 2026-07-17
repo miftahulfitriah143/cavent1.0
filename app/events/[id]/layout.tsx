@@ -1,40 +1,52 @@
 import { Metadata } from "next";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
   
   try {
-    const docRef = doc(db, "events", id);
-    const docSnap = await getDoc(docRef);
+    // Menggunakan Firebase REST API agar aman berjalan di Next.js Server Component
+    const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+    if (projectId) {
+      const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/events/${id}`;
+      const res = await fetch(url, { next: { revalidate: 60 } }); // Cache 60 detik
+      
+      if (res.ok) {
+        const data = await res.json();
+        const fields = data.fields;
+        
+        if (fields) {
+          const title = fields.title?.stringValue || "Event";
+          const tagline = fields.tagline?.stringValue || "";
+          const description = fields.description?.stringValue || "";
+          const bannerUrl = fields.bannerUrl?.stringValue || "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2070&auto=format&fit=crop";
 
-    if (docSnap.exists()) {
-      const event = docSnap.data();
-      return {
-        title: `${event.title} - Cavent`,
-        description: event.tagline || `Ikuti acara ${event.title} di Cavent. ${event.description?.substring(0, 100)}...`,
-        openGraph: {
-          title: event.title,
-          description: event.tagline || `Ikuti acara ${event.title} di Cavent.`,
-          images: [
-            {
-              url: event.bannerUrl || "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2070&auto=format&fit=crop",
-              width: 1200,
-              height: 630,
-              alt: event.title,
+          return {
+            title: `${title} - Cavent`,
+            description: tagline || `Ikuti acara ${title} di Cavent. ${description.substring(0, 100)}...`,
+            openGraph: {
+              title: title,
+              description: tagline || `Ikuti acara ${title} di Cavent.`,
+              images: [
+                {
+                  url: bannerUrl,
+                  width: 1200,
+                  height: 630,
+                  alt: title,
+                },
+              ],
             },
-          ],
-        },
-      };
+          };
+        }
+      }
     }
   } catch (error) {
     console.error("Error generating metadata:", error);
   }
 
+  // Fallback (Kembali ke tulisan asli jika gagal)
   return {
-    title: "Event - Cavent",
-    description: "Detail acara di platform Cavent",
+    title: "Cavent - Pusat Informasi Kegiatan Universitas Paramadina",
+    description: "Platform satu pintu untuk manajemen acara kampus.",
   };
 }
 
