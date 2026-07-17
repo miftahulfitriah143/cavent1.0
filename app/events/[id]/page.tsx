@@ -276,9 +276,22 @@ export default function EventDetail({ params }: { params: Promise<{ id: string }
                     text: `Mari ikuti acara ${event.title} di Cavent!`,
                     url: window.location.href,
                   }).catch(console.error);
-                } else {
+                } else if (navigator.clipboard) {
                   navigator.clipboard.writeText(window.location.href);
                   toast.success("Tautan acara berhasil disalin!");
+                } else {
+                  // Fallback for non-secure contexts (HTTP)
+                  const textArea = document.createElement("textarea");
+                  textArea.value = window.location.href;
+                  document.body.appendChild(textArea);
+                  textArea.select();
+                  try {
+                    document.execCommand('copy');
+                    toast.success("Tautan acara berhasil disalin!");
+                  } catch (err) {
+                    toast.error("Gagal menyalin tautan acara");
+                  }
+                  document.body.removeChild(textArea);
                 }
               }}
               className="absolute top-6 right-6 h-10 w-10 bg-white rounded-full flex items-center justify-center shadow-lg text-gray-500 hover:text-primary transition-colors z-10"
@@ -377,9 +390,21 @@ export default function EventDetail({ params }: { params: Promise<{ id: string }
                       text: `Mari ikuti acara ${event.title} di Cavent!`,
                       url: window.location.href,
                     }).catch(console.error);
-                  } else {
+                  } else if (navigator.clipboard) {
                     navigator.clipboard.writeText(window.location.href);
                     toast.success("Tautan acara berhasil disalin!");
+                  } else {
+                    const textArea = document.createElement("textarea");
+                    textArea.value = window.location.href;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    try {
+                      document.execCommand('copy');
+                      toast.success("Tautan acara berhasil disalin!");
+                    } catch (err) {
+                      toast.error("Gagal menyalin tautan acara");
+                    }
+                    document.body.removeChild(textArea);
                   }
                 }}
                 className="h-10 w-10 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-xl border border-white/20 active:scale-90 transition-all text-neutral hover:text-primary"

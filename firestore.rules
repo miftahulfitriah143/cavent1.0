@@ -47,8 +47,8 @@ service cloud.firestore {
       // Publik bisa membaca profil penyelenggara acara
       allow read: if resource.data.role == 'organizer';
 
-      // User bisa buat dokumen profil sendiri (saat register)
-      allow create: if isSignedIn() && isOwner(userId);
+      // User bisa buat dokumen profil sendiri (saat register), pastikan role valid (mencegah privilege escalation ke admin)
+      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.role in ['audiens', 'organizer'];
 
       // User bisa update profil sendiri (kecuali role dan isActive); admin bisa update semua
       allow update: if isSignedIn() && (

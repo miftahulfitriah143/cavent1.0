@@ -16,6 +16,7 @@ import {
   AlertCircle
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { db } from "@/lib/firebase";
 import { collection, query, where, onSnapshot, deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -47,21 +48,36 @@ export default function MyEventsPage() {
   const [docVideo, setDocVideo] = useState("");
   const [docGdrive, setDocGdrive] = useState("");
   const [isUploading, setIsUploading] = useState(false);
+  const [isProcessingAction, setIsProcessingAction] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (selectedRejection) setSelectedRejection(null);
+        if (docModalData && !isUploading) setDocModalData(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedRejection, docModalData, isUploading]);
 
   const handleDelete = async (eventId: string, title: string) => {
     if (!window.confirm(`Apakah Anda yakin ingin menghapus acara "${title}"?`)) return;
-
+    setIsProcessingAction(true);
     try {
       await deleteDoc(doc(db, "events", eventId));
       toast.success("Acara berhasil dihapus");
     } catch (error) {
       console.error("Delete Error:", error);
       toast.error("Gagal menghapus acara");
+    } finally {
+      setIsProcessingAction(false);
     }
   };
 
   const handleStartEvent = async (eventId: string, title: string) => {
     if (!window.confirm(`Apakah Anda yakin ingin memulai acara "${title}"? Ini akan mengaktifkan QR Code absensi peserta.`)) return;
+    setIsProcessingAction(true);
     try {
       await updateDoc(doc(db, "events", eventId), {
         eventState: "started"
@@ -71,11 +87,14 @@ export default function MyEventsPage() {
     } catch (error) {
       console.error("Start Event Error:", error);
       toast.error("Gagal memulai acara");
+    } finally {
+      setIsProcessingAction(false);
     }
   };
 
   const handleCancelStartEvent = async (eventId: string, title: string) => {
     if (!window.confirm(`Batal memulai acara "${title}"? Status akan kembali seperti sebelum dimulai.`)) return;
+    setIsProcessingAction(true);
     try {
       await updateDoc(doc(db, "events", eventId), {
         eventState: null
@@ -84,11 +103,14 @@ export default function MyEventsPage() {
     } catch (error) {
       console.error("Cancel Start Error:", error);
       toast.error("Gagal membatalkan status mulai");
+    } finally {
+      setIsProcessingAction(false);
     }
   };
 
   const handleCancelEvent = async (eventId: string, title: string) => {
     if (!window.confirm(`Apakah Anda yakin ingin MEMBATALKAN acara "${title}"? Tindakan ini tidak dapat diurungkan.`)) return;
+    setIsProcessingAction(true);
     try {
       await updateDoc(doc(db, "events", eventId), {
         status: "cancelled"
@@ -97,11 +119,14 @@ export default function MyEventsPage() {
     } catch (error) {
       console.error("Cancel Event Error:", error);
       toast.error("Gagal membatalkan acara");
+    } finally {
+      setIsProcessingAction(false);
     }
   };
 
   const handleCompleteEvent = async (eventId: string, title: string) => {
     if (!window.confirm(`Selesaikan acara "${title}"? Status akan berubah menjadi Selesai.`)) return;
+    setIsProcessingAction(true);
     try {
       await updateDoc(doc(db, "events", eventId), {
         eventState: "completed"
@@ -110,6 +135,8 @@ export default function MyEventsPage() {
     } catch (error) {
       console.error("Complete Event Error:", error);
       toast.error("Gagal menyelesaikan acara");
+    } finally {
+      setIsProcessingAction(false);
     }
   };
 
@@ -263,10 +290,12 @@ export default function MyEventsPage() {
             <div key={event.id} className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 group flex flex-col h-full">
               {/* Card Image */}
               <div className="aspect-[16/10] relative overflow-hidden">
-                <img
+                <Image
                   src={event.bannerUrl || "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2070&auto=format&fit=crop"}
                   alt={event.title}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  className="object-cover transition-transform duration-700 group-hover:scale-110"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                 <div className="absolute top-5 left-5">
@@ -345,14 +374,16 @@ export default function MyEventsPage() {
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleCancelStartEvent(event.id, event.title)}
-                          className="flex-1 py-3 bg-gray-50 hover:bg-gray-200 text-gray-600 rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 border border-gray-200 shadow-sm"
+                          disabled={isProcessingAction}
+                          className="flex-1 py-3 bg-gray-50 hover:bg-gray-200 text-gray-600 rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 border border-gray-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                           title="Batal Mulai Acara"
                         >
                           <XCircle className="h-4 w-4" /> Batal Mulai
                         </button>
                         <button
                           onClick={() => handleCompleteEvent(event.id, event.title)}
-                          className="flex-1 py-3 bg-red-50 hover:bg-red-500 text-red-600 hover:text-white rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 border border-red-100 hover:border-red-500 shadow-sm"
+                          disabled={isProcessingAction}
+                          className="flex-1 py-3 bg-red-50 hover:bg-red-500 text-red-600 hover:text-white rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 border border-red-100 hover:border-red-500 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                           title="Selesaikan Acara"
                         >
                           <CheckCircle2 className="h-4 w-4" /> Selesaikan
@@ -389,14 +420,16 @@ export default function MyEventsPage() {
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleCancelEvent(event.id, event.title)}
-                          className="flex-1 py-3 bg-red-50 hover:bg-red-500 text-red-600 hover:text-white rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 border border-red-100 hover:border-red-500 shadow-sm"
+                          disabled={isProcessingAction}
+                          className="flex-1 py-3 bg-red-50 hover:bg-red-500 text-red-600 hover:text-white rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 border border-red-100 hover:border-red-500 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                           title="Batalkan Acara"
                         >
                           <XCircle className="h-4 w-4" /> Batalkan
                         </button>
                         <button
                           onClick={() => handleStartEvent(event.id, event.title)}
-                          className="flex-[1.5] py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-600/15"
+                          disabled={isProcessingAction}
+                          className="flex-[1.5] py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-[10px] sm:text-xs font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-600/15 disabled:opacity-50 disabled:cursor-not-allowed"
                           title="Mulai Acara & Aktifkan Absensi"
                         >
                           <Play className="h-4 w-4 fill-white" /> Mulai Acara
@@ -414,6 +447,7 @@ export default function MyEventsPage() {
                       target="_blank"
                       className="p-3 bg-gray-50 text-neutral hover:text-primary hover:bg-primary/5 rounded-2xl transition-all"
                       title="Lihat Detail"
+                      aria-label={`Lihat detail acara ${event.title}`}
                     >
                       <ExternalLink className="h-4 w-4" />
                     </Link>
@@ -423,6 +457,7 @@ export default function MyEventsPage() {
                         href={`/organizer/events/${event.id}/attendance`}
                         className="p-3 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-2xl transition-all"
                         title="Manajemen Absensi"
+                        aria-label={`Manajemen absensi acara ${event.title}`}
                       >
                         <QrCode className="h-4 w-4" />
                       </Link>
@@ -432,14 +467,17 @@ export default function MyEventsPage() {
                       href={`/organizer/events/${event.id}/edit`}
                       className="p-3 bg-gray-50 text-neutral hover:text-blue-600 hover:bg-blue-50 rounded-2xl transition-all"
                       title="Edit Acara"
+                      aria-label={`Edit acara ${event.title}`}
                     >
                       <Edit3 className="h-4 w-4" />
                     </Link>
                   </div>
                   <button
                     onClick={() => handleDelete(event.id, event.title)}
-                    className="p-3 bg-gray-50 text-neutral hover:text-red-600 hover:bg-red-50 rounded-2xl transition-all"
+                    disabled={isProcessingAction}
+                    className="p-3 bg-gray-50 text-neutral hover:text-red-600 hover:bg-red-50 rounded-2xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     title="Hapus Acara"
+                    aria-label={`Hapus acara ${event.title}`}
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
