@@ -19,6 +19,7 @@ import Link from "next/link";
 import QRCode from "qrcode";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import * as XLSX from "xlsx";
 
 export default function AttendancePage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -181,37 +182,44 @@ export default function AttendancePage({ params }: { params: Promise<{ id: strin
   };
 
   const handleExport = () => {
-    // Generate CSV
-    const headers = ["No", "Nama", "Email", "Waktu Daftar", "Waktu Check-in", "Status"];
-    const rows = filteredAttendees.map((a, idx) => [
-      idx + 1,
-      a.userName,
-      a.userEmail,
-      a.registeredAt?.toDate().toLocaleString('id-ID') || "-",
-      a.attendedAt?.toDate().toLocaleString('id-ID') || "-",
-      a.status === "attended" ? "Hadir" : "Belum"
-    ]);
+    const formattedData = filteredAttendees.map((a, idx) => ({
+      "No": idx + 1,
+      "Nama Peserta": a.fullName || a.userName,
+      "Email": a.userEmail,
+      "NIM / ID": a.nim || extractNim(a.userEmail),
+      "Waktu Daftar": a.registeredAt?.toDate().toLocaleString('id-ID') || "-",
+      "Waktu Check-in": a.attendedAt?.toDate().toLocaleString('id-ID') || "-",
+      "Status Kehadiran": a.status === "attended" ? "Hadir" : "Belum Hadir"
+    }));
 
-    const csvContent = [
-      headers.join(","),
-      ...rows.map(e => e.map(cell => `"${cell}"`).join(","))
-    ].join("\n");
+    const worksheet = XLSX.utils.json_to_sheet(formattedData);
+    
+    // Set auto-width for columns
+    const wscols = [
+      { wch: 5 }, // No
+      { wch: 25 }, // Nama
+      { wch: 30 }, // Email
+      { wch: 15 }, // NIM
+      { wch: 20 }, // Daftar
+      { wch: 20 }, // Check-in
+      { wch: 15 } // Status
+    ];
+    worksheet['!cols'] = wscols;
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement("a");
-    const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-    link.setAttribute("download", `Data_Peserta_${event?.title || 'Acara'}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    toast.success("Data berhasil diekspor!");
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Data Absensi");
+
+    const fileName = `Laporan_Absensi_${event?.title?.replace(/\s+/g, '_') || 'Acara'}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+    
+    toast.success("Laporan Excel berhasil diekspor!");
   };
 
   const filteredAttendees = attendees.filter(a => {
-    return a.userName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      a.userEmail?.toLowerCase().includes(searchTerm.toLowerCase());
+    const nameMatch = (a.fullName || a.userName)?.toLowerCase().includes(searchTerm.toLowerCase());
+    const emailMatch = a.userEmail?.toLowerCase().includes(searchTerm.toLowerCase());
+    const nimMatch = (a.nim || "").toLowerCase().includes(searchTerm.toLowerCase());
+    return nameMatch || emailMatch || nimMatch;
   });
 
   const attendedCount = attendees.filter(a => a.status === "attended").length;
@@ -408,8 +416,8 @@ export default function AttendancePage({ params }: { params: Promise<{ id: strin
                     {filteredAttendees.map((a, idx) => (
                       <tr key={a.id} className="hover:bg-gray-50/50 transition-colors">
                         <td className="py-4 px-4 text-sm text-neutral text-center font-medium">{idx + 1}</td>
-                        <td className="py-4 px-4 text-sm font-bold text-dark">{a.userName}</td>
-                        <td className="py-4 px-4 text-sm text-neutral">{extractNim(a.userEmail)}</td>
+                        <td className="py-4 px-4 text-sm font-bold text-dark">{a.fullName || a.userName}</td>
+                        <td className="py-4 px-4 text-sm text-neutral">{a.nim || extractNim(a.userEmail)}</td>
                         <td className="py-4 px-4 text-sm text-dark font-medium">
                           {a.attendedAt
                             ? a.attendedAt.toDate().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB'

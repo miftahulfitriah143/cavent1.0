@@ -18,12 +18,14 @@ import { PublicNavbar } from "@/components/layout/PublicNavbar";
 import { Footer } from "@/components/layout/Footer";
 import { db } from "@/lib/firebase";
 import { collection, query, where, onSnapshot, orderBy } from "firebase/firestore";
+import { getCategoryBadgeClass } from "@/lib/category";
 
 const CATEGORIES = [
   { label: "Semua", color: "bg-primary text-white", inactive: "bg-white border border-gray-200 text-neutral hover:border-primary hover:text-primary" },
   { label: "Seminar", color: "bg-teal-500 text-white", inactive: "bg-white border border-teal-200 text-teal-700 hover:bg-teal-50" },
   { label: "Workshop", color: "bg-rose-500 text-white", inactive: "bg-white border border-rose-200 text-rose-700 hover:bg-rose-50" },
   { label: "Kompetisi", color: "bg-amber-500 text-white", inactive: "bg-white border border-amber-200 text-amber-700 hover:bg-amber-50" },
+  { label: "Webinar", color: "bg-blue-500 text-white", inactive: "bg-white border border-blue-200 text-blue-700 hover:bg-blue-50" },
   { label: "Diskusi", color: "bg-violet-500 text-white", inactive: "bg-white border border-violet-200 text-violet-700 hover:bg-violet-50" },
 ];
 
@@ -40,26 +42,7 @@ const FILTER_PENYELENGGARA = [
   { label: "FIR — DP", group: "Fak. Ilmu Rekayasa" },
 ];
 
-const getCategoryBadgeClass = (category: string) => {
-  const norm = category.toLowerCase();
-  if (norm.includes("seminar")) return "text-teal-600 bg-teal-50 border-teal-100";
-  if (norm.includes("workshop")) return "text-rose-600 bg-rose-50 border-rose-100";
-  if (norm.includes("kompetisi") || norm.includes("competition")) return "text-amber-600 bg-amber-50 border-amber-100";
-  if (norm.includes("diskusi")) return "text-violet-600 bg-violet-50 border-violet-100";
-  
-  const colors = [
-    "text-blue-600 bg-blue-50 border-blue-100",
-    "text-emerald-600 bg-emerald-50 border-emerald-100",
-    "text-pink-600 bg-pink-50 border-pink-100",
-    "text-orange-600 bg-orange-50 border-orange-100",
-    "text-indigo-600 bg-indigo-50 border-indigo-100",
-  ];
-  let hash = 0;
-  for (let i = 0; i < category.length; i++) {
-    hash = category.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return colors[Math.abs(hash) % colors.length];
-};
+
 
 const STATUS_OPTIONS = ["Gratis", "Berbayar", "Segera Dimulai", "Telah Lalu"];
 

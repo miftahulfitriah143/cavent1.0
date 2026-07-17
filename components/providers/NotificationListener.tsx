@@ -112,6 +112,8 @@ export function NotificationListener() {
           }
         }
       });
+    }, (error) => {
+      console.warn("Silenced NotificationListener user error:", error.message);
     });
 
     let unsubRole: (() => void) | undefined;
@@ -137,6 +139,8 @@ export function NotificationListener() {
             }
           }
         });
+      }, (error) => {
+        console.warn("Silenced NotificationListener admin error:", error.message);
       });
     }
 

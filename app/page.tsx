@@ -22,6 +22,7 @@ import {
 import { PublicNavbar } from "@/components/layout/PublicNavbar";
 import { Footer } from "@/components/layout/Footer";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { getCategoryBadgeClass } from "@/lib/category";
 import { db } from "@/lib/firebase";
 import { collection, query, where, onSnapshot, orderBy, limit } from "firebase/firestore";
 
@@ -298,9 +299,17 @@ export default function LandingPage() {
 
                   <div className="p-5 flex flex-col flex-1">
                     <div className="flex gap-2 mb-3">
-                      <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-primary/5 text-primary border border-primary/10">
-                        {event.category}
-                      </span>
+                      {Array.isArray(event.category) ? (
+                        event.category.map((cat: string) => (
+                          <span key={cat} className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${getCategoryBadgeClass(cat)}`}>
+                            {cat}
+                          </span>
+                        ))
+                      ) : (
+                        <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${getCategoryBadgeClass(event.category || "General")}`}>
+                          {event.category}
+                        </span>
+                      )}
                     </div>
 
                     <h3 className="font-bold text-dark text-sm mb-3 line-clamp-2 group-hover:text-primary transition-colors h-10">

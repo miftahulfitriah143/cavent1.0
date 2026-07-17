@@ -15,7 +15,9 @@ import {
   Bell,
   CheckCircle2,
   MessageSquare,
-  Clock
+  Clock,
+  Ticket,
+  ArrowRight
 } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
@@ -170,7 +172,7 @@ export default function ProfilePage() {
             </div>
           )}
           
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 w-full">
             <div className="relative shrink-0">
               <div className="h-24 w-24 md:h-28 md:w-28 rounded-full overflow-hidden border-4 border-white shadow-sm bg-gray-100">
                 {user.photoURL ? (
@@ -191,27 +193,27 @@ export default function ProfilePage() {
               )}
             </div>
             
-            <div className="flex-1 text-center sm:text-left mt-2 sm:mt-4">
+            <div className="flex-1 w-full flex flex-col items-center sm:items-start text-center sm:text-left mt-2 sm:mt-4">
               {isEditing ? (
                 <input 
                   type="text"
                   value={editData.displayName} 
                   onChange={(e) => setEditData({...editData, displayName: e.target.value})}
-                  className="text-xl md:text-2xl font-bold text-gray-900 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 w-full max-w-sm focus:outline-none focus:ring-1 focus:ring-blue-500" 
+                  className="text-xl md:text-2xl font-bold text-gray-900 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 w-full max-w-full sm:max-w-sm focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all" 
                 />
               ) : (
-                <h1 className="text-xl md:text-2xl font-bold text-gray-900 tracking-tight">
+                <h1 className="text-xl md:text-2xl font-bold text-gray-900 tracking-tight break-words px-3 py-1.5 border border-transparent w-full max-w-full sm:max-w-sm mx-auto sm:mx-0">
                   {user.displayName}
                 </h1>
               )}
               
-              <div className="flex items-center justify-center sm:justify-start gap-2 text-gray-600 mt-1.5">
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 text-gray-600 mt-1 w-full">
                 <GraduationCap className="h-4 w-4 shrink-0" />
                 {isEditing ? (
                      <select 
                     value={editData.prodi}
                     onChange={(e) => setEditData({...editData, prodi: e.target.value})}
-                    className="bg-gray-50 border border-gray-200 rounded-md px-2 py-1 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="bg-gray-50 border border-gray-200 rounded-md px-2 py-1 text-sm font-medium focus:outline-none focus:ring-1 focus:ring-blue-500 max-w-[90%] sm:max-w-none transition-all"
                    >
                      <option value="">-- Pilih Program Studi --</option>
                      <optgroup label="Fakultas Falsafah & Peradaban">
@@ -235,7 +237,7 @@ export default function ProfilePage() {
                      </optgroup>
                    </select>
                 ) : (
-                   <span className="text-sm font-medium">{editData.prodi || <span className="text-gray-400 italic">Belum diatur</span>}</span>
+                   <span className="text-sm font-medium px-2 py-1 border border-transparent">{editData.prodi || <span className="text-gray-400 italic">Belum diatur</span>}</span>
                 )}
               </div>
             </div>
@@ -243,25 +245,25 @@ export default function ProfilePage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8">
             <div className="bg-[#f8fafc] rounded-xl p-4 border border-gray-100 flex flex-col justify-center">
-              <div className="flex items-center gap-2 mb-1">
+               <div className="flex items-center gap-2 mb-1">
                 <CreditCard className="h-3.5 w-3.5 text-[#0b4d75]" />
-                <span className="text-xs font-semibold text-gray-500">Student ID (NIM)</span>
+                <span className="text-xs font-semibold text-gray-500">NIM (Nomor Induk Mahasiswa)</span>
               </div>
               {isEditing ? (
                 <input 
                   type="text"
                   value={editData.nim} 
                   onChange={(e) => setEditData({...editData, nim: e.target.value})}
-                  className="font-semibold text-gray-900 bg-white border border-gray-200 rounded-md px-2 py-1 w-full text-sm focus:outline-none focus:ring-1 focus:ring-blue-500" 
+                  className="font-semibold text-gray-900 bg-white border border-gray-200 rounded-md px-2 py-1 w-full text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all" 
                 />
               ) : (
-                <div className="font-semibold text-gray-900 text-sm md:text-base">{editData.nim || "-"}</div>
+                <div className="font-semibold text-gray-900 text-sm px-2 py-1 border border-transparent w-full">{editData.nim || "-"}</div>
               )}
             </div>
             <div className="bg-[#f8fafc] rounded-xl p-4 border border-gray-100 flex flex-col justify-center">
                <div className="flex items-center gap-2 mb-1">
                 <Mail className="h-3.5 w-3.5 text-[#0b4d75]" />
-                <span className="text-xs font-semibold text-gray-500">University Email</span>
+                <span className="text-xs font-semibold text-gray-500">Email Institusi</span>
               </div>
               <div className="font-semibold text-gray-900 text-sm md:text-base truncate">{user.email}</div>
             </div>
@@ -277,7 +279,7 @@ export default function ProfilePage() {
               </div>
               <div>
                 <div className="text-3xl font-bold text-gray-900 leading-none">{stats.totalEvents}</div>
-                <div className="text-[11px] font-semibold text-gray-600 mt-1.5 uppercase tracking-wider">Events Attended</div>
+                <div className="text-[11px] font-semibold text-gray-600 mt-1.5 uppercase tracking-wider">Acara Diikuti</div>
               </div>
             </div>
 
@@ -301,34 +303,43 @@ export default function ProfilePage() {
         <div className="lg:col-span-2">
           <div className="flex items-center justify-between mb-4 px-1">
             <h2 className="text-lg font-bold text-[#0b4d75] flex items-center gap-2">
-               My Events
+               Acara Saya
             </h2>
-            <Link href="/mahasiswa/my-events" className="text-[13px] font-bold text-[#0b4d75] hover:text-blue-800 transition-colors">
-              View All
+            <Link href="/audiens/my-events" className="text-[13px] font-bold text-[#0b4d75] hover:text-blue-800 transition-colors">
+              Lihat Semua
             </Link>
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             {recentRegistrations.length > 0 ? (
               recentRegistrations.map(reg => (
-                <Link key={reg.id} href={`/mahasiswa/my-events/${reg.id}`} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group flex flex-col">
-                  <div className="h-32 md:h-36 bg-gray-100 relative overflow-hidden shrink-0">
-                    <img src={reg.eventBanner || "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2070"} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                    <div className="absolute top-3 left-3 px-2.5 py-1 bg-white/95 backdrop-blur-md text-[9px] font-bold text-[#0b4d75] uppercase tracking-wider rounded-md shadow-sm">
-                      {reg.status === 'attended' ? 'Attended' : 'Registered'}
+                <Link key={reg.id} href={`/audiens/my-events/${reg.id}`} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm flex flex-col gap-4 group hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 hover:-translate-y-1 h-full">
+                  <div className="h-32 w-full rounded-xl overflow-hidden shrink-0 border border-gray-50 shadow-inner relative">
+                    <img src={reg.eventBanner || "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2070&auto=format&fit=crop"} alt={reg.eventTitle} className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                    <div className="absolute top-3 left-3 shadow-sm">
+                       <span className={`px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${reg.status === 'attended' ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-green-50 text-green-600 border-green-100'}`}>
+                         {reg.status === 'attended' ? 'Hadir' : 'Terdaftar'}
+                       </span>
                     </div>
                   </div>
-                  <div className="p-4 md:p-5 flex flex-col flex-1 bg-white">
-                    <h3 className="font-bold text-gray-900 text-sm md:text-base mb-3 line-clamp-2 leading-snug group-hover:text-[#0b4d75] transition-colors">{reg.eventTitle}</h3>
-                    <div className="mt-auto space-y-2">
-                      <div className="flex items-center gap-2.5 text-[13px] text-gray-600 font-medium">
-                        <Calendar className="h-3.5 w-3.5 shrink-0 text-gray-400" />
-                        <span>{reg.eventDate}</span>
+                  <div className="flex-1 space-y-3">
+                    <h3 className="font-black text-dark text-base leading-snug group-hover:text-primary transition-colors line-clamp-2">{reg.eventTitle}</h3>
+                    <div className="space-y-1.5">
+                      <div className="flex items-center gap-2 text-xs text-neutral font-medium">
+                        <Calendar className="h-3.5 w-3.5 text-primary/60 shrink-0" />
+                        <span className="truncate">{reg.eventDate}</span>
                       </div>
-                      <div className="flex items-center gap-2.5 text-[13px] text-gray-600 font-medium">
-                        <MapPin className="h-3.5 w-3.5 shrink-0 text-gray-400" />
+                      <div className="flex items-center gap-2 text-xs text-neutral font-medium">
+                        <MapPin className="h-3.5 w-3.5 text-primary/60 shrink-0" />
                         <span className="truncate">{reg.eventVenue || "Lokasi Acara"}</span>
                       </div>
+                    </div>
+                  </div>
+                  <div className="pt-3 border-t border-gray-50 mt-auto">
+                    <div className="flex items-center justify-center gap-2 bg-primary text-white w-full py-2.5 rounded-xl text-xs font-bold hover:bg-[#0f527c] transition-all shadow-md shadow-primary/20 group-active:scale-95">
+                      <Ticket className="h-4 w-4" />
+                      <span>Lihat Tiket</span>
+                      <ArrowRight className="h-3 w-3 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
                     </div>
                   </div>
                 </Link>
@@ -349,7 +360,7 @@ export default function ProfilePage() {
         <div className="lg:col-span-1">
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold text-gray-900">Recent Activity</h3>
+              <h3 className="text-lg font-bold text-gray-900">Aktivitas Terbaru</h3>
             </div>
             
             <div className="space-y-0 relative">
@@ -361,7 +372,7 @@ export default function ProfilePage() {
                 notifications.map((notif, idx) => {
                   const date = notif.createdAt ? new Date(notif.createdAt.seconds * 1000) : new Date();
                   const diffHours = Math.floor((new Date().getTime() - date.getTime()) / (1000 * 3600));
-                  const timeAgo = diffHours > 24 ? `${Math.floor(diffHours/24)} days ago` : diffHours > 0 ? `${diffHours} hours ago` : 'Just now';
+                  const timeAgo = diffHours > 24 ? `${Math.floor(diffHours/24)} hari yang lalu` : diffHours > 0 ? `${diffHours} jam yang lalu` : 'Baru saja';
                   
                   let Icon = Bell;
                   let colorClass = "text-blue-500 bg-blue-50 border-blue-100";

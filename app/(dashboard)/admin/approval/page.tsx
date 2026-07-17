@@ -31,6 +31,7 @@ import {
   serverTimestamp
 } from "firebase/firestore";
 import toast from "react-hot-toast";
+import { getCategoryBadgeClass } from "@/lib/category";
 
 export default function AdminApprovalPage() {
   const [pendingEvents, setPendingEvents] = useState<any[]>([]);
@@ -171,80 +172,95 @@ export default function AdminApprovalPage() {
           <p className="text-neutral text-sm font-bold tracking-widest uppercase">Memuat Antrean...</p>
         </div>
       ) : pendingEvents.length > 0 ? (
-        <div className="grid grid-cols-1 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {pendingEvents.map((event) => (
-            <div key={event.id} className="bg-white rounded-xl p-6 md:p-10 border border-gray-100 shadow-sm hover:shadow-2xl transition-all duration-500 flex flex-col lg:flex-row gap-10 items-start lg:items-center group">
+            <div key={event.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col group overflow-hidden">
               {/* Poster Preview */}
               <div
-                className="h-40 w-full lg:w-64 rounded-xl overflow-hidden bg-gray-50 shrink-0 shadow-sm border border-gray-100 cursor-pointer"
+                className="h-48 w-full bg-gray-100 relative cursor-pointer overflow-hidden shrink-0"
                 onClick={() => setSelectedEvent(event)}
               >
                 <img
                   src={event.bannerUrl || "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2070&auto=format&fit=crop"}
                   alt="Poster"
-                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
+                <div className="absolute top-3 left-3">
+                  <span className="text-[10px] font-black text-amber-600 px-3 py-1.5 bg-amber-50/90 backdrop-blur-sm rounded-full uppercase tracking-widest flex items-center gap-1.5 shadow-sm border border-amber-100/50">
+                    <Clock className="h-3 w-3" /> Menunggu Review
+                  </span>
+                </div>
               </div>
 
               {/* Event Info */}
-              <div className="flex-1 space-y-4">
-                <div className="flex flex-wrap items-center gap-3">
-                  <span className="text-[10px] font-black text-amber-600 px-4 py-1.5 bg-amber-50 rounded-full uppercase tracking-[0.15em] flex items-center gap-2 border border-amber-100 shadow-sm">
-                    <Clock className="h-3 w-3" /> Menunggu Review
-                  </span>
-                  <span className="text-[10px] font-black text-primary px-4 py-1.5 bg-primary/5 rounded-full uppercase tracking-[0.15em] border border-primary/5">{event.category}</span>
+              <div className="p-5 flex flex-col flex-1">
+                <div className="flex gap-2 mb-3 flex-wrap">
+                  {Array.isArray(event.category) ? (
+                    event.category.map((cat: string) => (
+                      <span key={cat} className={`text-[9px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider border ${getCategoryBadgeClass(cat)}`}>
+                        {cat}
+                      </span>
+                    ))
+                  ) : (
+                    <span className={`text-[9px] font-black px-2.5 py-1 rounded-md uppercase tracking-wider border ${getCategoryBadgeClass(event.category || "General")}`}>
+                      {event.category}
+                    </span>
+                  )}
                 </div>
 
-                <h3 className="text-2xl font-black text-dark leading-tight group-hover:text-primary transition-colors cursor-pointer" onClick={() => setSelectedEvent(event)}>{event.title}</h3>
+                <h3 className="text-lg font-black text-dark leading-snug mb-4 line-clamp-2 group-hover:text-primary transition-colors cursor-pointer" onClick={() => setSelectedEvent(event)}>
+                  {event.title}
+                </h3>
 
-                {/* Diajukan pada */}
-                <div className="text-[11px] text-neutral/80 bg-gray-50 border border-gray-100 rounded-xl px-3.5 py-2 w-fit flex items-center gap-2 font-medium">
-                  <span className="font-black text-[9px] uppercase tracking-wider text-neutral/50">Diajukan pada:</span>
-                  <span className="text-dark font-bold">{formatDateTime(event.createdAt)}</span>
-                </div>
-
-                <div className="flex flex-wrap gap-x-8 gap-y-3 text-xs text-neutral font-medium">
-                  <div className="flex items-center gap-2.5">
-                    <User className="h-4.5 w-4.5 text-primary/30" />
-                    <span className="font-black text-dark">{event.organizerName}</span>
+                <div className="space-y-2.5 text-xs text-neutral font-medium flex-1">
+                  <div className="flex items-center gap-2">
+                    <User className="h-3.5 w-3.5 text-primary/40 shrink-0" />
+                    <span className="truncate">{event.organizerName}</span>
                   </div>
-                  <div className="flex items-center gap-2.5">
-                    <Calendar className="h-4.5 w-4.5 text-primary/30" />
-                    <span>{event.startDate}</span>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-3.5 w-3.5 text-primary/40 shrink-0" />
+                    <span className="truncate">{event.startDate}</span>
                   </div>
-                  <div className="flex items-center gap-2.5">
-                    <MapPin className="h-4.5 w-4.5 text-primary/30" />
-                    <span className="truncate max-w-[200px]">{event.venue}</span>
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-3.5 w-3.5 text-primary/40 shrink-0" />
+                    <span className="truncate">{event.venue}</span>
+                  </div>
+                  
+                  <div className="pt-3 mt-3 border-t border-gray-50 flex items-center gap-2">
+                    <span className="text-[9px] uppercase tracking-wider font-bold text-neutral/50 shrink-0">Diajukan:</span>
+                    <span className="text-[10px] text-dark font-bold truncate">{formatDateTime(event.createdAt)}</span>
                   </div>
                 </div>
               </div>
 
               {/* Actions */}
-              <div className="flex items-center gap-4 w-full lg:w-auto pt-6 lg:pt-0 lg:border-l lg:pl-10 border-gray-50">
+              <div className="p-4 border-t border-gray-100 flex items-center justify-between gap-3 bg-gray-50/50">
                 <button
                   onClick={() => setSelectedEvent(event)}
-                  className="p-4 bg-gray-50 text-neutral hover:text-primary hover:bg-primary/5 rounded-xl border border-gray-100 transition-all"
+                  className="p-3 bg-white text-neutral hover:text-primary hover:bg-primary/5 hover:border-primary/30 rounded-xl border border-gray-200 transition-all shadow-sm"
                   title="Lihat Detail Lengkap"
                 >
-                  <Eye className="h-5 w-5" />
+                  <Eye className="h-4.5 w-4.5" />
                 </button>
-                <button
-                  onClick={() => handleApprove(event.id, event.organizerId, event.title)}
-                  disabled={isProcessing}
-                  className="flex-1 lg:flex-none flex items-center justify-center gap-2.5 bg-green-500 text-white px-8 py-4 rounded-xl font-bold text-sm hover:bg-green-600 transition-all shadow-sm active:scale-95 disabled:opacity-50"
-                >
-                  <Check className="h-5 w-5" /> Setujui
-                </button>
-                <button
-                  onClick={() => {
-                    setSelectedEvent(event);
-                    setIsRejectModalOpen(true);
-                  }}
-                  disabled={isProcessing}
-                  className="flex-1 lg:flex-none flex items-center justify-center gap-2.5 bg-red-50 text-red-600 px-8 py-4 rounded-xl font-bold text-sm hover:bg-red-100 border border-red-100 transition-all active:scale-95 disabled:opacity-50"
-                >
-                  <X className="h-5 w-5" /> Tolak
-                </button>
+                <div className="flex gap-2 flex-1">
+                  <button
+                    onClick={() => {
+                      setSelectedEvent(event);
+                      setIsRejectModalOpen(true);
+                    }}
+                    disabled={isProcessing}
+                    className="flex-1 flex items-center justify-center gap-1.5 bg-white text-red-600 py-3 rounded-xl font-bold text-[11px] uppercase tracking-wider hover:bg-red-50 border border-red-200 transition-all shadow-sm disabled:opacity-50"
+                  >
+                    <X className="h-4 w-4" /> Tolak
+                  </button>
+                  <button
+                    onClick={() => handleApprove(event.id, event.organizerId, event.title)}
+                    disabled={isProcessing}
+                    className="flex-1 flex items-center justify-center gap-1.5 bg-green-500 text-white py-3 rounded-xl font-bold text-[11px] uppercase tracking-wider hover:bg-green-600 transition-all shadow-sm disabled:opacity-50"
+                  >
+                    <Check className="h-4 w-4" /> Setujui
+                  </button>
+                </div>
               </div>
             </div>
           ))}
@@ -263,18 +279,14 @@ export default function AdminApprovalPage() {
 
       {/* Detail Preview Modal */}
       {selectedEvent && !isRejectModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6">
           <div className="absolute inset-0 bg-dark/60 backdrop-blur-md" onClick={() => setSelectedEvent(null)} />
-          <div className="relative bg-white w-full max-w-6xl max-h-[95vh] rounded-xl overflow-hidden shadow-xl border border-gray-100 animate-in zoom-in-95 duration-300 flex flex-col">
+          <div className="relative bg-white w-full max-w-7xl h-[95vh] rounded-2xl overflow-hidden shadow-2xl border border-gray-100 animate-in zoom-in-95 duration-300 flex flex-col">
             {/* Modal Header */}
-            <div className="px-10 py-8 border-b border-gray-100 flex items-center justify-between shrink-0 bg-white">
+            <div className="px-6 md:px-10 py-6 border-b border-gray-100 flex items-center justify-between shrink-0 bg-white z-10 relative">
               <div>
                 <h2 className="text-2xl font-black text-dark tracking-tight">Pratinjau Acara</h2>
                 <p className="text-neutral text-xs font-bold mt-1 uppercase tracking-widest">Oleh: {selectedEvent.organizerName}</p>
-                <p className="text-neutral-500 text-[11px] font-semibold mt-1 flex items-center gap-1.5">
-                  <span className="text-neutral-400 font-bold uppercase tracking-wider text-[9px]">Diajukan:</span>
-                  <span className="text-dark font-bold">{formatDateTime(selectedEvent.createdAt)}</span>
-                </p>
               </div>
               <button
                 onClick={() => setSelectedEvent(null)}
@@ -284,14 +296,14 @@ export default function AdminApprovalPage() {
               </button>
             </div>
 
-            {/* Modal Body (Scrollable) */}
-            <div className="flex-1 overflow-y-auto p-6 md:p-10 space-y-8 custom-scrollbar bg-gray-50/50">
-              {(() => {
-                const allMedia = [selectedEvent.bannerUrl, ...(selectedEvent.additionalMedia || [])].filter(Boolean);
-                return (
-                  <>
-                    {/* Desktop/Tablet 1:1 Student View Poster Area */}
-                    <div className="relative w-full h-[320px] md:h-[420px] bg-dark rounded-lg overflow-hidden flex items-center justify-center group/hero select-none shrink-0 shadow-sm border border-gray-200">
+            {/* Split Layout Body */}
+            <div className="flex-1 overflow-hidden flex flex-col lg:flex-row bg-gray-50/30">
+              {/* Left Column: Fixed, Actions & Poster */}
+              <div className="w-full lg:w-[400px] xl:w-[450px] shrink-0 border-r border-gray-100 flex flex-col bg-white overflow-y-auto custom-scrollbar">
+                {(() => {
+                  const allMedia = [selectedEvent.bannerUrl, ...(selectedEvent.additionalMedia || [])].filter(Boolean);
+                  return (
+                    <div className="relative w-full h-[300px] lg:h-[400px] bg-dark overflow-hidden flex items-center justify-center group/hero select-none shrink-0 shadow-inner">
                       {/* Blurred Background */}
                       <img
                         src={allMedia[currentHeroIdx] || selectedEvent.bannerUrl}
@@ -339,282 +351,296 @@ export default function AdminApprovalPage() {
                         </div>
                       )}
                     </div>
+                  );
+                })()}
 
-                    {/* CARD 1: HEADER (Judul + Info + Penyelenggara ala Tiket.com) */}
-                    <div className="bg-white rounded-xl border border-gray-200 p-6 md:p-10 shadow-sm space-y-6">
-                      <div className="space-y-4">
-                        {/* Kategori Kapsul */}
-                        <div className="flex items-center gap-2 flex-wrap">
-                          {Array.isArray(selectedEvent.category) ? (
-                            selectedEvent.category.map((cat: string) => (
-                              <span key={cat} className="bg-primary/5 text-primary border border-primary/10 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">
-                                {cat}
-                              </span>
-                            ))
-                          ) : (
-                            <span className="bg-primary/5 text-primary border border-primary/10 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">
-                              {selectedEvent.category}
-                            </span>
-                          )}
+                <div className="p-6 md:p-8 flex-1 flex flex-col">
+                  <div>
+                    <h3 className="font-bold text-dark text-lg mb-2 leading-snug">{selectedEvent.title}</h3>
+                    <div className="text-[11px] text-neutral-500 font-semibold mt-1 flex items-center gap-1.5 mb-6">
+                      <span className="text-neutral-400 font-bold uppercase tracking-wider text-[9px]">Diajukan:</span>
+                      <span className="text-dark font-bold">{formatDateTime(selectedEvent.createdAt)}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 pt-6 border-t border-gray-100 mt-auto">
+                    <button
+                      onClick={() => {
+                        setSelectedEvent(selectedEvent);
+                        setIsRejectModalOpen(true);
+                      }}
+                      disabled={isProcessing}
+                      className="flex-1 bg-white text-red-600 py-3.5 rounded-xl font-bold text-xs hover:bg-red-50 border border-red-200 transition-all shadow-sm flex items-center justify-center gap-1.5"
+                    >
+                      <X className="h-4 w-4" /> Tolak
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleApprove(selectedEvent.id, selectedEvent.organizerId, selectedEvent.title);
+                        setSelectedEvent(null);
+                      }}
+                      disabled={isProcessing}
+                      className="flex-1 bg-green-500 text-white py-3.5 rounded-xl font-bold text-xs hover:bg-green-600 shadow-md shadow-green-500/20 transition-all flex items-center justify-center gap-1.5"
+                    >
+                      <Check className="h-4 w-4" /> Setujui
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: Scrollable Details */}
+              <div className="flex-1 overflow-y-auto p-6 md:p-10 space-y-8 custom-scrollbar">
+                {/* CARD 1: HEADER (Judul + Info + Penyelenggara ala Tiket.com) */}
+                <div className="bg-white rounded-2xl border border-gray-200 p-6 md:p-8 shadow-sm space-y-6">
+                  <div className="space-y-4">
+                    {/* Kategori Kapsul */}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {Array.isArray(selectedEvent.category) ? (
+                        selectedEvent.category.map((cat: string) => (
+                          <span key={cat} className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${getCategoryBadgeClass(cat)}`}>
+                            {cat}
+                          </span>
+                        ))
+                      ) : (
+                        <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${getCategoryBadgeClass(selectedEvent.category || "General")}`}>
+                          {selectedEvent.category}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Judul */}
+                    <h1 className="text-2xl md:text-3xl font-black text-dark leading-snug">
+                      {selectedEvent.title}
+                    </h1>
+
+                    {/* Info List ala Tiket.com */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                      <div className="flex items-center gap-4 text-sm">
+                        <div className="h-11 w-11 rounded-2xl bg-pink-50 flex items-center justify-center shrink-0">
+                          <MapPin className="h-5 w-5 text-pink-500" />
                         </div>
+                        <div>
+                          <p className="text-[10px] font-black text-neutral uppercase tracking-wider leading-none mb-1">Lokasi</p>
+                          <span className="text-dark font-bold">{selectedEvent.campusLocation} - {selectedEvent.venue}</span>
+                        </div>
+                      </div>
 
-                        {/* Judul */}
-                        <h1 className="text-2xl md:text-3xl font-black text-dark leading-snug">
-                          {selectedEvent.title}
-                        </h1>
+                      <div className="flex items-center gap-4 text-sm">
+                        <div className="h-11 w-11 rounded-2xl bg-blue-50 flex items-center justify-center shrink-0">
+                          <Calendar className="h-5 w-5 text-blue-500" />
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-black text-neutral uppercase tracking-wider leading-none mb-1">Tanggal & Waktu</p>
+                          <span className="text-dark font-bold">
+                            {selectedEvent.startDate} • {selectedEvent.startTime} s/d {selectedEvent.endDate || selectedEvent.startDate} • {selectedEvent.endTime || "Selesai"}
+                          </span>
+                        </div>
+                      </div>
 
-                        {/* Info List ala Tiket.com */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-                          <div className="flex items-center gap-4 text-sm">
-                            <div className="h-11 w-11 rounded-2xl bg-pink-50 flex items-center justify-center shrink-0">
-                              <MapPin className="h-5 w-5 text-pink-500" />
-                            </div>
-                            <div>
-                              <p className="text-[10px] font-black text-neutral uppercase tracking-wider leading-none mb-1">Lokasi</p>
-                              <span className="text-dark font-bold">{selectedEvent.campusLocation} - {selectedEvent.venue}</span>
-                            </div>
-                          </div>
+                      <div className="flex items-center gap-4 text-sm">
+                        <div className="h-11 w-11 rounded-2xl bg-purple-50 flex items-center justify-center shrink-0">
+                          <Users className="h-5 w-5 text-purple-500" />
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-black text-neutral uppercase tracking-wider leading-none mb-1">Kapasitas</p>
+                          <span className="text-dark font-bold">{selectedEvent.maxCapacity} Peserta</span>
+                        </div>
+                      </div>
 
-                          <div className="flex items-center gap-4 text-sm">
-                            <div className="h-11 w-11 rounded-2xl bg-blue-50 flex items-center justify-center shrink-0">
-                              <Calendar className="h-5 w-5 text-blue-500" />
-                            </div>
-                            <div>
-                              <p className="text-[10px] font-black text-neutral uppercase tracking-wider leading-none mb-1">Tanggal & Waktu</p>
-                              <span className="text-dark font-bold">
-                                {selectedEvent.startDate} • {selectedEvent.startTime} s/d {selectedEvent.endDate || selectedEvent.startDate} • {selectedEvent.endTime || "Selesai"}
-                              </span>
-                            </div>
-                          </div>
+                      <div className="flex items-center gap-4 text-sm">
+                        <div className="h-11 w-11 rounded-2xl bg-emerald-50 flex items-center justify-center shrink-0">
+                          <CreditCard className="h-5 w-5 text-emerald-500" />
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-black text-neutral uppercase tracking-wider leading-none mb-1">Biaya Pendaftaran</p>
+                          <span className="text-primary font-black text-base">{selectedEvent.feeType}</span>
+                        </div>
+                      </div>
+                    </div>
 
-                          <div className="flex items-center gap-4 text-sm">
-                            <div className="h-11 w-11 rounded-2xl bg-purple-50 flex items-center justify-center shrink-0">
-                              <Users className="h-5 w-5 text-purple-500" />
-                            </div>
-                            <div>
-                              <p className="text-[10px] font-black text-neutral uppercase tracking-wider leading-none mb-1">Kapasitas</p>
-                              <span className="text-dark font-bold">{selectedEvent.maxCapacity} Peserta</span>
-                            </div>
-                          </div>
+                    {/* Divider */}
+                    <div className="h-px w-full bg-gray-100 my-4" />
 
-                          <div className="flex items-center gap-4 text-sm">
-                            <div className="h-11 w-11 rounded-2xl bg-emerald-50 flex items-center justify-center shrink-0">
-                              <CreditCard className="h-5 w-5 text-emerald-500" />
-                            </div>
-                            <div>
-                              <p className="text-[10px] font-black text-neutral uppercase tracking-wider leading-none mb-1">Biaya Pendaftaran</p>
-                              <span className="text-primary font-black text-base">{selectedEvent.feeType}</span>
-                            </div>
+                    {/* Penyelenggara */}
+                    <div className="flex items-center gap-4">
+                      <div className="h-11 w-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 border border-primary/10">
+                        <Building2 className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-black text-neutral uppercase tracking-widest mb-0.5">Diselenggarakan oleh</p>
+                        <p className="text-dark font-bold text-sm">{selectedEvent.organizerName}</p>
+                        <p className="text-neutral text-xs">{Array.isArray(selectedEvent.organizerProdi) ? selectedEvent.organizerProdi.join(", ") : selectedEvent.organizerProdi}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tab Switcher ala iOS/Tiket.com mock */}
+                <div className="flex justify-center pt-2">
+                  <div className="relative flex p-1 bg-gray-100/85 rounded-full border border-gray-200/50 w-72 overflow-hidden shadow-inner">
+                    <div className="absolute top-1 bottom-1 bg-white rounded-full shadow-sm w-[calc(50%-4px)] left-[4px]" />
+                    <div className="flex-1 relative z-10 py-2.5 rounded-full text-xs font-black text-center text-primary uppercase tracking-wider">
+                      Detail Acara
+                    </div>
+                    <div className="flex-1 relative z-10 py-2.5 rounded-full text-xs font-black text-center text-neutral/70 uppercase tracking-wider">
+                      Ulasan (0)
+                    </div>
+                  </div>
+                </div>
+
+                {/* Detail Cards List (Unified Detail Card matching latest events/[id]/page.tsx layout) */}
+                <div className="space-y-6">
+                  <div className="bg-white border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.02)] rounded-2xl overflow-hidden">
+                    {/* Tentang Acara */}
+                    <div className="px-6 md:px-8 pt-8 pb-6">
+                      <h2 className="text-xl font-bold text-dark mb-4">Tentang Acara</h2>
+                      {selectedEvent.tagline && (
+                        <p className="text-primary font-semibold text-sm mb-3">{selectedEvent.tagline}</p>
+                      )}
+                      <p className="text-neutral text-sm leading-relaxed whitespace-pre-wrap font-medium">{selectedEvent.description}</p>
+                      {selectedEvent.theme && (
+                        <div className="mt-4 flex items-start gap-2">
+                          <span className="text-base">🏆</span>
+                          <div>
+                            <span className="text-dark font-bold text-sm">Tema Besar: </span>
+                            <span className="text-neutral text-sm italic">&quot;{selectedEvent.theme}&quot;</span>
                           </div>
                         </div>
+                      )}
+                    </div>
 
-                        {/* Divider */}
-                        <div className="h-px w-full bg-gray-100 my-4" />
+                    {/* Row info: Tanggal, Lokasi, Benefit */}
+                    <div className="px-6 md:px-8 pb-6 space-y-4">
+                      {/* Tanggal & Waktu */}
+                      <div className="flex items-start gap-3">
+                        <div className="h-9 w-9 bg-blue-50 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
+                          <Calendar className="h-4.5 w-4.5 text-blue-500" />
+                        </div>
+                        <div>
+                          <p className="font-bold text-dark text-sm">Tanggal &amp; Waktu</p>
+                          <p className="text-neutral text-sm font-medium">
+                            {selectedEvent.startDate}{selectedEvent.startTime ? ` · ${selectedEvent.startTime}` : ""}{selectedEvent.endTime ? ` - ${selectedEvent.endTime} WIB` : " WIB"}
+                          </p>
+                        </div>
+                      </div>
 
-                        {/* Penyelenggara */}
-                        <div className="flex items-center gap-4">
-                          <div className="h-11 w-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 border border-primary/10">
-                            <Building2 className="h-5 w-5 text-primary" />
+                      {/* Lokasi */}
+                      <div className="flex items-start gap-3">
+                        <div className="h-9 w-9 bg-pink-50 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
+                          <MapPin className="h-4.5 w-4.5 text-pink-500" />
+                        </div>
+                        <div>
+                          <p className="font-bold text-dark text-sm">Lokasi</p>
+                          <p className="text-neutral text-sm font-medium">{selectedEvent.venue}</p>
+                        </div>
+                      </div>
+
+                      {/* Benefit */}
+                      {(selectedEvent.benefits || selectedEvent.feeType) && (
+                        <div className="flex items-start gap-3">
+                          <div className="h-9 w-9 bg-emerald-50 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
+                            <Award className="h-4.5 w-4.5 text-emerald-500" />
                           </div>
                           <div>
-                            <p className="text-[10px] font-black text-neutral uppercase tracking-widest mb-0.5">Diselenggarakan oleh</p>
-                            <p className="text-dark font-bold text-sm">{selectedEvent.organizerName}</p>
-                            <p className="text-neutral text-xs">{Array.isArray(selectedEvent.organizerProdi) ? selectedEvent.organizerProdi.join(", ") : selectedEvent.organizerProdi}</p>
+                            <p className="font-bold text-dark text-sm">Benefit</p>
+                            <p className="text-neutral text-sm font-medium">{selectedEvent.benefits || "Snack dan Sertifikat (SKPI)"}</p>
                           </div>
                         </div>
-                      </div>
+                      )}
                     </div>
 
-                    {/* Tab Switcher ala iOS/Tiket.com mock */}
-                    <div className="flex justify-center pt-2">
-                      <div className="relative flex p-1 bg-gray-100/85 rounded-full border border-gray-200/50 w-72 overflow-hidden shadow-inner">
-                        <div className="absolute top-1 bottom-1 bg-white rounded-full shadow-sm w-[calc(50%-4px)] left-[4px]" />
-                        <div className="flex-1 relative z-10 py-2.5 rounded-full text-xs font-black text-center text-primary uppercase tracking-wider">
-                          Detail Acara
-                        </div>
-                        <div className="flex-1 relative z-10 py-2.5 rounded-full text-xs font-black text-center text-neutral/70 uppercase tracking-wider">
-                          Ulasan (0)
-                        </div>
-                      </div>
-                    </div>
+                    {/* ── DIVIDER: What you will get ── */}
+                    {selectedEvent.whatYouWillGet && selectedEvent.whatYouWillGet.length > 0 && (
+                      <>
+                        <div className="mx-6 md:mx-8 h-px bg-gray-100" />
 
-                    {/* Detail Cards List (Unified Detail Card matching latest events/[id]/page.tsx layout) */}
-                    <div className="space-y-6">
-                      <div className="bg-white border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.02)] rounded-xl overflow-hidden">
-                        {/* Tentang Acara */}
-                        <div className="px-6 md:px-8 pt-8 pb-6">
-                          <h2 className="text-xl font-bold text-dark mb-4">Tentang Acara</h2>
-                          {selectedEvent.tagline && (
-                            <p className="text-primary font-semibold text-sm mb-3">{selectedEvent.tagline}</p>
-                          )}
-                          <p className="text-neutral text-sm leading-relaxed whitespace-pre-wrap font-medium">{selectedEvent.description}</p>
-                          {selectedEvent.theme && (
-                            <div className="mt-4 flex items-start gap-2">
-                              <span className="text-base">🏆</span>
-                              <div>
-                                <span className="text-dark font-bold text-sm">Tema Besar: </span>
-                                <span className="text-neutral text-sm italic">&quot;{selectedEvent.theme}&quot;</span>
+                        <div className="px-6 md:px-8 py-6">
+                          <h2 className="text-xl font-bold text-dark mb-5">Apa Saja Yang Akan Kamu Dapatkan?</h2>
+                          <div className="space-y-3">
+                            {selectedEvent.whatYouWillGet.map((item: string, idx: number) => (
+                              <div key={idx} className="flex items-center gap-3">
+                                <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
+                                <span className="text-neutral text-sm font-medium">{item}</span>
                               </div>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Row info: Tanggal, Lokasi, Benefit */}
-                        <div className="px-6 md:px-8 pb-6 space-y-4">
-                          {/* Tanggal & Waktu */}
-                          <div className="flex items-start gap-3">
-                            <div className="h-9 w-9 bg-blue-50 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
-                              <Calendar className="h-4.5 w-4.5 text-blue-500" />
-                            </div>
-                            <div>
-                              <p className="font-bold text-dark text-sm">Tanggal &amp; Waktu</p>
-                              <p className="text-neutral text-sm font-medium">
-                                {selectedEvent.startDate}{selectedEvent.startTime ? ` · ${selectedEvent.startTime}` : ""}{selectedEvent.endTime ? ` - ${selectedEvent.endTime} WIB` : " WIB"}
-                              </p>
-                            </div>
+                            ))}
                           </div>
-
-                          {/* Lokasi */}
-                          <div className="flex items-start gap-3">
-                            <div className="h-9 w-9 bg-pink-50 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
-                              <MapPin className="h-4.5 w-4.5 text-pink-500" />
-                            </div>
-                            <div>
-                              <p className="font-bold text-dark text-sm">Lokasi</p>
-                              <p className="text-neutral text-sm font-medium">{selectedEvent.venue}</p>
-                            </div>
-                          </div>
-
-                          {/* Benefit */}
-                          {(selectedEvent.benefits || selectedEvent.feeType) && (
-                            <div className="flex items-start gap-3">
-                              <div className="h-9 w-9 bg-emerald-50 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
-                                <Award className="h-4.5 w-4.5 text-emerald-500" />
-                              </div>
-                              <div>
-                                <p className="font-bold text-dark text-sm">Benefit</p>
-                                <p className="text-neutral text-sm font-medium">{selectedEvent.benefits || "Snack dan Sertifikat (SKPI)"}</p>
-                              </div>
-                            </div>
-                          )}
                         </div>
+                      </>
+                    )}
 
-                        {/* ── DIVIDER: What you will get ── */}
-                        {selectedEvent.whatYouWillGet && selectedEvent.whatYouWillGet.length > 0 && (
-                          <>
-                            <div className="mx-6 md:mx-8 h-px bg-gray-100" />
+                    {/* ── DIVIDER: Target Peserta ── */}
+                    {selectedEvent.targetAudience && (
+                      <>
+                        <div className="mx-6 md:mx-8 h-px bg-gray-100" />
 
-                            <div className="px-6 md:px-8 py-6">
-                              <h2 className="text-xl font-bold text-dark mb-5">Apa Saja Yang Akan Kamu Dapatkan?</h2>
-                              <div className="space-y-3">
-                                {selectedEvent.whatYouWillGet.map((item: string, idx: number) => (
-                                  <div key={idx} className="flex items-center gap-3">
-                                    <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
-                                    <span className="text-neutral text-sm font-medium">{item}</span>
+                        <div className="px-6 md:px-8 py-6">
+                          <h2 className="text-xl font-bold text-dark mb-4">Target Peserta</h2>
+                          <div className="flex items-start gap-3">
+                            <div className="h-9 w-9 bg-primary/10 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
+                              <Users className="h-4.5 w-4.5 text-primary" />
+                            </div>
+                            <p className="text-neutral text-sm font-medium leading-relaxed pt-1">{selectedEvent.targetAudience}</p>
+                          </div>
+                        </div>
+                      </>
+                    )}
+
+                    {/* ── DIVIDER: Syarat & Ketentuan ── */}
+                    {(() => {
+                      const termsList = Array.isArray(selectedEvent.termsAndConditions) 
+                        ? selectedEvent.termsAndConditions.filter((item: string) => item.trim() !== "")
+                        : (typeof selectedEvent.termsAndConditions === 'string' && selectedEvent.termsAndConditions.trim() !== '')
+                          ? selectedEvent.termsAndConditions.split('\n').map((item: string) => item.trim()).filter((item: string) => item !== "")
+                          : [];
+                      if (termsList.length === 0) return null;
+                      return (
+                        <>
+                          <div className="mx-6 md:mx-8 h-px bg-gray-100" />
+
+                          <div className="px-6 md:px-8 py-6">
+                            <h2 className="text-xl font-bold text-dark mb-5">Syarat & Ketentuan</h2>
+                            <div className="space-y-4">
+                              {termsList.map((item: string, idx: number) => {
+                                const cleanItem = item.replace(/^\s*(?:\d+[\.\)\-]?|\*|\-|•)\s*/, "");
+                                return (
+                                  <div key={idx} className="flex items-start gap-3 animate-in fade-in duration-300">
+                                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-red-50 text-[11px] font-black text-red-500 shrink-0 border border-red-100/50 mt-0.5">
+                                      {idx + 1}
+                                    </span>
+                                    <span className="text-neutral text-sm font-medium pt-0.5 leading-relaxed">{cleanItem}</span>
                                   </div>
-                                ))}
-                              </div>
+                                );
+                              })}
                             </div>
-                          </>
-                        )}
+                          </div>
+                        </>
+                      );
+                    })()}
 
-                        {/* ── DIVIDER: Target Peserta ── */}
-                        {selectedEvent.targetAudience && (
-                          <>
-                            <div className="mx-6 md:mx-8 h-px bg-gray-100" />
-
-                            <div className="px-6 md:px-8 py-6">
-                              <h2 className="text-xl font-bold text-dark mb-4">Target Peserta</h2>
-                              <div className="flex items-start gap-3">
-                                <div className="h-9 w-9 bg-primary/10 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
-                                  <Users className="h-4.5 w-4.5 text-primary" />
+                    {/* Fallback Legacy Agenda */}
+                    {(!selectedEvent.whatYouWillGet || selectedEvent.whatYouWillGet.length === 0) && selectedEvent.agenda && selectedEvent.agenda.length > 0 && (
+                      <>
+                        <div className="mx-6 md:mx-8 h-px bg-gray-100" />
+                        <div className="px-6 md:px-8 py-6">
+                          <h2 className="text-xl font-bold text-dark mb-6">Agenda Acara</h2>
+                          <div className="space-y-4">
+                            {selectedEvent.agenda.map((item: any, idx: number) => (
+                              <div key={idx} className="flex gap-6 items-start">
+                                <div className="text-neutral text-sm w-24 shrink-0 font-medium">
+                                  {item.startTime}–{item.endTime}
                                 </div>
-                                <p className="text-neutral text-sm font-medium leading-relaxed pt-1">{selectedEvent.targetAudience}</p>
-                              </div>
-                            </div>
-                          </>
-                        )}
-
-                        {/* ── DIVIDER: Syarat & Ketentuan ── */}
-                        {(() => {
-                          const termsList = Array.isArray(selectedEvent.termsAndConditions) 
-                            ? selectedEvent.termsAndConditions.filter((item: string) => item.trim() !== "")
-                            : (typeof selectedEvent.termsAndConditions === 'string' && selectedEvent.termsAndConditions.trim() !== '')
-                              ? selectedEvent.termsAndConditions.split('\n').map((item: string) => item.trim()).filter((item: string) => item !== "")
-                              : [];
-                          if (termsList.length === 0) return null;
-                          return (
-                            <>
-                              <div className="mx-6 md:mx-8 h-px bg-gray-100" />
-
-                              <div className="px-6 md:px-8 py-6">
-                                <h2 className="text-xl font-bold text-dark mb-5">Syarat & Ketentuan</h2>
-                                <div className="space-y-4">
-                                  {termsList.map((item: string, idx: number) => {
-                                    const cleanItem = item.replace(/^\s*(?:\d+[\.\)\-]?|\*|\-|•)\s*/, "");
-                                    return (
-                                      <div key={idx} className="flex items-start gap-3 animate-in fade-in duration-300">
-                                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-red-50 text-[11px] font-black text-red-500 shrink-0 border border-red-100/50 mt-0.5">
-                                          {idx + 1}
-                                        </span>
-                                        <span className="text-neutral text-sm font-medium pt-0.5 leading-relaxed">{cleanItem}</span>
-                                      </div>
-                                    );
-                                  })}
+                                <div className="text-dark text-sm font-medium">
+                                  {item.title}
                                 </div>
                               </div>
-                            </>
-                          );
-                        })()}
-
-                        {/* Fallback Legacy Agenda */}
-                        {(!selectedEvent.whatYouWillGet || selectedEvent.whatYouWillGet.length === 0) && selectedEvent.agenda && selectedEvent.agenda.length > 0 && (
-                          <>
-                            <div className="mx-6 md:mx-8 h-px bg-gray-100" />
-                            <div className="px-6 md:px-8 py-6">
-                              <h2 className="text-xl font-bold text-dark mb-6">Agenda Acara</h2>
-                              <div className="space-y-4">
-                                {selectedEvent.agenda.map((item: any, idx: number) => (
-                                  <div key={idx} className="flex gap-6 items-start">
-                                    <div className="text-neutral text-sm w-24 shrink-0 font-medium">
-                                      {item.startTime}–{item.endTime}
-                                    </div>
-                                    <div className="text-dark text-sm font-medium">
-                                      {item.title}
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </>
-                );
-              })()}
-            </div>
-
-            {/* Modal Footer (Actions) */}
-            <div className="px-10 py-8 border-t border-gray-100 flex gap-4 shrink-0 bg-white">
-              <button
-                onClick={() => {
-                  setSelectedEvent(selectedEvent);
-                  setIsRejectModalOpen(true);
-                }}
-                className="flex-1 bg-red-50 text-red-600 py-4 rounded-xl font-bold text-sm hover:bg-red-100 border border-red-100 transition-all"
-              >
-                Tolak Pengajuan
-              </button>
-              <button
-                onClick={() => {
-                  handleApprove(selectedEvent.id, selectedEvent.organizerId, selectedEvent.title);
-                  setSelectedEvent(null);
-                }}
-                className="flex-[2] bg-green-500 text-white py-4 rounded-xl font-bold text-sm hover:bg-green-600 shadow-sm transition-all"
-              >
-                Setujui & Tayangkan Sekarang
-              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

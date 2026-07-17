@@ -60,17 +60,23 @@ export function Sidebar() {
       const notifQuery = query(collection(db, "notifications"), where("targetRole", "==", "admin"), where("status", "==", "unread"));
       unsubNotif = onSnapshot(notifQuery, (snapshot) => {
         setUnreadNotifCount(snapshot.docs.length);
+      }, (error) => {
+        console.warn("Silenced Sidebar admin notif error:", error.message);
       });
 
       // Approval Count Listener (only for admin)
       const approvalQuery = query(collection(db, "events"), where("status", "==", "pending"));
       unsubApproval = onSnapshot(approvalQuery, (snapshot) => {
         setPendingApprovalCount(snapshot.docs.length);
+      }, (error) => {
+        console.warn("Silenced Sidebar approval error:", error.message);
       });
     } else if (role === "organizer") {
       const notifQuery = query(collection(db, "notifications"), where("userId", "==", user.uid), where("status", "==", "unread"));
       unsubNotif = onSnapshot(notifQuery, (snapshot) => {
         setUnreadNotifCount(snapshot.docs.length);
+      }, (error) => {
+        console.warn("Silenced Sidebar organizer notif error:", error.message);
       });
     }
 

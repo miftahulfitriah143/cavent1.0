@@ -35,8 +35,9 @@ export default function NewEventPage() {
   const [availableCategories, setAvailableCategories] = useState([
     "Seminar",
     "Workshop",
-    "Competition",
-    "Webinar"
+    "Kompetisi",
+    "Webinar",
+    "Diskusi"
   ]);
   const [customCategoryInput, setCustomCategoryInput] = useState("");
   const [bannerPreview, setBannerPreview] = useState<string>("");
@@ -53,6 +54,7 @@ export default function NewEventPage() {
     feeType: "Gratis",
     campusLocation: "",
     venue: "",
+    meetingLink: "",
     description: "",
     benefits: "",
     maxCapacity: "",
@@ -65,8 +67,6 @@ export default function NewEventPage() {
       "Peserta harus scan QR atau menunjukkan tiket (e-ticket) saat registrasi onsite.",
       "Hanya peserta yang statusnya hadir yang bisa menuliskan ulasan."
     ] as string[],
-    registrationStatus: "",
-    isProdiOnly: false,
     regOpenDate: "",
     regCloseDate: "",
     bannerPoster: null as File | null,
@@ -239,14 +239,13 @@ export default function NewEventPage() {
         feeType: formData.feeType,
         campusLocation: formData.campusLocation,
         venue: formData.venue,
+        meetingLink: formData.campusLocation === 'Online' ? formData.meetingLink : '',
         maxCapacity: parseInt(formData.maxCapacity) || 0,
         description: formData.description,
         benefits: formData.benefits,
         targetAudience: formData.targetAudience,
         whatYouWillGet: formData.whatYouWillGet.filter(item => item.trim() !== ''),
         termsAndConditions: formData.termsAndConditions.filter(item => item.trim() !== ''),
-        registrationStatus: formData.registrationStatus,
-        isProdiOnly: formData.isProdiOnly,
         organizerProdi: formData.organizerProdi,
         regOpenDate: formData.regOpenDate,
         regCloseDate: formData.regCloseDate,
@@ -317,14 +316,13 @@ export default function NewEventPage() {
         feeType: formData.feeType,
         campusLocation: formData.campusLocation,
         venue: formData.venue,
+        meetingLink: formData.campusLocation === 'Online' ? formData.meetingLink : '',
         maxCapacity: parseInt(formData.maxCapacity) || 0,
         description: formData.description,
         benefits: formData.benefits,
         targetAudience: formData.targetAudience,
         whatYouWillGet: formData.whatYouWillGet.filter(item => item.trim() !== ""),
         termsAndConditions: formData.termsAndConditions.filter(item => item.trim() !== ""),
-        registrationStatus: formData.registrationStatus,
-        isProdiOnly: formData.isProdiOnly,
         organizerProdi: formData.organizerProdi,
         regOpenDate: formData.regOpenDate,
         regCloseDate: formData.regCloseDate,
@@ -385,8 +383,12 @@ export default function NewEventPage() {
         toast.error("Mohon pilih minimal satu Kategori!");
         return;
       }
-      if (!formData.venue.trim()) {
+      if (formData.campusLocation !== 'Online' && !formData.venue.trim()) {
         toast.error("Mohon isi Ruangan / Venue!");
+        return;
+      }
+      if (formData.campusLocation === 'Online' && !formData.meetingLink.trim()) {
+        toast.error("Mohon isi Link Zoom/GMeet!");
         return;
       }
       if (!formData.maxCapacity || parseInt(formData.maxCapacity) <= 0) {
@@ -685,6 +687,25 @@ export default function NewEventPage() {
                 </div>
               </div>
 
+              {formData.campusLocation === "Online" && (
+                <div className="md:col-span-2 space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <label className="text-xs font-black text-dark uppercase tracking-widest flex items-center gap-2">
+                    Link Zoom / GMeet <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral" />
+                    <input
+                      type="url"
+                      name="meetingLink"
+                      placeholder="https://zoom.us/j/..."
+                      value={formData.meetingLink}
+                      onChange={handleChange}
+                      className="w-full bg-gray-50 border border-gray-100 rounded-2xl pl-12 pr-5 py-4 text-sm text-dark focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                    />
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-2">
                 <label className="text-xs font-black text-dark uppercase tracking-widest flex items-center gap-2">
                   Ruangan / Venue <span className="text-red-500">*</span>
@@ -868,35 +889,9 @@ export default function NewEventPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-2">
-                <label className="text-xs font-black text-dark uppercase tracking-widest">Status Pendaftaran *</label>
-                <select
-                  name="registrationStatus"
-                  value={formData.registrationStatus}
-                  onChange={handleChange}
-                  className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 text-sm text-dark focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none transition-all cursor-pointer"
-                >
-                  <option>Terbuka</option>
-                  <option>Segera Hadir</option>
-                  <option>Selesai</option>
-                </select>
-              </div>
-
-              <div className="flex items-center gap-3 md:mt-8">
-                <input
-                  type="checkbox"
-                  name="isProdiOnly"
-                  id="isProdiOnly"
-                  checked={formData.isProdiOnly}
-                  onChange={handleChange}
-                  className="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
-                />
-                <label htmlFor="isProdiOnly" className="text-sm font-bold text-dark cursor-pointer">
-                  Khusus Mahasiswa Prodi Teknik Informatika
+                <label className="text-xs font-black text-dark uppercase tracking-widest flex items-center gap-2">
+                  Pendaftaran Buka <span className="text-red-500">*</span>
                 </label>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-xs font-black text-dark uppercase tracking-widest">Pendaftaran Buka *</label>
                 <div className="relative">
                   <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral" />
                   <input
@@ -910,7 +905,9 @@ export default function NewEventPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-black text-dark uppercase tracking-widest">Pendaftaran Tutup *</label>
+                <label className="text-xs font-black text-dark uppercase tracking-widest flex items-center gap-2">
+                  Pendaftaran Tutup <span className="text-red-500">*</span>
+                </label>
                 <div className="relative">
                   <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral" />
                   <input
@@ -930,7 +927,9 @@ export default function NewEventPage() {
         {step === 3 && (
           <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="space-y-4">
-              <label className="text-xs font-black text-dark uppercase tracking-widest">Poster Utama / Banner</label>
+              <label className="text-xs font-black text-dark uppercase tracking-widest flex items-center gap-2">
+                Poster Utama / Banner <span className="text-red-500">*</span>
+              </label>
               <div className="relative group">
                 <input
                   type="file"

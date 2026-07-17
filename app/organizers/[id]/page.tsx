@@ -18,6 +18,7 @@ import {
   HardDrive
 } from "lucide-react";
 import { PublicNavbar } from "@/components/layout/PublicNavbar";
+import { getCategoryBadgeClass } from "@/lib/category";
 
 export default function OrganizerProfilePage() {
   const params = useParams();
@@ -214,8 +215,18 @@ export default function OrganizerProfilePage() {
                   <Link key={event.id} href={`/events/${event.id}`} className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all overflow-hidden flex flex-col md:flex-row h-[160px]">
                     <div className="w-full md:w-2/5 h-full relative overflow-hidden">
                       <img src={event.bannerUrl} alt={event.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                      <div className="absolute top-2 left-2 bg-primary text-white text-[10px] font-black uppercase px-2 py-1 rounded-md">
-                        {event.category}
+                      <div className="absolute top-2 left-2 flex gap-1 flex-wrap max-w-[80%]">
+                        {Array.isArray(event.category) ? (
+                          event.category.map((cat: string) => (
+                            <span key={cat} className={`text-[10px] font-black uppercase px-2 py-1 rounded-md border ${getCategoryBadgeClass(cat)}`}>
+                              {cat}
+                            </span>
+                          ))
+                        ) : (
+                          <span className={`text-[10px] font-black uppercase px-2 py-1 rounded-md border ${getCategoryBadgeClass(event.category || "General")}`}>
+                            {event.category}
+                          </span>
+                        )}
                       </div>
                     </div>
                     <div className="p-5 flex-1 flex flex-col justify-center">

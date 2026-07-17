@@ -33,7 +33,7 @@ export default function MyEventsPage() {
       setRegistrations(regData);
       setIsLoading(false);
     }, (error) => {
-      console.error("Firestore Error:", error);
+      console.warn("Silenced Firestore error for registrations:", error.message);
       setIsLoading(false);
     });
 
@@ -57,7 +57,7 @@ export default function MyEventsPage() {
         <p className="text-neutral text-sm mt-2">Kelola pendaftaran dan tiket acara kampus Anda.</p>
       </div>
 
-      <div className="grid grid-cols-1 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
 
         {registrations.length > 0 ? (
@@ -97,6 +97,8 @@ function RegistrationCard({ reg, user }: { reg: any; user: any }) {
       if (docSnap.exists()) {
         setEventState(docSnap.data().eventState || "");
       }
+    }, (error) => {
+      console.warn(`Silenced eventRef error for ${reg.eventId}:`, error.message);
     });
 
     // Real-time listener for the user's review of this event
@@ -107,6 +109,8 @@ function RegistrationCard({ reg, user }: { reg: any; user: any }) {
     );
     const unsubReview = onSnapshot(reviewQuery, (snap) => {
       setHasReviewed(!snap.empty);
+    }, (error) => {
+      console.warn(`Silenced reviewQuery error for ${reg.eventId}:`, error.message);
     });
 
     return () => {
@@ -131,44 +135,45 @@ function RegistrationCard({ reg, user }: { reg: any; user: any }) {
   }
 
   return (
-    <div className="bg-white rounded-xl p-6 md:p-8 border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 group hover:shadow-xl hover:shadow-primary/5 transition-all duration-500 hover:-translate-y-1">
-      <div className="flex gap-6 items-center">
-        <div className="h-20 w-20 md:h-24 md:w-24 rounded-xl overflow-hidden shrink-0 border border-gray-50 shadow-inner">
-          <img 
-            src={reg.eventBanner || "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2070&auto=format&fit=crop"} 
-            alt={reg.eventTitle}
-            className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700"
-          />
+    <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm flex flex-col gap-4 group hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 hover:-translate-y-1 h-full">
+      {/* Banner & Badge */}
+      <div className="h-32 w-full rounded-xl overflow-hidden shrink-0 border border-gray-50 shadow-inner relative">
+        <img 
+          src={reg.eventBanner || "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=2070&auto=format&fit=crop"} 
+          alt={reg.eventTitle}
+          className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-700"
+        />
+        <div className="absolute top-3 left-3 shadow-sm">
+          {badge}
         </div>
-        
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 mb-1">
-            {badge}
+      </div>
+      
+      {/* Details */}
+      <div className="flex-1 space-y-3">
+        <h3 className="font-black text-dark text-base leading-snug group-hover:text-primary transition-colors line-clamp-2">
+          {reg.eventTitle}
+        </h3>
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-2 text-xs text-neutral font-medium">
+            <Calendar className="h-3.5 w-3.5 text-primary/60 shrink-0" />
+            <span className="truncate">{reg.eventDate}</span>
           </div>
-          <h3 className="font-black text-dark text-lg md:text-xl leading-tight group-hover:text-primary transition-colors">
-            {reg.eventTitle}
-          </h3>
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
-            <div className="flex items-center gap-2 text-xs text-neutral font-medium">
-              <Calendar className="h-3.5 w-3.5 text-primary/40" />
-              <span>{reg.eventDate}</span>
-            </div>
-            <div className="flex items-center gap-2 text-xs text-neutral font-medium">
-              <MapPin className="h-3.5 w-3.5 text-primary/40" />
-              <span className="truncate max-w-[150px]">{reg.eventVenue}</span>
-            </div>
+          <div className="flex items-center gap-2 text-xs text-neutral font-medium">
+            <MapPin className="h-3.5 w-3.5 text-primary/60 shrink-0" />
+            <span className="truncate">{reg.eventVenue}</span>
           </div>
         </div>
       </div>
 
-      <div className="flex items-center gap-3 md:pl-6 md:border-l border-gray-50">
+      {/* Action */}
+      <div className="pt-3 border-t border-gray-50 mt-auto">
         <Link 
           href={`/audiens/my-events/${reg.id}`}
-          className="flex items-center justify-center gap-3 bg-gray-50 text-dark px-6 py-3.5 rounded-2xl text-sm font-bold hover:bg-primary hover:text-white transition-all shadow-sm active:scale-95 group/btn"
+          className="flex items-center justify-center gap-2 bg-primary text-white w-full py-2.5 rounded-xl text-xs font-bold hover:bg-[#0f527c] transition-all shadow-md shadow-primary/20 active:scale-95 group/btn"
         >
           <Ticket className="h-4 w-4" />
           <span>Lihat Tiket</span>
-          <ArrowRight className="h-4 w-4 opacity-0 -translate-x-2 group-hover/btn:opacity-100 group-hover/btn:translate-x-0 transition-all" />
+          <ArrowRight className="h-3 w-3 opacity-0 -translate-x-2 group-hover/btn:opacity-100 group-hover/btn:translate-x-0 transition-all" />
         </Link>
       </div>
     </div>

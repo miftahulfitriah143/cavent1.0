@@ -22,16 +22,7 @@ import { collection, query, where, onSnapshot, deleteDoc, doc, updateDoc } from 
 import { useAuth } from "@/components/providers/AuthProvider";
 import toast from "react-hot-toast";
 import { QrCode, Play, X, CheckCircle2, FileText } from "lucide-react";
-const getCategoryBadgeClass = (category: string) => {
-  if (!category) return "text-primary bg-primary/5 border border-primary/10";
-  const norm = category.toLowerCase();
-  if (norm.includes("seminar")) return "text-teal-600 bg-teal-50 border border-teal-100";
-  if (norm.includes("workshop")) return "text-rose-600 bg-rose-50 border border-rose-100";
-  if (norm.includes("kompetisi") || norm.includes("competition")) return "text-amber-600 bg-amber-50 border border-amber-100";
-  if (norm.includes("diskusi")) return "text-violet-600 bg-violet-50 border border-violet-100";
-
-  return "text-primary bg-primary/5 border border-primary/10";
-};
+import { getCategoryBadgeClass } from "@/lib/category";
 
 import { uploadImage } from "@/lib/cloudinary";
 
@@ -463,14 +454,16 @@ export default function MyEventsPage() {
                       </Link>
                     )}
 
-                    <Link
-                      href={`/organizer/events/${event.id}/edit`}
-                      className="p-3 bg-gray-50 text-neutral hover:text-blue-600 hover:bg-blue-50 rounded-2xl transition-all"
-                      title="Edit Acara"
-                      aria-label={`Edit acara ${event.title}`}
-                    >
-                      <Edit3 className="h-4 w-4" />
-                    </Link>
+                    {event.eventState !== "started" && event.eventState !== "completed" && (
+                      <Link
+                        href={`/organizer/events/${event.id}/edit`}
+                        className="p-3 bg-gray-50 text-neutral hover:text-blue-600 hover:bg-blue-50 rounded-2xl transition-all"
+                        title="Edit Acara"
+                        aria-label={`Edit acara ${event.title}`}
+                      >
+                        <Edit3 className="h-4 w-4" />
+                      </Link>
+                    )}
                   </div>
                   <button
                     onClick={() => handleDelete(event.id, event.title)}

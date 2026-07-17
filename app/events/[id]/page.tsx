@@ -27,6 +27,7 @@ import {
 import { PublicNavbar } from "@/components/layout/PublicNavbar";
 import { Footer } from "@/components/layout/Footer";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { getCategoryBadgeClass } from "@/lib/category";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, updateDoc, increment, addDoc, collection, serverTimestamp, query, where, getDocs, deleteDoc, onSnapshot } from "firebase/firestore";
 import toast from "react-hot-toast";
@@ -47,6 +48,11 @@ export default function EventDetail({ params }: { params: Promise<{ id: string }
   const [reviews, setReviews] = useState<any[]>([]);
   const [averageRating, setAverageRating] = useState<number>(0);
   const [ratingBreakdown, setRatingBreakdown] = useState<number[]>([0, 0, 0, 0, 0]);
+  
+  // Registration Modal State
+  const [showRegModal, setShowRegModal] = useState(false);
+  const [regFullName, setRegFullName] = useState("");
+  const [regNim, setRegNim] = useState("");
 
   useEffect(() => {
     // 1. Real-time Subscription for Event Data
@@ -119,7 +125,7 @@ export default function EventDetail({ params }: { params: Promise<{ id: string }
     fetchAdditionalData();
   }, [id, user]);
 
-  const handleRegister = async () => {
+  const openRegistrationModal = () => {
     if (!user) {
       toast.error("Silakan login untuk mendaftar");
       router.push("/login");
@@ -130,13 +136,27 @@ export default function EventDetail({ params }: { params: Promise<{ id: string }
       toast.error("Silakan verifikasi email Anda terlebih dahulu!");
       return;
     }
+    
+    // Preset full name if available
+    setRegFullName(user.displayName || "");
+    setShowRegModal(true);
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!regFullName.trim() || !regNim.trim()) {
+      toast.error("Mohon lengkapi Nama Lengkap dan NIM/ID Anda!");
+      return;
+    }
 
     setIsActionLoading(true);
     try {
       const newRegRef = await addDoc(collection(db, "registrations"), {
-        userId: user.uid || "",
-        userEmail: user.email || "",
-        userName: user.displayName || "Audiens",
+        userId: user?.uid || "",
+        userEmail: user?.email || "",
+        userName: user?.displayName || "Audiens",
+        fullName: regFullName.trim(),
+        nim: regNim.trim(),
         eventId: id,
         eventTitle: event.title || "Acara Tanpa Judul",
         eventDate: event.startDate || "",
@@ -167,6 +187,7 @@ export default function EventDetail({ params }: { params: Promise<{ id: string }
 
       setIsRegistered(true);
       setRegistrationData({ id: newRegRef.id, status: "confirmed" });
+      setShowRegModal(false);
       toast.success("Berhasil mendaftar acara!");
     } catch (error: any) {
       console.error("Registration Error:", error);
@@ -428,12 +449,12 @@ export default function EventDetail({ params }: { params: Promise<{ id: string }
               <div className="flex items-center gap-2 flex-wrap">
                 {Array.isArray(event.category) ? (
                   event.category.map((cat: string) => (
-                    <span key={cat} className="bg-primary/5 text-primary border border-primary/10 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">
+                    <span key={cat} className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${getCategoryBadgeClass(cat)}`}>
                       {cat}
                     </span>
                   ))
                 ) : (
-                  <span className="bg-primary/5 text-primary border border-primary/10 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">
+                  <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${getCategoryBadgeClass(event.category || "General")}`}>
                     {event.category}
                   </span>
                 )}
@@ -880,7 +901,7 @@ export default function EventDetail({ params }: { params: Promise<{ id: string }
 
                   return (
                     <button
-                      onClick={handleRegister}
+                      onClick={openRegistrationModal}
                       disabled={isActionLoading || seatsLeft <= 0}
                       className={`w-full font-extrabold py-4 rounded-2xl transition-all shadow-lg active:scale-95 text-sm ${seatsLeft <= 0 ? "bg-gray-100 text-neutral cursor-not-allowed" : "bg-primary hover:bg-primary/95 text-white shadow-primary/20"}`}
                     >
@@ -963,7 +984,7 @@ export default function EventDetail({ params }: { params: Promise<{ id: string }
           }
 
           return (
-            <button onClick={handleRegister} disabled={isActionLoading || seatsLeft <= 0} className="bg-primary text-white font-black px-10 py-4 rounded-2xl text-sm shadow-lg shadow-primary/20 active:scale-95 transition-all">
+            <button onClick={openRegistrationModal} disabled={isActionLoading || seatsLeft <= 0} className="bg-primary text-white font-black px-10 py-4 rounded-2xl text-sm shadow-lg shadow-primary/20 active:scale-95 transition-all">
               {isActionLoading ? "..." : "Daftar"}
             </button>
           );
@@ -1021,6 +1042,59 @@ export default function EventDetail({ params }: { params: Promise<{ id: string }
               <ChevronLeft className="h-8 w-8 rotate-180" />
             </button>
           )}
+        </div>
+      )}
+
+      {/* Registration Modal */}
+      {showRegModal && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-dark/60 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl p-6 md:p-8 w-full max-w-md shadow-2xl relative">
+            <button 
+              onClick={() => setShowRegModal(false)}
+              className="absolute top-4 right-4 p-2 text-neutral hover:text-dark hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <h2 className="text-xl font-black text-dark mb-2">Konfirmasi Pendaftaran</h2>
+            <p className="text-sm text-neutral mb-6">Lengkapi data Anda untuk keperluan e-ticket dan absensi acara.</p>
+            
+            <form onSubmit={handleRegister} className="space-y-4">
+              <div>
+                <label className="text-xs font-black text-dark uppercase tracking-widest flex items-center gap-2 mb-2">
+                  Nama Lengkap <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={regFullName}
+                  onChange={(e) => setRegFullName(e.target.value)}
+                  placeholder="Nama sesuai identitas"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                  required
+                />
+              </div>
+              <div>
+                <label className="text-xs font-black text-dark uppercase tracking-widest flex items-center gap-2 mb-2">
+                  NIM / ID Identitas <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={regNim}
+                  onChange={(e) => setRegNim(e.target.value)}
+                  placeholder="Contoh: 122103001"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                  required
+                />
+              </div>
+              
+              <button
+                type="submit"
+                disabled={isActionLoading}
+                className="w-full bg-primary text-white font-extrabold py-4 rounded-xl mt-4 shadow-lg shadow-primary/20 hover:bg-primary-900 transition-all active:scale-95 text-sm"
+              >
+                {isActionLoading ? "Memproses..." : "Selesaikan Pendaftaran"}
+              </button>
+            </form>
+          </div>
         </div>
       )}
     </div>
