@@ -178,7 +178,7 @@ export default function EventDetail({ params }: { params: Promise<{ id: string }
           userId: event.organizerId,
           type: "NEW_REGISTRATION",
           title: "Pendaftar Baru",
-          message: `${user.displayName || "Audiens"} baru saja mendaftar ke acara Anda: ${event.title || "Acara Tanpa Judul"}`,
+          message: `${user?.displayName || "Audiens"} baru saja mendaftar ke acara Anda: ${event.title || "Acara Tanpa Judul"}`,
           eventId: id,
           status: "unread",
           createdAt: serverTimestamp(),
