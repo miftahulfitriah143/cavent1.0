@@ -19,13 +19,17 @@ import {
   CreditCard,
   Building2,
   ArrowRight,
-  Award
+  Award,
+  Sparkles,
+  FileText,
+  Link2,
+  Tag
 } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { db, auth } from "@/lib/firebase";
-import { doc, getDoc, updateDoc, addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { doc, getDoc, updateDoc, addDoc, collection, serverTimestamp, getDocs, query, where } from "firebase/firestore";
 import { uploadImage } from "@/lib/cloudinary";
 
 export default function EditEventPage({ params }: { params: Promise<{ id: string }> }) {
@@ -34,13 +38,37 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [availableCategories, setAvailableCategories] = useState([
-    "Seminar",
-    "Workshop",
-    "Kompetisi",
-    "Webinar",
-    "Diskusi"
-  ]);
+  const DEFAULT_CATEGORIES = ["Seminar", "Workshop", "Kompetisi", "Webinar", "Diskusi"];
+  const [availableCategories, setAvailableCategories] = useState<string[]>(DEFAULT_CATEGORIES);
+
+  // Load global categories from Firestore
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const snap = await getDocs(collection(db, "categories"));
+        if (snap.empty) {
+          const seedPromises = DEFAULT_CATEGORIES.map(name =>
+            addDoc(collection(db, "categories"), { name, createdAt: serverTimestamp() })
+          );
+          await Promise.all(seedPromises);
+          setAvailableCategories(DEFAULT_CATEGORIES);
+        } else {
+          const names = Array.from(new Set(snap.docs.map(d => d.data().name as string)));
+          const sorted = [
+            ...DEFAULT_CATEGORIES.filter(d => names.includes(d)),
+            ...names.filter(n => !DEFAULT_CATEGORIES.includes(n))
+          ];
+          setAvailableCategories(sorted);
+        }
+      } catch (err) {
+        // Jika belum dideploy rulesnya ke Firebase live, maka ini wajar akan catch error (permission denied)
+        // Kita cukup abaikan karena akan fallback ke DEFAULT_CATEGORIES.
+        // console.warn("Menggunakan kategori bawaan karena gagal membaca dari server.");
+      }
+    };
+    loadCategories();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [customCategoryInput, setCustomCategoryInput] = useState("");
   
   // Track existing database URLs so we don't re-upload
@@ -127,12 +155,14 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
             additionalMedia: [],
           });
 
-          // Set custom categories if any aren't in available default lists
+          // Set custom categories if any aren't in available lists, avoiding duplicates
           if (eventData.category) {
-            eventData.category.forEach((cat: string) => {
-              if (!availableCategories.includes(cat)) {
-                setAvailableCategories(prev => [...prev, cat]);
+            setAvailableCategories(prev => {
+              const newCats = eventData.category.filter((cat: string) => !prev.includes(cat));
+              if (newCats.length > 0) {
+                return Array.from(new Set([...prev, ...newCats]));
               }
+              return prev;
             });
           }
 
@@ -199,14 +229,24 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
     });
   };
 
-  const handleAddCustomCategory = () => {
+  const handleAddCustomCategory = async () => {
     const trimmed = customCategoryInput.trim();
     if (!trimmed) return;
 
     const formatted = trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
 
     if (!availableCategories.includes(formatted)) {
-      setAvailableCategories(prev => [...prev, formatted]);
+      setAvailableCategories(prev => Array.from(new Set([...prev, formatted])));
+      try {
+        const existing = await getDocs(
+          query(collection(db, "categories"), where("name", "==", formatted))
+        );
+        if (existing.empty) {
+          await addDoc(collection(db, "categories"), { name: formatted, createdAt: serverTimestamp() });
+        }
+      } catch (err) {
+        console.error("Failed to save category:", err);
+      }
     }
 
     setFormData(prev => {
@@ -515,135 +555,156 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
     );
   }
 
+const labelClass = "text-[11px] font-black text-dark uppercase tracking-widest flex items-center gap-2";
+  // Reusable input class
+  const inputClass = "w-full bg-white border border-gray-200 rounded-xl px-5 py-3.5 text-sm text-dark focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all shadow-sm placeholder:text-gray-300";
+  const inputWithIconClass = "w-full bg-white border border-gray-200 rounded-xl pl-11 pr-5 py-3.5 text-sm text-dark focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-all shadow-sm";
+
+  const steps = [
+    { id: 1, label: "Informasi Dasar", icon: Info, color: "text-primary", bg: "bg-primary" },
+    { id: 2, label: "Detail Acara", icon: LayoutGrid, color: "text-secondary", bg: "bg-secondary" },
+    { id: 3, label: "Media & Poster", icon: ImageIcon, color: "text-accent", bg: "bg-accent" },
+  ];
+
   return (
-    <div className="max-w-7xl mx-auto space-y-6 pb-10">
+    <div className="space-y-6 pb-10">
+      
+
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <Link href="/organizer/events" className="inline-flex lg:hidden items-center gap-2 text-accent hover:text-accent-600 mb-4 font-bold text-sm transition-colors"><ChevronLeft className="h-4 w-4" /> Batal & Kembali</Link><h1 className="text-3xl font-black text-dark tracking-tight">Edit Acara</h1><p className="text-neutral text-xs font-medium mt-1">Ubah rincian acara Anda di bawah. Acara akan diajukan ulang untuk verifikasi admin.</p>
-          
+      <div className="bg-gradient-to-r from-primary-900 via-primary to-secondary rounded-2xl p-6 md:p-8 text-white relative overflow-hidden shadow-xl shadow-primary/20">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-secondary/20 rounded-full blur-2xl pointer-events-none" />
+                <div className="absolute top-6 right-6 md:top-8 md:right-8 z-20">
+          <Link href="/organizer/events" className="flex items-center justify-center bg-red-500/90 hover:bg-red-600 text-white px-4 py-2 rounded-xl font-bold text-xs transition-all backdrop-blur-sm border border-red-400/30 gap-2 shadow-xl">
+            <X className="h-4 w-4" /> Batal Edit
+          </Link>
+        </div>
+<div className="relative z-10">
+          <div className="flex items-center gap-2 mb-2">
+            <Sparkles className="h-4 w-4 text-accent" />
+            <span className="text-accent text-xs font-bold uppercase tracking-widest">Form Pengajuan</span>
+          </div>
+          <h1 className="text-2xl md:text-3xl font-black tracking-tight">Edit Acara</h1>
+          <p className="text-white/70 text-sm mt-1">Ubah rincian acara Anda di bawah. Acara akan diajukan ulang untuk verifikasi admin.</p>
         </div>
       </div>
 
-
       {/* Stepper */}
-      <div className="bg-white rounded-xl p-1 mb-8 shadow-sm border border-gray-100 flex overflow-hidden">
-        {[
-          { id: 1, label: "Informasi Dasar", icon: Info },
-          { id: 2, label: "Detail Acara", icon: LayoutGrid },
-          { id: 3, label: "Media & Poster", icon: ImageIcon }
-        ].map((s) => (
-          <button
-            key={s.id}
-            onClick={() => s.id < step && setStep(s.id)}
-            disabled={s.id > step}
-            className={`flex-1 flex items-center justify-center gap-3 py-4 text-sm font-bold transition-all ${step === s.id
-              ? "bg-primary/5 text-primary"
-              : step > s.id
-                ? "text-green-600"
-                : "text-neutral/40"
-              }`}
-          >
-            <div className={`h-6 w-6 rounded-full flex items-center justify-center text-[10px] ${step === s.id ? "bg-primary text-white" : step > s.id ? "bg-green-600 text-white" : "bg-gray-100 text-neutral"
-              }`}>
-              {step > s.id ? <CheckCircle2 className="h-4 w-4" /> : s.id}
-            </div>
-            <span className="hidden md:inline">{s.label}</span>
-          </button>
-        ))}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="flex">
+          {steps.map((s, idx) => {
+            const Icon = s.icon;
+            const isActive = step === s.id;
+            const isDone = step > s.id;
+            return (
+              <button
+                key={s.id}
+                onClick={() => s.id < step && setStep(s.id)}
+                disabled={s.id > step}
+                className={`flex-1 flex flex-col md:flex-row items-center justify-center gap-2 md:gap-3 py-4 px-3 text-xs md:text-sm font-bold transition-all border-b-2 ${isActive
+                    ? `border-primary bg-primary/5 text-primary`
+                    : isDone
+                      ? "border-green-400 bg-green-50/50 text-green-600 cursor-pointer"
+                      : "border-transparent text-neutral/40 cursor-not-allowed"
+                  }`}
+              >
+                <div className={`h-7 w-7 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 ${isActive ? `${s.bg} text-white shadow-md` : isDone ? "bg-green-500 text-white" : "bg-gray-100 text-neutral/40"
+                  }`}>
+                  {isDone ? <CheckCircle2 className="h-4 w-4" /> : <Icon className="h-3.5 w-3.5" />}
+                </div>
+                <span className="hidden sm:inline">{s.label}</span>
+              </button>
+            );
+          })}
+        </div>
+        {/* Progress bar */}
+        <div className="h-1 bg-gray-100">
+          <div
+            className="h-full bg-gradient-to-r from-primary via-secondary to-accent transition-all duration-500"
+            style={{ width: `${((step - 1) / 2) * 100}%` }}
+          />
+        </div>
       </div>
 
       {/* Form Content */}
-      <div className="bg-white rounded-xl p-6 md:p-8 shadow-sm border border-gray-100 min-h-[500px]">
+      <div className="space-y-5">
 
         {/* STEP 1: INFORMASI DASAR */}
         {step === 1 && (
-          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="md:col-span-2 space-y-2">
-                <label className="text-xs font-black text-dark uppercase tracking-widest flex items-center gap-2">
-                  Nama Acara <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="title"
-                  placeholder="Seminar Nasional Teknologi 2026"
-                  value={formData.title}
-                  onChange={handleChange}
-                  className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 text-sm text-dark focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                />
-              </div>
+          <div className="space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
-              <div className="space-y-2">
-                <label className="text-xs font-black text-dark uppercase tracking-widest flex items-center gap-2">
-                  Tanggal Mulai <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral" />
-                  <input
-                    type="date"
-                    name="startDate"
-                    value={formData.startDate}
-                    onChange={handleChange}
-                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl pl-12 pr-5 py-4 text-sm text-dark focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                  />
+            {/* Section: Nama & Waktu */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/10">
+                <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center shadow-sm">
+                  <Info className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <p className="font-black text-sm text-primary">Identitas Acara</p>
+                  <p className="text-[11px] text-primary/60">Nama, tanggal, dan waktu pelaksanaan</p>
                 </div>
               </div>
-
-              <div className="space-y-2">
-                <label className="text-xs font-black text-dark uppercase tracking-widest flex items-center gap-2">
-                  Tanggal Selesai <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral" />
+              <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="md:col-span-2 space-y-1.5">
+                  <label className={labelClass}>
+                    Nama Acara <span className="text-red-500">*</span>
+                  </label>
                   <input
-                    type="date"
-                    name="endDate"
-                    value={formData.endDate}
+                    type="text"
+                    name="title"
+                    placeholder="Seminar Nasional Teknologi 2026"
+                    value={formData.title}
                     onChange={handleChange}
-                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl pl-12 pr-5 py-4 text-sm text-dark focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                    className={inputClass}
                   />
                 </div>
-              </div>
 
-              <div className="space-y-2">
-                <label className="text-xs font-black text-dark uppercase tracking-widest flex items-center gap-2">
-                  Jam Mulai <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <Clock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral" />
-                  <input
-                    type="time"
-                    name="startTime"
-                    value={formData.startTime}
-                    onChange={handleChange}
-                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl pl-12 pr-5 py-4 text-sm text-dark focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                  />
+                <div className="space-y-1.5">
+                  <label className={labelClass}>Tanggal Mulai <span className="text-red-500">*</span></label>
+                  <div className="relative">
+                    <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/60" />
+                    <input type="date" name="startDate" value={formData.startDate} onChange={handleChange} className={inputWithIconClass} />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className={labelClass}>Tanggal Selesai <span className="text-red-500">*</span></label>
+                  <div className="relative">
+                    <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/60" />
+                    <input type="date" name="endDate" value={formData.endDate} onChange={handleChange} className={inputWithIconClass} />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className={labelClass}>Jam Mulai <span className="text-red-500">*</span></label>
+                  <div className="relative">
+                    <Clock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-secondary/70" />
+                    <input type="time" name="startTime" value={formData.startTime} onChange={handleChange} className={inputWithIconClass} />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className={labelClass}>Jam Selesai <span className="text-red-500">*</span></label>
+                  <div className="relative">
+                    <Clock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-secondary/70" />
+                    <input type="time" name="endTime" value={formData.endTime} onChange={handleChange} className={inputWithIconClass} />
+                  </div>
                 </div>
               </div>
+            </div>
 
-              <div className="space-y-2">
-                <label className="text-xs font-black text-dark uppercase tracking-widest flex items-center gap-2">
-                  Jam Selesai <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <Clock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral" />
-                  <input
-                    type="time"
-                    name="endTime"
-                    value={formData.endTime}
-                    onChange={handleChange}
-                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl pl-12 pr-5 py-4 text-sm text-dark focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                  />
+            {/* Section: Kategori */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-secondary/10 to-secondary/5 border-b border-secondary/10">
+                <div className="h-8 w-8 rounded-lg bg-secondary flex items-center justify-center shadow-sm">
+                  <Tag className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <p className="font-black text-sm text-secondary">Kategori Acara</p>
+                  <p className="text-[11px] text-secondary/60">Pilih satu atau lebih kategori yang sesuai</p>
                 </div>
               </div>
-
-              <div className="md:col-span-2 space-y-4">
-                <label className="text-xs font-black text-dark uppercase tracking-widest flex items-center gap-2">
-                  Kategori Acara (Pilih satu atau lebih) <span className="text-red-500">*</span>
-                </label>
-
-                {/* Predefined & Custom Categories Grid */}
+              <div className="p-6 space-y-4">
                 <div className="flex flex-wrap gap-2.5">
                   {availableCategories.map((cat) => {
                     const isSelected = formData.category.includes(cat);
@@ -652,9 +713,9 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
                         key={cat}
                         type="button"
                         onClick={() => handleToggleCategory(cat)}
-                        className={`px-5 py-3 rounded-full text-xs font-bold transition-all duration-300 active:scale-95 border ${isSelected
-                          ? "bg-primary border-primary text-white shadow-md shadow-primary/20"
-                          : "bg-gray-50 border-gray-100 text-neutral hover:bg-gray-100"
+                        className={`px-5 py-2.5 rounded-full text-xs font-bold transition-all duration-200 active:scale-95 border ${isSelected
+                            ? "bg-secondary border-secondary text-white shadow-md shadow-secondary/20"
+                            : "bg-white border-gray-200 text-neutral hover:border-secondary/40 hover:text-secondary hover:bg-secondary/5"
                           }`}
                       >
                         {cat}
@@ -662,52 +723,39 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
                     );
                   })}
                 </div>
-
-                {/* Add Custom Category Input */}
-                <div className="flex gap-2 max-w-md">
+                <div className="flex gap-2 max-w-sm">
                   <input
                     type="text"
                     placeholder="Tambah kategori kustom..."
                     value={customCategoryInput}
                     onChange={(e) => setCustomCategoryInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        handleAddCustomCategory();
-                      }
-                    }}
-                    className="flex-1 bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-xs text-dark focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddCustomCategory(); } }}
+                    className="flex-1 bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-dark focus:outline-none focus:ring-2 focus:ring-secondary/20 transition-all shadow-sm placeholder:text-gray-300"
                   />
                   <button
                     type="button"
                     onClick={handleAddCustomCategory}
-                    className="bg-primary hover:bg-primary-900 text-white font-bold px-4 py-3 rounded-xl text-xs transition-all active:scale-95 flex items-center gap-1.5"
+                    className="bg-secondary hover:bg-secondary/90 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition-all active:scale-95 flex items-center gap-1.5 shadow-sm"
                   >
-                    <Plus className="h-4 w-4" /> Tambah
+                    <Plus className="h-3.5 w-3.5" /> Tambah
                   </button>
                 </div>
               </div>
+            </div>
 
-              <div className="md:col-span-2 space-y-2">
-                <label className="text-xs font-black text-dark uppercase tracking-widest flex items-center gap-2">
-                  Biaya Pendaftaran
-                </label>
-                <div className="relative">
-                  <CreditCard className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral" />
-                  <input
-                    type="text"
-                    disabled
-                    value="Gratis (Default)"
-                    className="w-full bg-gray-100 border border-gray-200 rounded-2xl pl-12 pr-5 py-4 text-sm text-neutral cursor-not-allowed font-bold"
-                  />
+            {/* Section: Penyelenggara */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-accent/10 to-accent/5 border-b border-accent/10">
+                <div className="h-8 w-8 rounded-lg bg-accent flex items-center justify-center shadow-sm">
+                  <Building2 className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <p className="font-black text-sm text-accent">Penyelenggara</p>
+                  <p className="text-[11px] text-accent/60">Pilih program studi / unit penyelenggara</p>
                 </div>
               </div>
-
-              <div className="md:col-span-2 space-y-2">
-                <label className="text-xs font-black text-dark uppercase tracking-widest flex items-center gap-2">
-                  Penyelenggara / Program Studi (Bisa pilih lebih dari satu) <span className="text-red-500">*</span>
-                </label>
-                <div className="flex flex-wrap gap-2.5 mt-2">
+              <div className="p-6">
+                <div className="flex flex-wrap gap-2.5">
                   {[
                     "Universitas",
                     "FEB — Manajemen",
@@ -725,9 +773,9 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
                         key={prodi}
                         type="button"
                         onClick={() => handleToggleProdi(prodi)}
-                        className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300 active:scale-95 border ${isSelected
-                          ? "bg-primary border-primary text-white shadow-md shadow-primary/20"
-                          : "bg-white border-gray-200 text-neutral hover:bg-gray-50"
+                        className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 active:scale-95 border ${isSelected
+                            ? "bg-accent border-accent text-white shadow-md shadow-accent/20"
+                            : "bg-white border-gray-200 text-neutral hover:border-accent/40 hover:text-accent hover:bg-accent/5"
                           }`}
                       >
                         {prodi}
@@ -736,165 +784,212 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
                   })}
                 </div>
               </div>
+            </div>
 
-              <div className="md:col-span-2 space-y-2">
-                <label className="text-xs font-black text-dark uppercase tracking-widest flex items-center gap-2">
-                  Lokasi Kampus <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral" />
-                  <select
-                    name="campusLocation"
-                    value={formData.campusLocation}
-                    onChange={handleChange}
-                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl pl-12 pr-5 py-4 text-sm text-dark focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none transition-all cursor-pointer"
-                  >
-                    <option>Kampus Cipayung, Jakarta Timur</option>
-                    <option>Kampus Cikarang, Kab. Bekasi</option>
-                    <option>Kampus Kuningan (Trinity Tower Lt.45), Jakarta Selatan</option>
-                    <option>Online</option>
-                  </select>
+            {/* Section: Biaya & Lokasi */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-primary/10 to-secondary/5 border-b border-primary/10">
+                <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-sm">
+                  <MapPin className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <p className="font-black text-sm text-primary">Lokasi & Kapasitas</p>
+                  <p className="text-[11px] text-primary/60">Tempat pelaksanaan dan jumlah peserta</p>
                 </div>
               </div>
-
-              {formData.campusLocation === "Online" && (
-                <div className="md:col-span-2 space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                  <label className="text-xs font-black text-dark uppercase tracking-widest flex items-center gap-2">
-                    Link Zoom / GMeet <span className="text-red-500">*</span>
-                  </label>
+              <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="md:col-span-2 space-y-1.5">
+                  <label className={labelClass}>Biaya Pendaftaran</label>
                   <div className="relative">
-                    <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral" />
+                    <CreditCard className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <input
-                      type="url"
-                      name="meetingLink"
-                      placeholder="https://zoom.us/j/..."
-                      value={formData.meetingLink}
-                      onChange={handleChange}
-                      className="w-full bg-gray-50 border border-gray-100 rounded-2xl pl-12 pr-5 py-4 text-sm text-dark focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                      type="text"
+                      disabled
+                      value="Gratis (Default)"
+                      className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-11 pr-5 py-3.5 text-sm text-neutral cursor-not-allowed font-bold shadow-sm"
                     />
                   </div>
                 </div>
-              )}
 
-              <div className="space-y-2">
-                <label className="text-xs font-black text-dark uppercase tracking-widest flex items-center gap-2">
-                  Ruangan / Venue <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral" />
-                  <input
-                    type="text"
-                    name="venue"
-                    placeholder="Aula Firmanzah Lt.8"
-                    value={formData.venue}
-                    onChange={handleChange}
-                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl pl-12 pr-5 py-4 text-sm text-dark focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                  />
+                <div className="md:col-span-2 space-y-1.5">
+                  <label className={labelClass}>Lokasi Kampus <span className="text-red-500">*</span></label>
+                  <div className="relative">
+                    <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/60" />
+                    <select
+                      name="campusLocation"
+                      value={formData.campusLocation}
+                      onChange={handleChange}
+                      className={`${inputWithIconClass} appearance-none cursor-pointer`}
+                    >
+                      <option value="">-- Pilih Lokasi Kampus --</option>
+                      <option>Kampus Cipayung, Jakarta Timur</option>
+                      <option>Kampus Cikarang, Kab. Bekasi</option>
+                      <option>Kampus Kuningan (Trinity Tower Lt.45), Jakarta Selatan</option>
+                      <option>Online</option>
+                    </select>
+                  </div>
                 </div>
-              </div>
 
-              <div className="space-y-2">
-                <label className="text-xs font-black text-dark uppercase tracking-widest flex items-center gap-2">
-                  Kapasitas Maksimal <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <Users className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral" />
-                  <input
-                    type="number"
-                    name="maxCapacity"
-                    placeholder="300"
-                    value={formData.maxCapacity}
-                    onChange={handleChange}
-                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl pl-12 pr-5 py-4 text-sm text-dark focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                  />
+                {formData.campusLocation === "Online" && (
+                  <div className="md:col-span-2 space-y-1.5 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <label className={labelClass}>Link Zoom / GMeet <span className="text-red-500">*</span></label>
+                    <div className="relative">
+                      <Link2 className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-secondary/70" />
+                      <input
+                        type="url"
+                        name="meetingLink"
+                        placeholder="https://zoom.us/j/..."
+                        value={formData.meetingLink}
+                        onChange={handleChange}
+                        className={inputWithIconClass}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-1.5">
+                  <label className={labelClass}>Ruangan / Venue <span className="text-red-500">*</span></label>
+                  <div className="relative">
+                    <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/60" />
+                    <input
+                      type="text"
+                      name="venue"
+                      placeholder="Aula Firmanzah Lt.8"
+                      value={formData.venue}
+                      onChange={handleChange}
+                      className={inputWithIconClass}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className={labelClass}>Kapasitas Maksimal <span className="text-red-500">*</span></label>
+                  <div className="relative">
+                    <Users className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-secondary/70" />
+                    <input
+                      type="number"
+                      name="maxCapacity"
+                      placeholder="300"
+                      value={formData.maxCapacity}
+                      onChange={handleChange}
+                      className={inputWithIconClass}
+                    />
+                  </div>
                 </div>
               </div>
-                </div>
-              </div>
+            </div>
+          </div>
         )}
 
         {/* STEP 2: DETAIL ACARA */}
         {step === 2 && (
-          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="space-y-2">
-              <label className="text-xs font-black text-dark uppercase tracking-widest flex items-center gap-2">
-                Deskripsi Acara <span className="text-red-500">*</span>
-              </label>
-              <textarea
-                name="description"
-                rows={4}
-                placeholder="Seminar nasional yang membahas perkembangan teknologi terkini..."
-                value={formData.description}
-                onChange={handleChange}
-                className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 text-sm text-dark focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none"
-              />
-            </div>
+          <div className="space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-2">
-                <label className="text-xs font-black text-dark uppercase tracking-widest flex items-center gap-2">
-                  Benefit Acara <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <Award className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral animate-pulse" />
-                  <input
-                    type="text"
-                    name="benefits"
-                    placeholder="Contoh: Snack, Sertifikat (SKPI)"
-                    value={formData.benefits}
-                    onChange={handleChange}
-                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl pl-12 pr-5 py-4 text-sm text-dark focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                  />
+            {/* Deskripsi & Info */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-secondary/10 to-secondary/5 border-b border-secondary/10">
+                <div className="h-8 w-8 rounded-lg bg-secondary flex items-center justify-center shadow-sm">
+                  <FileText className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <p className="font-black text-sm text-secondary">Informasi Detail</p>
+                  <p className="text-[11px] text-secondary/60">Deskripsi, benefit, dan target peserta</p>
                 </div>
               </div>
-
-              <div className="space-y-2">
-                <label className="text-xs font-black text-dark uppercase tracking-widest flex items-center gap-2">
-                  Target Peserta <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <Users className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral" />
-                  <input
-                    type="text"
-                    name="targetAudience"
-                    placeholder="Contoh: Mahasiswa Umum, Mahasiswa Informatika"
-                    value={formData.targetAudience}
+              <div className="p-6 space-y-5">
+                <div className="space-y-1.5">
+                  <label className={labelClass}>Deskripsi Acara <span className="text-red-500">*</span></label>
+                  <textarea
+                    name="description"
+                    rows={4}
+                    placeholder="Seminar nasional yang membahas perkembangan teknologi terkini..."
+                    value={formData.description}
                     onChange={handleChange}
-                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl pl-12 pr-5 py-4 text-sm text-dark focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                    className={`${inputClass} resize-none`}
                   />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="space-y-1.5">
+                    <label className={labelClass}>Benefit Acara <span className="text-red-500">*</span></label>
+                    <div className="relative">
+                      <Award className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-accent/70" />
+                      <input
+                        type="text"
+                        name="benefits"
+                        placeholder="Contoh: Snack, Sertifikat (SKPI)"
+                        value={formData.benefits}
+                        onChange={handleChange}
+                        className={inputWithIconClass}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className={labelClass}>Target Peserta <span className="text-red-500">*</span></label>
+                    <div className="relative">
+                      <Users className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-secondary/70" />
+                      <input
+                        type="text"
+                        name="targetAudience"
+                        placeholder="Contoh: Mahasiswa Umum, Mahasiswa Informatika"
+                        value={formData.targetAudience}
+                        onChange={handleChange}
+                        className={inputWithIconClass}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="space-y-1.5">
+                    <label className={labelClass}>Pendaftaran Buka <span className="text-red-500">*</span></label>
+                    <div className="relative">
+                      <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/60" />
+                      <input type="date" name="regOpenDate" value={formData.regOpenDate} onChange={handleChange} className={inputWithIconClass} />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className={labelClass}>Pendaftaran Tutup <span className="text-red-500">*</span></label>
+                    <div className="relative">
+                      <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/60" />
+                      <input type="date" name="regCloseDate" value={formData.regCloseDate} onChange={handleChange} className={inputWithIconClass} />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="space-y-4">
-              <div>
-                <label className="text-xs font-black text-dark uppercase tracking-widest flex items-center gap-2">
-                  Apa saja yang akan kamu dapatkan <span className="text-neutral-400 text-[10px] font-normal lowercase tracking-normal">(opsional)</span>
-                </label>
-                <p className="text-[11px] text-neutral/70 mt-1 font-medium leading-relaxed">
-                  Tuliskan wawasan, kompetensi, atau hal-hal berharga yang akan didapatkan peserta dari acara ini.
-                </p>
+            {/* Apa yang Didapat */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-primary/10 to-primary/5 border-b border-primary/10">
+                <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center shadow-sm">
+                  <CheckCircle2 className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <p className="font-black text-sm text-primary">Yang Akan Didapatkan</p>
+                  <p className="text-[11px] text-primary/60">Wawasan dan kompetensi yang diperoleh peserta <span className="text-neutral/50 font-normal normal-case tracking-normal">(opsional)</span></p>
+                </div>
               </div>
-              <div className="space-y-3">
+              <div className="p-6 space-y-3">
                 {formData.whatYouWillGet.length === 0 ? (
-                  <div className="bg-gray-50/50 rounded-2xl p-6 text-center border border-dashed border-gray-100">
-                    <p className="text-xs text-neutral/60 italic">Tidak ada item yang ditambahkan.</p>
+                  <div className="bg-gray-50/50 rounded-xl p-5 text-center border border-dashed border-gray-200">
+                    <p className="text-xs text-neutral/50 italic">Tidak ada item yang ditambahkan.</p>
                   </div>
                 ) : (
                   formData.whatYouWillGet.map((item, idx) => (
                     <div key={idx} className="flex gap-3 items-center">
+                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-[11px] font-black text-primary shrink-0 border border-primary/10">
+                        {idx + 1}
+                      </span>
                       <input
                         type="text"
                         placeholder="Contoh: Pemahaman dasar AI, Relasi baru, Sertifikat resmi"
                         value={item}
                         onChange={(e) => handleWhatYouWillGetChange(idx, e.target.value)}
-                        className="flex-1 bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-xs text-dark w-full focus:ring-2 focus:ring-primary/20 outline-none"
+                        className="flex-1 bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-dark focus:ring-2 focus:ring-primary/20 outline-none shadow-sm transition-all"
                       />
-                      <button
-                        type="button"
-                        onClick={() => removeWhatYouWillGetItem(idx)}
-                        className="p-3 text-red-400 hover:text-red-600 transition-colors"
-                      >
+                      <button type="button" onClick={() => removeWhatYouWillGetItem(idx)} className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
                         <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
@@ -903,45 +998,43 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
                 <button
                   type="button"
                   onClick={addWhatYouWillGetItem}
-                  className="flex items-center gap-2 text-xs font-bold text-primary px-4 py-2 bg-primary/5 rounded-xl hover:bg-primary/10 transition-all"
+                  className="flex items-center gap-2 text-xs font-bold text-primary px-4 py-2.5 bg-primary/5 rounded-xl hover:bg-primary/10 transition-all border border-primary/10"
                 >
                   <Plus className="h-4 w-4" /> Tambah Item
                 </button>
               </div>
             </div>
 
-            <div className="space-y-4">
-              <div>
-                <label className="text-xs font-black text-dark uppercase tracking-widest flex items-center gap-2">
-                  Syarat & Ketentuan <span className="text-neutral-400 text-[10px] font-normal lowercase tracking-normal">(opsional)</span>
-                </label>
-                <p className="text-[11px] text-neutral/70 mt-1 font-medium leading-relaxed">
-                  Tuliskan poin-poin persyaratan atau ketentuan yang berlaku bagi peserta acara ini.
-                </p>
+            {/* Syarat & Ketentuan */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-amber-50 to-orange-50 border-b border-amber-100">
+                <div className="h-8 w-8 rounded-lg bg-accent flex items-center justify-center shadow-sm">
+                  <Info className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <p className="font-black text-sm text-accent">Syarat & Ketentuan</p>
+                  <p className="text-[11px] text-accent/60">Persyaratan yang berlaku bagi peserta <span className="text-neutral/50 font-normal normal-case tracking-normal">(opsional)</span></p>
+                </div>
               </div>
-              <div className="space-y-3">
+              <div className="p-6 space-y-3">
                 {formData.termsAndConditions.length === 0 ? (
-                  <div className="bg-gray-50/50 rounded-2xl p-6 text-center border border-dashed border-gray-100">
-                    <p className="text-xs text-neutral/60 italic">Tidak ada syarat yang ditambahkan.</p>
+                  <div className="bg-gray-50/50 rounded-xl p-5 text-center border border-dashed border-gray-200">
+                    <p className="text-xs text-neutral/50 italic">Tidak ada syarat yang ditambahkan.</p>
                   </div>
                 ) : (
                   formData.termsAndConditions.map((item, idx) => (
                     <div key={idx} className="flex gap-3 items-center animate-in fade-in duration-300">
-                      <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-red-50 text-xs font-black text-red-500 shrink-0 border border-red-100/50">
+                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-accent/10 text-[11px] font-black text-accent shrink-0 border border-accent/10">
                         {idx + 1}
                       </span>
                       <input
                         type="text"
-                        placeholder="Contoh: Peserta wajib membawa laptop pribadi, Menggunakan kemeja rapi"
+                        placeholder="Contoh: Peserta wajib membawa laptop pribadi"
                         value={item}
                         onChange={(e) => handleTermsChange(idx, e.target.value)}
-                        className="flex-1 bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-xs text-dark w-full focus:ring-2 focus:ring-primary/20 outline-none"
+                        className="flex-1 bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-dark focus:ring-2 focus:ring-accent/20 outline-none shadow-sm transition-all"
                       />
-                      <button
-                        type="button"
-                        onClick={() => removeTermsItem(idx)}
-                        className="p-3 text-red-400 hover:text-red-600 transition-colors"
-                      >
+                      <button type="button" onClick={() => removeTermsItem(idx)} className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
                         <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
@@ -950,44 +1043,10 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
                 <button
                   type="button"
                   onClick={addTermsItem}
-                  className="flex items-center gap-2 text-xs font-bold text-red-600 px-4 py-2 bg-red-50 rounded-xl hover:bg-red-100 transition-all border border-red-100/50 w-fit"
+                  className="flex items-center gap-2 text-xs font-bold text-accent px-4 py-2.5 bg-accent/5 rounded-xl hover:bg-accent/10 transition-all border border-accent/10 w-fit"
                 >
                   <Plus className="h-4 w-4" /> Tambah Syarat
                 </button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-2">
-                <label className="text-xs font-black text-dark uppercase tracking-widest flex items-center gap-2">
-                  Pendaftaran Buka <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral" />
-                  <input
-                    type="date"
-                    name="regOpenDate"
-                    value={formData.regOpenDate}
-                    onChange={handleChange}
-                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl pl-12 pr-5 py-4 text-sm text-dark focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-xs font-black text-dark uppercase tracking-widest flex items-center gap-2">
-                  Pendaftaran Tutup <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral" />
-                  <input
-                    type="date"
-                    name="regCloseDate"
-                    value={formData.regCloseDate}
-                    onChange={handleChange}
-                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl pl-12 pr-5 py-4 text-sm text-dark focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                  />
-                </div>
               </div>
             </div>
           </div>
@@ -995,110 +1054,131 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
 
         {/* STEP 3: MEDIA & POSTER */}
         {step === 3 && (
-          <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="space-y-4">
-              <label className="text-xs font-black text-dark uppercase tracking-widest flex items-center gap-2">
-                Poster Utama / Banner <span className="text-red-500">*</span>
-              </label>
-              <div className="relative group">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleBannerUpload}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                />
-                <div className="h-64 border-2 border-dashed border-gray-200 rounded-[2.5rem] flex flex-col items-center justify-center gap-4 bg-gray-50/50 group-hover:bg-primary/5 group-hover:border-primary/20 transition-all">
-                  {bannerPreview ? (
-                    <div className="flex flex-col items-center">
-                      <div className="h-40 w-64 rounded-2xl overflow-hidden mb-2">
-                        <img src={bannerPreview} alt="Preview" className="h-full w-full object-cover" />
+          <div className="space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
+
+            {/* Poster Utama */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-accent/10 to-amber-50 border-b border-accent/10">
+                <div className="h-8 w-8 rounded-lg bg-accent flex items-center justify-center shadow-sm">
+                  <ImageIcon className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <p className="font-black text-sm text-accent">Poster Utama / Banner</p>
+                  <p className="text-[11px] text-accent/60">Gambar utama yang ditampilkan di halaman acara <span className="text-red-500 font-black">*</span></p>
+                </div>
+              </div>
+              <div className="p-6">
+                <div className="relative group">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleBannerUpload}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  />
+                  <div className="h-64 border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-gray-50 to-white group-hover:from-accent/5 group-hover:to-amber-50/30 group-hover:border-accent/30 transition-all">
+                    {bannerPreview ? (
+                      <div className="flex flex-col items-center">
+                        <div className="h-40 w-64 rounded-2xl overflow-hidden mb-3 shadow-md border border-white">
+                          <img src={bannerPreview} alt="Preview" className="h-full w-full object-cover" />
+                        </div>
+                        <span className="text-xs font-bold text-accent bg-accent/10 px-3 py-1 rounded-full">{formData.bannerPoster?.name}</span>
                       </div>
-                      <span className="text-xs font-bold text-primary">{formData.bannerPoster ? formData.bannerPoster.name : "Menggunakan Poster Terdaftar"}</span>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="h-16 w-16 bg-white rounded-2xl flex items-center justify-center shadow-sm">
-                        <Upload className="h-8 w-8 text-primary" />
-                      </div>
-                      <div className="text-center">
-                        <p className="text-sm font-bold text-dark">Tambah Foto</p>
-                        <p className="text-[10px] text-neutral mt-1 uppercase tracking-wider">JPG, PNG, max 10MB per foto</p>
-                      </div>
-                    </>
-                  )}
+                    ) : (
+                      <>
+                        <div className="h-16 w-16 bg-white rounded-2xl flex items-center justify-center shadow-sm border border-gray-100 group-hover:border-accent/20 transition-colors">
+                          <Upload className="h-7 w-7 text-accent" />
+                        </div>
+                        <div className="text-center">
+                          <p className="text-sm font-bold text-dark">Klik atau drag foto di sini</p>
+                          <p className="text-[10px] text-neutral mt-1 uppercase tracking-wider">JPG, PNG, maks. 10MB</p>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="space-y-4">
-              <label className="text-xs font-black text-dark uppercase tracking-widest">Media (Maks 5 Foto)</label>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                {/* Preview existing media */}
-                {additionalMediaPreviews.map((url, idx) => (
-                  <div key={idx} className="aspect-square rounded-2xl border border-gray-100 overflow-hidden relative group">
-                    <img src={url} alt="Media" className="h-full w-full object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => removeAdditionalMedia(idx)}
-                      className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
-                      title="Hapus Media"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </button>
-                  </div>
-                ))}
-
-                {/* Upload Slot */}
-                {formData.additionalMedia.length < 5 && (
-                  <div className="relative aspect-square">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      onChange={handleMediaUpload}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                    />
-                    <div className="h-full border-2 border-dashed border-gray-100 rounded-2xl flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition-all">
-                      <Plus className="h-6 w-6 text-neutral" />
-                      <p className="text-[10px] font-bold text-neutral mt-1">Tambah</p>
+            {/* Media Tambahan */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-secondary/10 to-secondary/5 border-b border-secondary/10">
+                <div className="h-8 w-8 rounded-lg bg-secondary flex items-center justify-center shadow-sm">
+                  <ImageIcon className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <p className="font-black text-sm text-secondary">Media Tambahan</p>
+                  <p className="text-[11px] text-secondary/60">Foto pendukung acara, maksimal 5 foto</p>
+                </div>
+              </div>
+              <div className="p-6">
+                <div className="grid grid-cols-3 md:grid-cols-5 gap-4">
+                  {additionalMediaPreviews.map((url, idx) => (
+                    <div key={idx} className="aspect-square rounded-2xl border border-gray-100 overflow-hidden relative group shadow-sm">
+                      <img src={url} alt="Media" className="h-full w-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => removeAdditionalMedia(idx)}
+                        className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity shadow-sm"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
                     </div>
-                  </div>
-                )}
+                  ))}
+                  {formData.additionalMedia.length < 5 && (
+                    <div className="relative aspect-square">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={handleMediaUpload}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                      />
+                      <div className="h-full border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center bg-gray-50 hover:bg-secondary/5 hover:border-secondary/30 transition-all">
+                        <Plus className="h-6 w-6 text-secondary/50" />
+                        <p className="text-[10px] font-bold text-neutral/50 mt-1">Tambah</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         )}
-
       </div>
 
       {/* Navigation Buttons */}
-      <div className="mt-8 flex items-center justify-between">
+      <div className="flex items-center justify-between pt-2">
         <button
           onClick={prevStep}
           disabled={step === 1 || isLoading}
-          className={`flex items-center gap-2 px-8 py-3.5 rounded-2xl font-bold text-sm transition-all ${step === 1 ? "opacity-0 invisible" : "bg-white border border-gray-200 text-dark hover:bg-gray-50"
+          className={`flex items-center gap-2 px-7 py-3.5 rounded-xl font-bold text-sm transition-all ${step === 1 ? "opacity-0 invisible" : "bg-white border border-gray-200 text-dark hover:bg-gray-50 shadow-sm"
             }`}
         >
           <ChevronLeft className="h-4 w-4" /> Sebelumnya
         </button>
 
-        <div className="flex items-center gap-4">
-          <button type="button" onClick={handleSaveDraft} disabled={isLoading} className="hidden md:block text-sm font-bold text-neutral hover:text-dark px-6 py-3.5 rounded-2xl transition-all disabled:opacity-50">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handleSaveDraft}
+            disabled={isLoading || isSaving}
+            className="hidden md:block text-sm font-bold text-neutral hover:text-dark px-6 py-3.5 rounded-xl transition-all disabled:opacity-50 hover:bg-gray-100"
+          >
             Simpan Draft
           </button>
 
           {step < 3 ? (
             <button
               onClick={nextStep}
-              className="flex items-center gap-2 bg-primary text-white px-10 py-3.5 rounded-2xl font-bold text-sm hover:bg-primary-900 shadow-lg shadow-primary/20 transition-all active:scale-[0.98]"
+              className="flex items-center gap-2 bg-gradient-to-r from-primary to-secondary text-white px-10 py-3.5 rounded-xl font-bold text-sm hover:opacity-90 shadow-lg shadow-primary/20 transition-all active:scale-[0.98]"
             >
               Lanjut <ChevronRight className="h-4 w-4" />
             </button>
           ) : (
             <button
               onClick={handleSubmit}
-              disabled={isLoading}
-              className="flex items-center gap-2 bg-primary text-white px-10 py-3.5 rounded-2xl font-bold text-sm hover:bg-primary-900 shadow-lg shadow-primary/20 transition-all active:scale-[0.98] disabled:opacity-50"
+              disabled={isLoading || isSaving}
+              className="flex items-center gap-2 bg-gradient-to-r from-primary to-secondary text-white px-10 py-3.5 rounded-xl font-bold text-sm hover:opacity-90 shadow-lg shadow-primary/20 transition-all active:scale-[0.98] disabled:opacity-50"
             >
               {isLoading ? "Mengirim..." : "Submit Acara"} <ArrowRight className="h-4 w-4" />
             </button>
@@ -1108,4 +1188,3 @@ export default function EditEventPage({ params }: { params: Promise<{ id: string
     </div>
   );
 }
-

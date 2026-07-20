@@ -152,5 +152,13 @@ service cloud.firestore {
       // Hanya admin yang bisa hapus notifikasi
       allow delete: if isAdmin();
     }
+    // ─────────────────────────────────────────────────────────────
+    // KOLEKSI: categories
+    // ─────────────────────────────────────────────────────────────
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
+    }
   }
 }

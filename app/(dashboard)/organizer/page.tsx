@@ -148,8 +148,8 @@ export default function OrganizerDashboard() {
                     </td>
                     <td className="px-8 py-6">
                       <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${event.status === 'published' ? 'bg-green-50 text-green-600 border-green-100' :
-                          event.status === 'pending' ? 'bg-amber-50 text-amber-600 border-amber-100' :
-                            'bg-red-50 text-red-600 border-red-100'
+                        event.status === 'pending' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                          'bg-red-50 text-red-600 border-red-100'
                         }`}>
                         {event.status === 'published' ? 'Aktif' : event.status === 'pending' ? 'Menunggu' : 'Ditolak'}
                       </span>

@@ -284,7 +284,7 @@ export default function LandingPage() {
               upcomingEvents.map((event) => (
                 <Link
                   key={event.id}
-                  href={role ? `/events/${event.id}` : "/login"}
+                  href={`/events/${event.id}`}
                   className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow group flex flex-col h-full cursor-pointer"
                 >
                   <div className="h-44 bg-gray-100 relative overflow-hidden">

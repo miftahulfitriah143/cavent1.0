@@ -362,7 +362,7 @@ export default function EventsPage() {
                     <div>
                       <div className="flex items-center gap-2">
                         <h3 className="font-bold text-dark text-base">{matchedOrganizer.displayName}</h3>
-                        <span className="text-[9px] bg-red-500 text-white px-1.5 py-0.5 rounded-sm font-bold uppercase tracking-wider">Penyelenggara</span>
+                        <span className="text-[9px] bg-secondary text-white px-1.5 py-0.5 rounded-sm font-bold uppercase tracking-wider">Penyelenggara</span>
                       </div>
                       <p className="text-xs text-neutral flex items-center gap-1 mt-1">
                         Penyelenggara terkait dengan &quot;{searchQuery}&quot;
@@ -371,7 +371,7 @@ export default function EventsPage() {
                   </div>
                   <Link
                     href={`/organizers/${matchedOrganizer.id}`}
-                    className="flex items-center justify-center gap-1 text-sm font-semibold text-primary border border-primary px-5 py-2.5 rounded-xl hover:bg-primary hover:text-white transition-colors whitespace-nowrap"
+                    className="flex items-center justify-center gap-1 text-sm font-semibold text-accent border border-accent px-5 py-2.5 rounded-xl hover:bg-accent hover:text-white transition-colors whitespace-nowrap"
                   >
                     Kunjungi Profil
                   </Link>

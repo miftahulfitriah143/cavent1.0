@@ -444,7 +444,7 @@ export default function EventDetail({ params }: { params: Promise<{ id: string }
           <div className="flex flex-col lg:flex-row justify-between items-start gap-8">
 
             {/* Left: Main Info */}
-            <div className="flex-1 space-y-4">
+            <div className="flex-1 w-full space-y-4">
               {/* Kategori Kapsul */}
               <div className="flex items-center gap-2 flex-wrap">
                 {Array.isArray(event.category) ? (
@@ -489,7 +489,7 @@ export default function EventDetail({ params }: { params: Promise<{ id: string }
 
 
               {/* Divider */}
-              <div className="h-px w-full bg-gray-100 pt-2" />
+              <div className="h-px bg-gray-200 mt-2 mx-1" />
 
               {/* Penyelenggara */}
               <div className="flex items-center gap-4 pt-1">
@@ -691,7 +691,7 @@ export default function EventDetail({ params }: { params: Promise<{ id: string }
               </>
             ) : (
               /* Card: Rating & Ulasan (Dynamic State) */
-              <div className="bg-white px-6 md:px-8 py-8 rounded-xl border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.02)] space-y-8 animate-in fade-in duration-500">
+              <div className="bg-white px-6 md:px-8 py-8 rounded-xl border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.02)] space-y-8">
                 <div>
                   <h2 className="text-xl font-bold text-dark mb-1">Rating &amp; Ulasan</h2>
                   <p className="text-neutral text-xs">Ulasan jujur dari audiens yang telah mengikuti acara ini.</p>
@@ -841,9 +841,14 @@ export default function EventDetail({ params }: { params: Promise<{ id: string }
 
               <div className="flex flex-col gap-3">
                 {(() => {
+                  const now = new Date();
                   const regCloseDateObj = event.regCloseDate ? new Date(event.regCloseDate) : event.startDate ? new Date(event.startDate) : new Date();
                   regCloseDateObj.setHours(23, 59, 59, 999);
-                  const isRegistrationClosed = new Date() > regCloseDateObj;
+                  const isRegistrationClosed = now > regCloseDateObj;
+
+                  const regOpenDateObj = event.regOpenDate ? new Date(event.regOpenDate) : new Date(0);
+                  regOpenDateObj.setHours(0, 0, 0, 0);
+                  const isRegistrationNotOpenYet = now < regOpenDateObj;
 
                   if (event.eventState === "completed") {
                     if (isRegistered && registrationData?.status === "attended") {
@@ -899,6 +904,14 @@ export default function EventDetail({ params }: { params: Promise<{ id: string }
                     );
                   }
 
+                  if (isRegistrationNotOpenYet) {
+                    return (
+                      <button disabled className="w-full bg-gray-100 text-gray-500 cursor-not-allowed font-extrabold py-4 rounded-2xl text-center text-sm border border-gray-200">
+                        Belum Dibuka
+                      </button>
+                    );
+                  }
+
                   return (
                     <button
                       onClick={openRegistrationModal}
@@ -932,9 +945,14 @@ export default function EventDetail({ params }: { params: Promise<{ id: string }
           <p className="text-[9px] font-bold text-red-500 mt-0.5">Sisa {seatsLeft} Kursi</p>
         </div>
         {(() => {
+          const now = new Date();
           const regCloseDateObj = event.regCloseDate ? new Date(event.regCloseDate) : event.startDate ? new Date(event.startDate) : new Date();
           regCloseDateObj.setHours(23, 59, 59, 999);
-          const isRegistrationClosed = new Date() > regCloseDateObj;
+          const isRegistrationClosed = now > regCloseDateObj;
+
+          const regOpenDateObj = event.regOpenDate ? new Date(event.regOpenDate) : new Date(0);
+          regOpenDateObj.setHours(0, 0, 0, 0);
+          const isRegistrationNotOpenYet = now < regOpenDateObj;
 
           if (event.eventState === "completed") {
             if (isRegistered && registrationData?.status === "attended") {
@@ -979,6 +997,14 @@ export default function EventDetail({ params }: { params: Promise<{ id: string }
             return (
               <button disabled className="bg-gray-100 text-gray-500 cursor-not-allowed px-8 py-4 rounded-2xl text-sm border border-gray-200 font-black">
                 Ditutup
+              </button>
+            );
+          }
+
+          if (isRegistrationNotOpenYet) {
+            return (
+              <button disabled className="bg-gray-100 text-gray-500 cursor-not-allowed px-8 py-4 rounded-2xl text-sm border border-gray-200 font-black">
+                Belum Dibuka
               </button>
             );
           }
