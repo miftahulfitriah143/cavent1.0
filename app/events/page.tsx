@@ -50,6 +50,8 @@ export default function EventsPage() {
   const [events, setEvents] = useState<any[]>([]);
   const [activeCategory, setActiveCategory] = useState("Semua");
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeOrganizer, setActiveOrganizer] = useState("Semua Penyelenggara");
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [sortBy, setSortBy] = useState("Terbaru");
   const [isLoading, setIsLoading] = useState(true);
   const [organizers, setOrganizers] = useState<any[]>([]);
@@ -101,7 +103,14 @@ export default function EventsPage() {
       if (sortBy === "Gratis" && e.feeType !== "Gratis") return false;
     }
 
-    return matchCat && matchSearch;
+    // 4. Penyelenggara Filter
+    let matchOrganizer = true;
+    if (activeOrganizer !== "Semua Penyelenggara") {
+      const prod = e.organizerProdi;
+      matchOrganizer = Array.isArray(prod) ? prod.includes(activeOrganizer) : prod === activeOrganizer;
+    }
+
+    return matchCat && matchSearch && matchOrganizer;
   }).sort((a, b) => {
     // Pengurutan (Selalu Terbaru)
     const dateA = a.createdAt?.seconds || 0;
@@ -170,7 +179,12 @@ export default function EventsPage() {
             <button className="flex items-center gap-2 bg-accent text-white px-6 py-3 rounded-xl text-sm font-semibold hover:bg-amber-500 transition-colors shadow-md">
               Cari
             </button>
-
+            <button
+              className="md:hidden flex items-center justify-center bg-white/20 backdrop-blur-sm text-white border border-white/30 w-12 h-12 rounded-xl"
+              onClick={() => setIsMobileFilterOpen(!isMobileFilterOpen)}
+            >
+              <SlidersHorizontal className="h-4 w-4" />
+            </button>
           </div>
         </div>
       </section>
@@ -196,7 +210,58 @@ export default function EventsPage() {
           {/* Layout: Sidebar + Grid */}
           <div className="flex flex-col md:flex-row gap-5 items-start">
 
-
+            {/* ── SIDEBAR FILTER ── */}
+            {/* Sidebar: full-width toggle di mobile, fixed-width di desktop */}
+            <aside className={`${isMobileFilterOpen ? "block" : "hidden"} w-full md:block md:w-56 md:shrink-0 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden`}>
+              {/* Sidebar header strip */}
+              <div className="bg-gradient-to-r from-primary to-secondary px-5 py-3">
+                <h3 className="font-bold text-white text-sm">Filter Acara</h3>
+              </div>
+              
+              <div className="p-5">
+                {/* Penyelenggara */}
+                <div className="mb-5">
+                  <p className="text-[10px] font-bold text-neutral uppercase tracking-wider mb-3">Penyelenggara</p>
+                  <ul className="space-y-1">
+                    {(() => {
+                      let lastGroup: string | null = undefined as any;
+                      return FILTER_PENYELENGGARA.map((item) => {
+                        const showHeader = item.group !== lastGroup && item.group !== null;
+                        if (item.group !== null) lastGroup = item.group;
+                        return (
+                          <li key={item.label}>
+                            {showHeader && (
+                              <p className="text-[9px] font-bold text-primary/60 uppercase tracking-wider mt-3 mb-1.5 pl-0.5">
+                                {item.group}
+                              </p>
+                            )}
+                            <div className="flex items-center gap-2.5 py-0.5">
+                              <div
+                                onClick={() => setActiveOrganizer(item.label)}
+                                className={`h-4 w-4 rounded-full shrink-0 cursor-pointer flex items-center justify-center border-2 transition-colors ${activeOrganizer === item.label
+                                    ? "border-primary bg-primary"
+                                    : "border-gray-300 bg-white"
+                                  }`}
+                              >
+                                {activeOrganizer === item.label && (
+                                  <div className="h-1.5 w-1.5 rounded-full bg-white" />
+                                )}
+                              </div>
+                              <span
+                                className="text-xs text-neutral cursor-pointer hover:text-dark transition-colors"
+                                onClick={() => setActiveOrganizer(item.label)}
+                              >
+                                {item.group === null ? item.label : item.label.split(" — ")[1]}
+                              </span>
+                            </div>
+                          </li>
+                        );
+                      });
+                    })()}
+                  </ul>
+                </div>
+              </div>
+            </aside>
 
             {/* ── EVENT GRID ── */}
             <div className="w-full md:flex-1 md:min-w-0">
