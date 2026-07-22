@@ -50,7 +50,7 @@ export default function AdminEventsPage() {
       const allEvents = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
-      }));
+      })) as any[];
       
       // Auto-expire acara yang tanggalnya sudah lewat
       checkAndExpirePendingEvents(allEvents);
