@@ -923,11 +923,7 @@ export default function EventDetail({ params }: { params: Promise<{ id: string }
                   );
                 })()}
 
-                {event.eventState !== "completed" && (
-                  <button className="w-full border border-gray-200 text-neutral font-bold py-4 rounded-2xl flex items-center justify-center gap-3 hover:bg-gray-50 transition-all text-sm">
-                    <Bell className="h-5 w-5 text-neutral" /> Ingatkan Saya
-                  </button>
-                )}
+
               </div>
 
               <p className="text-[10px] text-neutral/70 text-center mt-5 leading-relaxed px-2">

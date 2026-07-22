@@ -92,6 +92,7 @@ export function Sidebar() {
       items: [
         { name: "Dasbor", href: "/admin", icon: <Home className="h-4 w-4" /> },
         { name: "Approval Acara", href: "/admin/approval", icon: <FileText className="h-4 w-4" />, badge: pendingApprovalCount },
+        { name: "Semua Acara", href: "/admin/events", icon: <Calendar className="h-4 w-4" /> },
         { name: "Manajemen Akun", href: "/admin/users", icon: <Users className="h-4 w-4" /> },
       ]
     },

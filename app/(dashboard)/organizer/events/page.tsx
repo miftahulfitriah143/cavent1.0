@@ -25,6 +25,7 @@ import { QrCode, Play, X, CheckCircle2, FileText } from "lucide-react";
 import { getCategoryBadgeClass } from "@/lib/category";
 
 import { uploadImage } from "@/lib/cloudinary";
+import { checkAndExpirePendingEvents } from "@/lib/expireEvents";
 
 export default function MyEventsPage() {
   const { user } = useAuth();
@@ -180,7 +181,12 @@ export default function MyEventsPage() {
       const eventData = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
-      })).sort((a: any, b: any) => {
+      }));
+
+      // Auto-expire acara yang tanggalnya sudah lewat
+      checkAndExpirePendingEvents(eventData);
+
+      eventData.sort((a: any, b: any) => {
         // Sort manual untuk menghindari error index Firestore di awal
         const dateA = a.createdAt?.seconds || 0;
         const dateB = b.createdAt?.seconds || 0;
@@ -217,6 +223,18 @@ export default function MyEventsPage() {
             <XCircle className="h-3 w-3" /> Ditolak (Lihat Alasan)
           </button>
         );
+      case "expired":
+        return (
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              setSelectedRejection({ title: event.title, reason: event.rejectionReason || "Tanggal pelaksanaan sudah terlewat." });
+            }}
+            className="bg-orange-50 text-orange-600 px-3 py-1 rounded-full text-[10px] font-bold flex items-center gap-1.5 shadow-sm border border-orange-100 hover:bg-orange-100 transition-colors"
+          >
+            <AlertCircle className="h-3 w-3" /> Kedaluwarsa
+          </button>
+        );
       case "cancelled":
         return <span className="bg-gray-50 text-gray-600 px-3 py-1 rounded-full text-[10px] font-bold flex items-center gap-1.5 shadow-sm border border-gray-100"><XCircle className="h-3 w-3" /> Dibatalkan</span>;
       default:
@@ -243,7 +261,7 @@ export default function MyEventsPage() {
           { label: "Total Acara", value: events.length, color: "text-dark", bg: "bg-white" },
           { label: "Disetujui", value: events.filter(e => e.status === "published").length, color: "text-green-600", bg: "bg-green-50/30" },
           { label: "Menunggu", value: events.filter(e => e.status === "pending").length, color: "text-amber-600", bg: "bg-amber-50/30" },
-          { label: "Ditolak/Batal", value: events.filter(e => e.status === "rejected" || e.status === "cancelled").length, color: "text-red-600", bg: "bg-red-50/30" },
+          { label: "Ditolak/Kedaluwarsa", value: events.filter(e => e.status === "rejected" || e.status === "cancelled" || e.status === "expired").length, color: "text-red-600", bg: "bg-red-50/30" },
         ].map((stat, i) => (
           <div key={i} className={`${stat.bg} p-6 rounded-xl border border-gray-100 shadow-sm transition-transform hover:scale-[1.02]`}>
             <p className="text-[10px] font-bold text-neutral uppercase tracking-[0.2em]">{stat.label}</p>

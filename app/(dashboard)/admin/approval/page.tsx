@@ -32,6 +32,7 @@ import {
 } from "firebase/firestore";
 import toast from "react-hot-toast";
 import { getCategoryBadgeClass } from "@/lib/category";
+import { checkAndExpirePendingEvents } from "@/lib/expireEvents";
 
 export default function AdminApprovalPage() {
   const [pendingEvents, setPendingEvents] = useState<any[]>([]);
@@ -77,6 +78,10 @@ export default function AdminApprovalPage() {
         id: doc.id,
         ...doc.data()
       }));
+      
+      // Auto-expire acara yang tanggalnya sudah lewat
+      checkAndExpirePendingEvents(events);
+      
       setPendingEvents(events);
       setIsLoading(false);
     }, (error) => {

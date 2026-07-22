@@ -50,11 +50,7 @@ export default function EventsPage() {
   const [events, setEvents] = useState<any[]>([]);
   const [activeCategory, setActiveCategory] = useState("Semua");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedPenyelenggara, setSelectedPenyelenggara] = useState("Semua Penyelenggara");
-  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
-  const [filterDate, setFilterDate] = useState("");
   const [sortBy, setSortBy] = useState("Terbaru");
-  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [organizers, setOrganizers] = useState<any[]>([]);
 
@@ -88,80 +84,29 @@ export default function EventsPage() {
     };
   }, []);
 
-  const toggleStatus = (s: string) =>
-    setSelectedStatuses((prev) =>
-      prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]
-    );
-
   const filtered = events.filter((e) => {
     // 1. Kategori Tag
-    const matchCat =
-      activeCategory === "Semua"
-        ? true
-        : Array.isArray(e.category)
-          ? e.category.includes(activeCategory)
-          : e.category === activeCategory;
+    const matchCat = activeCategory === "Semua" ? true : (Array.isArray(e.category) ? e.category.includes(activeCategory) : e.category === activeCategory);
 
     // 2. Search Query
-    const matchSearch =
-      !searchQuery ||
-      e.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      e.venue?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      e.organizerName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (typeof e.organizerProdi === "string" && e.organizerProdi.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (Array.isArray(e.organizerProdi) && e.organizerProdi.some((prodi: string) => prodi.toLowerCase().includes(searchQuery.toLowerCase())));
+    const matchSearch = !searchQuery || e.title?.toLowerCase().includes(searchQuery.toLowerCase()) || e.venue?.toLowerCase().includes(searchQuery.toLowerCase()) || e.organizerName?.toLowerCase().includes(searchQuery.toLowerCase()) || (typeof e.organizerProdi === "string" && e.organizerProdi.toLowerCase().includes(searchQuery.toLowerCase())) || (Array.isArray(e.organizerProdi) && e.organizerProdi.some((prodi: string) => prodi.toLowerCase().includes(searchQuery.toLowerCase())));
 
-    // 3. Penyelenggara
-    const matchPenyelenggara =
-      selectedPenyelenggara === "Semua Penyelenggara"
-        ? true
-        : Array.isArray(e.organizerProdi)
-          ? e.organizerProdi.includes(selectedPenyelenggara)
-          : e.organizerProdi === selectedPenyelenggara;
-
-    // 4. Status Filter Logic
-    const feeFilters = selectedStatuses.filter(s => s === "Gratis" || s === "Berbayar");
-    const timeFilters = selectedStatuses.filter(s => s === "Segera Dimulai" || s === "Telah Lalu");
-
+    // 3. Status/Dropdown Filter
     const isPastEvent = e.eventState === "completed";
 
-    // Aturan khusus: sembunyikan acara "Telah Lalu" secara default jika tidak dicentang
-    if (isPastEvent && !timeFilters.includes("Telah Lalu")) {
-      return false;
+    if (sortBy === "Telah Lalu") {
+      if (!isPastEvent) return false;
+    } else {
+      if (isPastEvent) return false; // Hide past events by default
+      if (sortBy === "Gratis" && e.feeType !== "Gratis") return false;
     }
 
-    // Filter berdasarkan Waktu
-    if (timeFilters.length > 0) {
-      if (timeFilters.includes("Telah Lalu") && !timeFilters.includes("Segera Dimulai")) {
-        if (!isPastEvent) return false; // Hanya tampilkan yang sudah selesai
-      }
-      if (timeFilters.includes("Segera Dimulai") && !timeFilters.includes("Telah Lalu")) {
-        if (isPastEvent) return false; // Hanya tampilkan yang belum selesai
-      }
-    }
-
-    // Filter berdasarkan Biaya
-    if (feeFilters.length > 0) {
-      if (!feeFilters.includes(e.feeType)) return false;
-    }
-
-    return matchCat && matchSearch && matchPenyelenggara;
+    return matchCat && matchSearch;
   }).sort((a, b) => {
-    // Pengurutan (Sorting)
-    if (sortBy === "Terbaru") {
-      const dateA = a.createdAt?.seconds || 0;
-      const dateB = b.createdAt?.seconds || 0;
-      return dateB - dateA;
-    } else if (sortBy === "Terlama") {
-      const dateA = a.createdAt?.seconds || 0;
-      const dateB = b.createdAt?.seconds || 0;
-      return dateA - dateB;
-    } else if (sortBy === "Populer") {
-      const popA = a.registeredCount || 0;
-      const popB = b.registeredCount || 0;
-      return popB - popA;
-    }
-    return 0;
+    // Pengurutan (Selalu Terbaru)
+    const dateA = a.createdAt?.seconds || 0;
+    const dateB = b.createdAt?.seconds || 0;
+    return dateB - dateA;
   });
 
   const matchedOrganizer = searchQuery.length >= 2 
@@ -225,12 +170,7 @@ export default function EventsPage() {
             <button className="flex items-center gap-2 bg-accent text-white px-6 py-3 rounded-xl text-sm font-semibold hover:bg-amber-500 transition-colors shadow-md">
               Cari
             </button>
-            <button
-              className="md:hidden flex items-center justify-center bg-white/20 backdrop-blur-sm text-white border border-white/30 w-12 h-12 rounded-xl"
-              onClick={() => setIsMobileFilterOpen(!isMobileFilterOpen)}
-            >
-              <SlidersHorizontal className="h-4 w-4" />
-            </button>
+
           </div>
         </div>
       </section>
@@ -256,96 +196,7 @@ export default function EventsPage() {
           {/* Layout: Sidebar + Grid */}
           <div className="flex flex-col md:flex-row gap-5 items-start">
 
-            {/* ── SIDEBAR FILTER ── */}
-            {/* Sidebar: full-width toggle di mobile, fixed-width di desktop */}
-            <aside className={`${isMobileFilterOpen ? "block" : "hidden"} w-full md:block md:w-56 md:shrink-0 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden`}>
-              {/* Sidebar header strip */}
-              <div className="bg-gradient-to-r from-primary to-secondary px-5 py-3">
-                <h3 className="font-bold text-white text-sm">Filter Acara</h3>
-              </div>
 
-              <div className="p-5">
-                {/* Penyelenggara */}
-                <div className="mb-5">
-                  <p className="text-[10px] font-bold text-neutral uppercase tracking-wider mb-3">Penyelenggara</p>
-                  <ul className="space-y-1">
-                    {(() => {
-                      let lastGroup: string | null = undefined as any;
-                      return FILTER_PENYELENGGARA.map((item) => {
-                        const showHeader = item.group !== lastGroup && item.group !== null;
-                        if (item.group !== null) lastGroup = item.group;
-                        return (
-                          <li key={item.label}>
-                            {showHeader && (
-                              <p className="text-[9px] font-bold text-primary/60 uppercase tracking-wider mt-3 mb-1.5 pl-0.5">
-                                {item.group}
-                              </p>
-                            )}
-                            <div className="flex items-center gap-2.5 py-0.5">
-                              <div
-                                onClick={() => setSelectedPenyelenggara(item.label)}
-                                className={`h-4 w-4 rounded-full shrink-0 cursor-pointer flex items-center justify-center border-2 transition-colors ${selectedPenyelenggara === item.label
-                                    ? "border-primary bg-primary"
-                                    : "border-gray-300 bg-white"
-                                  }`}
-                              >
-                                {selectedPenyelenggara === item.label && (
-                                  <div className="h-1.5 w-1.5 rounded-full bg-white" />
-                                )}
-                              </div>
-                              <span
-                                className="text-xs text-neutral cursor-pointer hover:text-dark transition-colors"
-                                onClick={() => setSelectedPenyelenggara(item.label)}
-                              >
-                                {item.group === null ? item.label : item.label.split(" — ")[1]}
-                              </span>
-                            </div>
-                          </li>
-                        );
-                      });
-                    })()}
-                  </ul>
-                </div>
-
-                {/* Tanggal */}
-                <div className="mb-5">
-                  <p className="text-[10px] font-bold text-neutral uppercase tracking-wider mb-3">Tanggal</p>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={filterDate}
-                      onChange={(e) => setFilterDate(e.target.value)}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-primary pr-8"
-                    />
-                    <Calendar className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-neutral/60" />
-                  </div>
-                </div>
-
-                {/* Status */}
-                <div className="mb-6">
-                  <p className="text-[10px] font-bold text-neutral uppercase tracking-wider mb-3">Status</p>
-                  <ul className="space-y-2">
-                    {STATUS_OPTIONS.map((s) => (
-                      <li key={s} className="flex items-center gap-2.5">
-                        <div
-                          onClick={() => toggleStatus(s)}
-                          className={`h-4 w-4 rounded shrink-0 cursor-pointer flex items-center justify-center border transition-colors ${selectedStatuses.includes(s) ? "bg-primary border-primary" : "border-gray-300 bg-white"
-                            }`}
-                        >
-                          {selectedStatuses.includes(s) && (
-                            <svg viewBox="0 0 10 8" fill="none" className="h-2.5 w-2.5">
-                              <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                          )}
-                        </div>
-                        <span className="text-xs text-neutral cursor-pointer" onClick={() => toggleStatus(s)}>{s}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-              </div>
-            </aside>
 
             {/* ── EVENT GRID ── */}
             <div className="w-full md:flex-1 md:min-w-0">
@@ -390,8 +241,9 @@ export default function EventsPage() {
                     className="appearance-none border border-gray-200 bg-white rounded-lg px-4 py-2 pr-8 text-sm font-semibold text-dark focus:outline-none focus:border-primary cursor-pointer"
                   >
                     <option>Terbaru</option>
-                    <option>Terlama</option>
-                    <option>Populer</option>
+                    <option>Telah Lalu</option>
+                    <option>Gratis</option>
+                    <option>Segera Dimulai</option>
                   </select>
                   <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral pointer-events-none" />
                 </div>
