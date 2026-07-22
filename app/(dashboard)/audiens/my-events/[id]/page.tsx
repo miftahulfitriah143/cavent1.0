@@ -180,8 +180,11 @@ export default function TicketPage({ params }: { params: Promise<{ id: string }>
     try {
       setIsLoading(true);
       
-      // Hapus dokumen pendaftaran
-      await deleteDoc(doc(db, "registrations", id));
+      // Ubah status pendaftaran menjadi dibatalkan
+      await updateDoc(doc(db, "registrations", id), {
+        status: "cancelled",
+        cancelCount: increment(1)
+      });
       
       // Kurangi registeredCount di dokumen event
       await updateDoc(doc(db, "events", registration.eventId), {
@@ -488,13 +491,16 @@ export default function TicketPage({ params }: { params: Promise<{ id: string }>
                {isSyncingCalendar ? "Menyimpan..." : "Simpan ke Google Calendar"}
              </button>
              
-             {eventState !== "started" && eventState !== "completed" && registration.status !== "attended" && (
-               <button 
-                 onClick={handleCancelRegistration}
-                 className="flex-1 bg-red-50 text-red-600 font-bold py-2.5 px-3 rounded-lg hover:bg-red-100 hover:text-red-700 transition-all text-[11px] flex items-center justify-center gap-2"
-               >
-                 Batalkan Pendaftaran
-               </button>
+             {eventState !== "started" && eventState !== "completed" && registration.status !== "attended" && (registration.cancelCount || 0) < 2 && (
+               <div className="flex-1 flex flex-col gap-1.5 justify-center">
+                 <button 
+                   onClick={handleCancelRegistration}
+                   className="w-full bg-red-50 text-red-600 font-bold py-2.5 px-3 rounded-lg hover:bg-red-100 hover:text-red-700 transition-all text-[11px] flex items-center justify-center gap-2"
+                 >
+                   Batalkan Pendaftaran
+                 </button>
+                 <p className="text-[9px] text-center text-red-500/80 font-medium">*Maksimal batal 2 kali</p>
+               </div>
              )}
           </div>
 

@@ -86,8 +86,9 @@ export default function EventDetail({ params }: { params: Promise<{ id: string }
           );
           const regSnap = await getDocs(regQuery);
           if (!regSnap.empty) {
-            setIsRegistered(true);
-            setRegistrationData({ id: regSnap.docs[0].id, ...regSnap.docs[0].data() });
+            const data = regSnap.docs[0].data();
+            setRegistrationData({ id: regSnap.docs[0].id, ...data });
+            setIsRegistered(data.status !== "cancelled");
           } else {
             setIsRegistered(false);
             setRegistrationData(null);
@@ -151,21 +152,36 @@ export default function EventDetail({ params }: { params: Promise<{ id: string }
 
     setIsActionLoading(true);
     try {
-      const newRegRef = await addDoc(collection(db, "registrations"), {
-        userId: user?.uid || "",
-        userEmail: user?.email || "",
-        userName: user?.displayName || "Audiens",
-        fullName: regFullName.trim(),
-        nim: regNim.trim(),
-        eventId: id,
-        eventTitle: event.title || "Acara Tanpa Judul",
-        eventDate: event.startDate || "",
-        eventVenue: event.venue || "",
-        eventBanner: event.bannerUrl || "",
-        organizerId: event.organizerId || "",
-        registeredAt: serverTimestamp(),
-        status: "confirmed"
-      });
+      let regId = "";
+      if (registrationData && registrationData.status === "cancelled") {
+        regId = registrationData.id;
+        await updateDoc(doc(db, "registrations", regId), {
+          status: "confirmed",
+          fullName: regFullName.trim(),
+          nim: regNim.trim(),
+          registeredAt: serverTimestamp(),
+        });
+        setRegistrationData((prev: any) => ({ ...prev, status: "confirmed", fullName: regFullName.trim(), nim: regNim.trim() }));
+      } else {
+        const newRegRef = await addDoc(collection(db, "registrations"), {
+          userId: user?.uid || "",
+          userEmail: user?.email || "",
+          userName: user?.displayName || "Audiens",
+          fullName: regFullName.trim(),
+          nim: regNim.trim(),
+          eventId: id,
+          eventTitle: event.title || "Acara Tanpa Judul",
+          eventDate: event.startDate || "",
+          eventVenue: event.venue || "",
+          eventBanner: event.bannerUrl || "",
+          organizerId: event.organizerId || "",
+          registeredAt: serverTimestamp(),
+          status: "confirmed",
+          cancelCount: 0
+        });
+        regId = newRegRef.id;
+        setRegistrationData({ id: regId, status: "confirmed", cancelCount: 0 });
+      }
 
       const eventRef = doc(db, "events", id);
       await updateDoc(eventRef, {
@@ -186,7 +202,6 @@ export default function EventDetail({ params }: { params: Promise<{ id: string }
       }
 
       setIsRegistered(true);
-      setRegistrationData({ id: newRegRef.id, status: "confirmed" });
       setShowRegModal(false);
       toast.success("Berhasil mendaftar acara!");
     } catch (error: any) {
@@ -211,12 +226,16 @@ export default function EventDetail({ params }: { params: Promise<{ id: string }
       const regSnap = await getDocs(regQuery);
 
       if (!regSnap.empty) {
-        await deleteDoc(doc(db, "registrations", regSnap.docs[0].id));
+        await updateDoc(doc(db, "registrations", regSnap.docs[0].id), {
+          status: "cancelled",
+          cancelCount: increment(1)
+        });
         const eventRef = doc(db, "events", id);
         await updateDoc(eventRef, {
           registeredCount: increment(-1)
         });
         setIsRegistered(false);
+        setRegistrationData((prev: any) => ({ ...prev, status: "cancelled", cancelCount: (prev?.cancelCount || 0) + 1 }));
         toast.success("Pendaftaran dibatalkan.");
       }
     } catch (error) {
@@ -887,10 +906,13 @@ export default function EventDetail({ params }: { params: Promise<{ id: string }
                         <Link href={`/audiens/my-events/${registrationData?.id}`} className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold py-4 rounded-2xl text-center shadow-lg transition-all active:scale-95 text-sm flex items-center justify-center gap-2">
                           <Ticket className="h-4 w-4" /> Lihat Tiket
                         </Link>
-                        {event.eventState !== "started" && (
-                          <button onClick={handleCancel} disabled={isActionLoading} className="w-full bg-red-50 text-red-600 border border-red-100 font-bold py-3 rounded-2xl hover:bg-red-100 transition-all active:scale-95 text-xs">
-                            {isActionLoading ? "Memproses..." : "Batalkan Pendaftaran"}
-                          </button>
+                        {event.eventState !== "started" && (registrationData?.cancelCount || 0) < 2 && (
+                          <>
+                            <button onClick={handleCancel} disabled={isActionLoading} className="w-full bg-red-50 text-red-600 border border-red-100 font-bold py-3 rounded-2xl hover:bg-red-100 transition-all active:scale-95 text-xs">
+                              {isActionLoading ? "Memproses..." : "Batalkan Pendaftaran"}
+                            </button>
+                            <p className="text-[10px] text-center text-red-500/80 font-medium mt-[-2px]">*Maksimal batal 2 kali</p>
+                          </>
                         )}
                       </div>
                     );

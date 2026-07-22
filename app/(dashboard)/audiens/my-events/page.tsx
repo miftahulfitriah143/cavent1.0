@@ -24,7 +24,7 @@ export default function MyEventsPage() {
       const regData = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
-      })).sort((a: any, b: any) => {
+      })).filter((r: any) => r.status !== "cancelled").sort((a: any, b: any) => {
         const dateA = a.registeredAt?.seconds || 0;
         const dateB = b.registeredAt?.seconds || 0;
         return dateB - dateA;
