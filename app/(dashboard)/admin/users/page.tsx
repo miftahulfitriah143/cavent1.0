@@ -33,15 +33,7 @@ export default function UsersManagementPage() {
     return () => unsubscribe();
   }, [user, role]);
 
-  const handleRoleChange = async (userId: string, currentRole: string) => {
-    // Jangan izinkan ubah role admin
-    if (currentRole === "admin") {
-      toast.error("Tidak dapat mengubah role Admin utama.");
-      return;
-    }
-
-    const newRole = currentRole === "organizer" ? "audiens" : "organizer";
-
+  const handleRoleChange = async (userId: string, newRole: string) => {
     if (!window.confirm(`Apakah Anda yakin ingin mengubah role akun ini menjadi ${newRole.toUpperCase()}?`)) return;
 
     try {
@@ -207,17 +199,26 @@ export default function UsersManagementPage() {
                             </button>
                           )}
 
-                          <button
-                            onClick={() => handleRoleChange(u.id, roleName)}
-                            disabled={roleName === "admin"}
-                            className={`px-4 py-2 rounded-lg text-xs font-bold transition-colors ${roleName === "admin"
-                                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                                : "bg-primary/10 text-primary hover:bg-primary hover:text-white"
+                          <select
+                            value={roleName}
+                            onChange={(e) => {
+                              // e.target.value contains the newly selected role
+                              const targetRole = e.target.value;
+                              if (targetRole !== roleName) {
+                                handleRoleChange(u.id, targetRole);
+                              }
+                            }}
+                            disabled={u.email === "miftahulfitriah143@gmail.com"}
+                            className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors border outline-none cursor-pointer ${u.email === "miftahulfitriah143@gmail.com"
+                                ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
+                                : "bg-white text-dark border-gray-200 hover:border-primary focus:border-primary"
                               }`}
                             title="Ubah Role"
                           >
-                            Ubah Role
-                          </button>
+                            <option value="audiens">Audiens</option>
+                            <option value="organizer">Penyelenggara</option>
+                            <option value="admin">Admin</option>
+                          </select>
 
                           <button
                             onClick={() => handleToggleActive(u.id, u.isActive, roleName)}
