@@ -48,7 +48,7 @@ export default function LandingPage() {
           const dateB = b.createdAt?.seconds || 0;
           return dateB - dateA; // Descending
         });
-      
+
       setUpcomingEvents(events.slice(0, 3));
       setIsLoading(false);
     });

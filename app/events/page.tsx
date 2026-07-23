@@ -118,7 +118,7 @@ export default function EventsPage() {
     return dateB - dateA;
   });
 
-  const matchedOrganizer = searchQuery.length >= 2 
+  const matchedOrganizer = searchQuery.length >= 2
     ? organizers.find(o => o.displayName?.toLowerCase().includes(searchQuery.toLowerCase()))
     : null;
 
@@ -217,7 +217,7 @@ export default function EventsPage() {
               <div className="bg-gradient-to-r from-primary to-secondary px-5 py-3">
                 <h3 className="font-bold text-white text-sm">Filter Acara</h3>
               </div>
-              
+
               <div className="p-5">
                 {/* Penyelenggara */}
                 <div className="mb-5">
@@ -239,8 +239,8 @@ export default function EventsPage() {
                               <div
                                 onClick={() => setActiveOrganizer(item.label)}
                                 className={`h-4 w-4 rounded-full shrink-0 cursor-pointer flex items-center justify-center border-2 transition-colors ${activeOrganizer === item.label
-                                    ? "border-primary bg-primary"
-                                    : "border-gray-300 bg-white"
+                                  ? "border-primary bg-primary"
+                                  : "border-gray-300 bg-white"
                                   }`}
                               >
                                 {activeOrganizer === item.label && (
@@ -270,7 +270,7 @@ export default function EventsPage() {
               {searchQuery.length >= 2 && matchedOrganizer && (
                 <div className="mb-6 bg-white rounded-2xl border border-primary/20 shadow-sm p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in fade-in zoom-in duration-300">
                   <div className="flex items-center gap-4">
-                    <img 
+                    <img
                       src={matchedOrganizer.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(matchedOrganizer.displayName)}&background=0e517a&color=fff`}
                       alt={matchedOrganizer.displayName}
                       className="w-14 h-14 rounded-full object-cover border-2 border-primary/20 shadow-sm"

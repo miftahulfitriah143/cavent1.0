@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { db } from "@/lib/firebase";
 import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
 import Link from "next/link";
@@ -22,6 +22,7 @@ import { getCategoryBadgeClass } from "@/lib/category";
 
 export default function OrganizerProfilePage() {
   const params = useParams();
+  const router = useRouter();
   const id = params.id as string;
 
   const [organizer, setOrganizer] = useState<any>(null);
@@ -32,6 +33,9 @@ export default function OrganizerProfilePage() {
 
   // State for active media in past events
   const [activeMediaPreview, setActiveMediaPreview] = useState<string | null>(null);
+  
+  // State for mobile custom dropdown
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const fetchOrganizerData = async () => {
@@ -139,22 +143,49 @@ export default function OrganizerProfilePage() {
       </div>
 
       {/* Header Profile */}
-      <section className="w-full bg-gradient-to-br from-primary-900 via-primary to-secondary pt-32 pb-16 items-center relative z-10 overflow-hidden text-white">
+      <section className="w-full bg-slate-900 pt-16 pb-8 md:pt-32 md:pb-16 items-center relative z-10 overflow-hidden text-white">
+        
+        {/* Blurred Profile Background */}
+        {organizer.photoURL ? (
+          <div 
+            className="absolute inset-0 z-0 opacity-60 scale-125"
+            style={{ 
+              backgroundImage: `url(${organizer.photoURL})`, 
+              backgroundSize: 'cover', 
+              backgroundPosition: 'center',
+              filter: 'blur(24px)'
+            }} 
+          />
+        ) : (
+          <div className="absolute inset-0 z-0 bg-gradient-to-br from-primary-900 via-primary to-secondary" />
+        )}
+        <div className="absolute inset-0 bg-black/30 z-0" />
+        {/* Back Button (Mobile Only) */}
+        <div className="absolute top-4 left-4 z-50 md:hidden">
+          <button
+            onClick={() => router.back()}
+            className="h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300 active:scale-90 transition-all text-orange-500 shadow-lg border border-gray-300"
+            title="Kembali"
+          >
+            <ChevronLeft className="h-6 w-6 md:h-7 md:w-7" strokeWidth={3} />
+          </button>
+        </div>
+
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.05]" />
         
-        <div className="max-w-5xl mx-auto px-6 relative z-10 flex flex-col md:flex-row items-center gap-8">
-          <div className="h-32 w-32 md:h-40 md:w-40 bg-white rounded-full p-2 shadow-2xl flex-shrink-0">
+        <div className="max-w-5xl mx-auto px-6 relative z-10 flex flex-col md:flex-row items-center gap-4 md:gap-8">
+          <div className="h-24 w-24 md:h-40 md:w-40 bg-white rounded-full p-1.5 md:p-2 shadow-2xl flex-shrink-0">
             {organizer.photoURL ? (
               <img src={organizer.photoURL} alt={organizer.displayName} className="w-full h-full object-cover rounded-full" />
             ) : (
               <div className="w-full h-full bg-primary/10 rounded-full flex items-center justify-center">
-                <Building2 className="h-16 w-16 text-primary" />
+                <Building2 className="h-10 w-10 md:h-16 md:w-16 text-primary" />
               </div>
             )}
           </div>
           <div className="text-center md:text-left">
-            <h1 className="text-4xl md:text-5xl font-black mb-4">{organizer.displayName}</h1>
-            <p className="text-white/80 font-medium max-w-2xl mb-6">
+            <h1 className="text-2xl md:text-5xl font-black mb-2 md:mb-4 leading-tight">{organizer.displayName}</h1>
+            <p className="text-white/80 font-medium text-sm md:text-base max-w-2xl mb-4 md:mb-6 leading-relaxed">
               {organizer.orgDescription || "Penyelenggara resmi di Universitas Paramadina yang aktif membuat acara berkualitas untuk audiens."}
             </p>
             
@@ -176,8 +207,46 @@ export default function OrganizerProfilePage() {
       {/* Main Content */}
       <main className="max-w-5xl mx-auto w-full px-4 md:px-6 py-12 flex-1">
         
-        {/* Tabs Switcher */}
-        <div className="flex justify-center mb-12 overflow-x-auto pb-4 scrollbar-hide">
+        {/* Custom Modern Dropdown for Mobile */}
+        <div className="block md:hidden mb-8 relative z-30">
+          <button 
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="w-full bg-white border border-gray-200 text-dark font-bold text-sm rounded-2xl px-5 py-4 flex items-center justify-between shadow-[0_2px_10px_rgba(0,0,0,0.04)] active:scale-[0.98] transition-all hover:border-primary/30"
+          >
+            <span className="flex items-center gap-2">
+              {activeTab === "upcoming" && <>Acara Mendatang <span className="text-primary bg-primary/10 px-2 py-0.5 rounded-md text-xs">{upcomingEvents.length}</span></>}
+              {activeTab === "past" && <>Riwayat & Dokumentasi <span className="text-primary bg-primary/10 px-2 py-0.5 rounded-md text-xs">{pastEvents.length}</span></>}
+              {activeTab === "reviews" && <>Ulasan <span className="text-primary bg-primary/10 px-2 py-0.5 rounded-md text-xs">{reviews.length}</span></>}
+            </span>
+            <ChevronRight className={`h-4 w-4 text-neutral transition-transform duration-300 ${isMobileMenuOpen ? "rotate-90" : ""}`} />
+          </button>
+          
+          {isMobileMenuOpen && (
+            <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-white border border-gray-100 rounded-2xl p-2 shadow-xl flex flex-col gap-1 animate-in fade-in slide-in-from-top-2 duration-200">
+              <button 
+                onClick={() => { setActiveTab("upcoming"); setIsMobileMenuOpen(false); }}
+                className={`px-4 py-3 rounded-xl text-left text-sm font-bold transition-colors ${activeTab === "upcoming" ? "bg-primary/10 text-primary" : "text-neutral hover:bg-gray-50 hover:text-dark"}`}
+              >
+                Acara Mendatang ({upcomingEvents.length})
+              </button>
+              <button 
+                onClick={() => { setActiveTab("past"); setIsMobileMenuOpen(false); }}
+                className={`px-4 py-3 rounded-xl text-left text-sm font-bold transition-colors ${activeTab === "past" ? "bg-primary/10 text-primary" : "text-neutral hover:bg-gray-50 hover:text-dark"}`}
+              >
+                Riwayat & Dokumentasi ({pastEvents.length})
+              </button>
+              <button 
+                onClick={() => { setActiveTab("reviews"); setIsMobileMenuOpen(false); }}
+                className={`px-4 py-3 rounded-xl text-left text-sm font-bold transition-colors ${activeTab === "reviews" ? "bg-primary/10 text-primary" : "text-neutral hover:bg-gray-50 hover:text-dark"}`}
+              >
+                Ulasan ({reviews.length})
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Desktop Tabs Switcher */}
+        <div className="hidden md:flex justify-center mb-12">
           <div className="inline-flex bg-gray-100/80 p-1.5 rounded-full border border-gray-200/50">
             <button
               onClick={() => setActiveTab("upcoming")}
@@ -341,26 +410,26 @@ export default function OrganizerProfilePage() {
                   const eventTitle = events.find(e => e.id === review.eventId)?.title || "Acara tidak diketahui";
                   return (
                     <div key={review.id} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                      <div className="flex items-start justify-between mb-4">
-                        <div>
-                          <div className="flex flex-wrap items-center gap-2 mb-1">
-                            <h4 className="font-bold text-dark">{review.userName}</h4>
-                            <span className="bg-primary/5 border border-primary/10 text-primary px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider max-w-[250px] truncate">
-                              Acara: {eventTitle}
-                            </span>
+                      <div className="flex flex-col mb-4 gap-3">
+                        <div className="flex items-center justify-between gap-4 w-full">
+                          <h4 className="font-bold text-dark text-sm md:text-base truncate">{review.userName}</h4>
+                          <div className="flex shrink-0">
+                            {[1, 2, 3, 4, 5].map(s => (
+                              <Star key={s} className={`h-3.5 w-3.5 md:h-4 md:w-4 ${s <= review.rating ? "text-amber-400 fill-amber-400" : "text-gray-200"}`} />
+                            ))}
                           </div>
+                        </div>
+                        <div className="flex flex-col items-start gap-1">
+                          <span className="bg-primary/5 border border-primary/10 text-primary px-2.5 py-1 rounded-md text-[9px] font-bold uppercase tracking-wider max-w-full truncate">
+                            Acara: {eventTitle}
+                          </span>
                           {review.createdAt && (
-                            <p className="text-[10px] text-neutral uppercase tracking-wider font-semibold mt-0.5">
+                            <p className="text-[10px] text-neutral uppercase tracking-wider font-semibold mt-1">
                               {new Date(review.createdAt).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}
                             </p>
                           )}
                         </div>
-                      <div className="flex">
-                        {[1, 2, 3, 4, 5].map(s => (
-                          <Star key={s} className={`h-4 w-4 ${s <= review.rating ? "text-amber-400 fill-amber-400" : "text-gray-200"}`} />
-                        ))}
                       </div>
-                    </div>
                     <div className="bg-gray-50/50 p-4 rounded-xl border border-gray-100/50">
                       <p className="text-neutral text-sm italic leading-relaxed">"{review.comment}"</p>
                     </div>
