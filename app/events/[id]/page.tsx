@@ -822,23 +822,23 @@ export default function EventDetail({ params }: { params: Promise<{ id: string }
               </div>
 
               <div className="space-y-4 mb-6">
-                <div className="flex justify-between items-center py-2.5 border-b border-gray-100">
-                  <span className="text-neutral font-medium text-sm">Penyelenggara</span>
-                  <Link href={`/organizers/${event.organizerId}`} className="text-primary hover:underline font-extrabold text-sm">
+                <div className="flex justify-between items-start gap-4 py-2.5 border-b border-gray-100">
+                  <span className="text-neutral font-medium text-sm shrink-0">Penyelenggara</span>
+                  <Link href={`/organizers/${event.organizerId}`} className="text-primary hover:underline font-extrabold text-sm text-right break-words">
                     {event.organizerName}
                   </Link>
                 </div>
-                <div className="flex justify-between items-center py-2.5 border-b border-gray-100">
-                  <span className="text-neutral font-medium text-sm">Kapasitas</span>
-                  <span className="text-dark font-extrabold text-sm">{event.maxCapacity} Orang</span>
+                <div className="flex justify-between items-start gap-4 py-2.5 border-b border-gray-100">
+                  <span className="text-neutral font-medium text-sm shrink-0">Kapasitas</span>
+                  <span className="text-dark font-extrabold text-sm text-right break-words">{event.maxCapacity} Orang</span>
                 </div>
-                <div className="flex justify-between items-center py-2.5 border-b border-gray-100">
-                  <span className="text-neutral font-medium text-sm">Tersisa</span>
-                  <span className="text-red-500 font-extrabold text-sm">{seatsLeft} Kursi</span>
+                <div className="flex justify-between items-start gap-4 py-2.5 border-b border-gray-100">
+                  <span className="text-neutral font-medium text-sm shrink-0">Tersisa</span>
+                  <span className="text-red-500 font-extrabold text-sm text-right break-words">{seatsLeft} Kursi</span>
                 </div>
-                <div className="flex justify-between items-center py-2.5 border-b border-gray-100">
-                  <span className="text-neutral font-medium text-sm">Batas Daftar</span>
-                  <span className="text-dark font-extrabold text-sm">{event.regCloseDate || event.startDate}</span>
+                <div className="flex justify-between items-start gap-4 py-2.5 border-b border-gray-100">
+                  <span className="text-neutral font-medium text-sm shrink-0">Batas Daftar</span>
+                  <span className="text-dark font-extrabold text-sm text-right break-words">{event.regCloseDate || event.startDate}</span>
                 </div>
               </div>
 
@@ -928,8 +928,9 @@ export default function EventDetail({ params }: { params: Promise<{ id: string }
 
                   if (isRegistrationNotOpenYet) {
                     return (
-                      <button disabled className="w-full bg-gray-100 text-gray-500 cursor-not-allowed font-extrabold py-4 rounded-2xl text-center text-sm border border-gray-200">
-                        Belum Dibuka
+                      <button disabled className="w-full bg-gray-100 text-gray-500 cursor-not-allowed font-extrabold py-3.5 rounded-2xl text-center text-sm border border-gray-200 flex flex-col items-center justify-center leading-tight">
+                        <span>Belum Dibuka</span>
+                        {event.regOpenDate && <span className="text-[10px] font-semibold text-gray-400 mt-1">Dibuka: {event.regOpenDate}</span>}
                       </button>
                     );
                   }
@@ -1021,8 +1022,9 @@ export default function EventDetail({ params }: { params: Promise<{ id: string }
 
           if (isRegistrationNotOpenYet) {
             return (
-              <button disabled className="bg-gray-100 text-gray-500 cursor-not-allowed px-8 py-4 rounded-2xl text-sm border border-gray-200 font-black">
-                Belum Dibuka
+              <button disabled className="bg-gray-100 text-gray-500 cursor-not-allowed px-8 py-3 rounded-2xl border border-gray-200 flex flex-col items-center justify-center leading-tight">
+                <span className="font-black text-sm">Belum Dibuka</span>
+                {event.regOpenDate && <span className="text-[10px] font-bold text-gray-400 mt-1">Dibuka: {event.regOpenDate}</span>}
               </button>
             );
           }
