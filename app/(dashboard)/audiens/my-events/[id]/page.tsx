@@ -116,9 +116,8 @@ export default function TicketPage({ params }: { params: Promise<{ id: string }>
         { 
           fps: 10, 
           qrbox: { width: 250, height: 250 },
-          rememberLastUsedCamera: false,
-          supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
-          videoConstraints: { facingMode: "environment" }
+          rememberLastUsedCamera: true,
+          supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
         },
         /* verbose= */ false
       );
@@ -635,7 +634,7 @@ export default function TicketPage({ params }: { params: Promise<{ id: string }>
                    </button>
                  </div>
                  <div id="reader" className="w-full rounded-xl border-2 border-primary/20 bg-gray-50 p-2" />
-                 <p className="text-neutral text-[10px] text-center font-medium mt-2">Arahkan kamera ke layar di meja panitia</p>
+                 <p className="text-neutral text-[10px] text-center font-medium mt-2">Arahkan kamera ke QR Code di meja panitia</p>
               </div>
             ) : (
               <div className="flex flex-col gap-3">
