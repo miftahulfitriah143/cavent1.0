@@ -21,7 +21,7 @@ import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { doc, getDoc, updateDoc, serverTimestamp, collection, query, where, getDocs, addDoc, increment, deleteDoc } from "firebase/firestore";
 import { useAuth } from "@/components/providers/AuthProvider";
 import toast from "react-hot-toast";
-import { Html5QrcodeScanner } from "html5-qrcode";
+import { Html5QrcodeScanner, Html5QrcodeScanType } from "html5-qrcode";
 import { CertificateTemplate } from "@/components/CertificateTemplate";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
@@ -117,6 +117,7 @@ export default function TicketPage({ params }: { params: Promise<{ id: string }>
           fps: 10, 
           qrbox: { width: 250, height: 250 },
           rememberLastUsedCamera: false,
+          supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
           videoConstraints: { facingMode: "environment" }
         },
         /* verbose= */ false
